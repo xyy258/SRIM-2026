@@ -60,10 +60,6 @@ u_star = 0.049*U∞ # friction velocity
 δ = u_star/f₀ # boundary layer lengthscale
 
 # Drag boundary condition
-
-# @inline drag_u(x, t, u, p) = - p.c_drag * abs(u) * u
-# drag_bc_u = FluxBoundaryCondition(drag_u, field_dependencies=:u, parameters=(c_drag=cᴰ,))
-
 drag_bc_u = BulkDrag(coefficient=cᴰ)
 
 # No slip

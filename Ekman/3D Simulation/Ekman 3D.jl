@@ -61,12 +61,6 @@ u_star = 0.049*U∞ # friction velocity
 δ = u_star/f₀ # boundary layer lengthscale
 
 # Quadratic drag
-
-# @inline drag_u(x, y, t, u, v, p) = - p.c_drag * √(u^2 + v^2) * u
-# @inline drag_v(x, y, t, u, v, p) = - p.c_drag * √(u^2 + v^2) * v
-# drag_bc_u = FluxBoundaryCondition(drag_u, field_dependencies=(:u, :v), parameters=(c_drag = cᴰ,))
-# drag_bc_v = FluxBoundaryCondition(drag_v, field_dependencies=(:u, :v), parameters=(c_drag = cᴰ,))
-
 drag_bc_u = BulkDrag(coefficient=cᴰ)
 drag_bc_v = BulkDrag(coefficient=cᴰ)
 
