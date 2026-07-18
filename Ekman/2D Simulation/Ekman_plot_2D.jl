@@ -5,19 +5,11 @@ filename = "Data/Ekman_2D"
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
-u_ic = FieldTimeSeries(filename * "_velocity.jld2", "u", iterations=0)
-v_ic = FieldTimeSeries(filename * "_velocity.jld2", "v", iterations=0)
-w_ic = FieldTimeSeries(filename * "_velocity.jld2", "w", iterations=0)
 b_ic = FieldTimeSeries(filename * "_b_c.jld2", "b", iterations=0)
-c_ic = FieldTimeSeries(filename * "_b_c.jld2", "c", iterations=0)
 
 ## Load in coordinate arrays
 ## We do this separately for each variable since Oceananigans uses a staggered grid
-xu, yu, zu = nodes(u_ic)
-xv, yv, zv = nodes(v_ic)
-xw, yw, zw = nodes(w_ic)
 xb, yb, zb = nodes(b_ic)
-xc, yc, zc = nodes(c_ic)
 
 ## Now, open the file with our data
 file_xz_velocity = jldopen(filename * "_velocity.jld2")
@@ -29,7 +21,6 @@ iterations = parse.(Int, keys(file_xz_velocity["timeseries/t"]))
 @info "Making an animation from saved data..."
 
 t_save = zeros(length(iterations))
-b_bottom = zeros(length(b_ic[1:Nx, 1, 1, 1]), length(iterations))
 
 # Here, we loop over all iterations
 anim = @animate for (i, iter) in enumerate(iterations)
@@ -39,37 +30,24 @@ anim = @animate for (i, iter) in enumerate(iterations)
         @info "Drawing frame $i from iteration $iter..."
     end
 
-    u_xz = file_xz_velocity["timeseries/u/$iter"][:, 1, :];
-    v_xz = file_xz_velocity["timeseries/v/$iter"][:, 1, :];
-    w_xz = file_xz_velocity["timeseries/w/$iter"][:, 1, :];
     b_xz = file_xz_b_c["timeseries/b/$iter"][:, 1, :];
-    c_xz = file_xz_b_c["timeseries/c/$iter"][:, 1, :];
 
     t = file_xz_velocity["timeseries/t/$iter"];
-
-    # Save some variables to plot at the end
-    b_bottom[:, i] = b_xz[:, 1, 1]; # This is the buoyancy along the bottom wall
     t_save[i] = t # save the time
 
-    u_xz_plot = heatmap(xu, zu, u_xz'; color=:balance, xlabel="x", ylabel="z",
-        xlims=(0, Lx), ylims=(0, Lz));
-    v_xz_plot = heatmap(xv, zv, v_xz'; color=:balance, xlabel="x", ylabel="z",
-        xlims=(0, Lx), ylims=(0, Lz));
-    w_xz_plot = heatmap(xw, zw, w_xz'; color=:balance, xlabel="x", ylabel="z",
-        xlims=(0, Lx), ylims=(0, Lz));
-    b_xz_plot = heatmap(xb, zb, b_xz'; color=:thermal, xlabel="x", ylabel="z",
-        xlims=(0, Lx), ylims=(0, Lz));
-    c_xz_plot = heatmap(xc, zc, c_xz'; color=:thermal, xlabel="x", ylabel="z",
-        xlims=(0, Lx), ylims=(0, Lz));
+    zbconcat = zb[findall(x -> x < 5, zb)]
+    Nzconcat = length(zbconcat)
 
-    u_title = @sprintf("u, t = %s", round(t));
-    v_title = @sprintf("v, t = %s", round(t));
-    w_title = @sprintf("w, t = %s", round(t));
-    b_title = @sprintf("b, t = %s", round(t));
-    c_title = @sprintf("c, t = %s", round(t));
+    b_xz_plot = heatmap(xb, zb, b_xz[1:Nzconcat]'/N²; color=:thermal, xlabel="x", ylabel="z",
+        xlims=(0, Lx), ylims=(0, zb[Nzconcat]));
+    b_diff_xz_plot = heatmap(xb, zb, b_xz[1:Nzconcat]'/N²-zb[1:Nzconcat]; color=:thermal, xlabel="x", ylabel="z",
+        xlims=(0, Lx), ylims=(0, zb[Nzconcat]));
+
+    b_title = @sprintf("b/N², t = %s", round(t));
+    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
 
     # Combine the sub-plots into a single figure
-    plot(b_xz_plot, c_xz_plot, layout=(2, 1), size=(1000, 500), title=[b_title c_title])
+        plot(b_xz_plot, b_diff_xz_plot, layout=(2, 1), size=(1000, 500), title=[b_title b_diff_title])
 
     if iter == iterations[end]
         close(file_xz_velocity)

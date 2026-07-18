@@ -155,7 +155,7 @@ simulation.output_writers[:xz_velocity] =
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:xz_b_c] =
-    JLD2Writer(model, (; b, c),
+    JLD2Writer(model, (; b),
                filename = filename * "_b_c.jld2",
                indices = (:, 1, :),
                schedule = TimeInterval(250),
@@ -178,23 +178,20 @@ simulation.output_writers[:xz_b_c] =
 #                overwrite_existing = true,
 #                with_halos = false)
 
-# Horizontally-averaged buoyancy
-b_avg = Field(Average(b, dims=(1, 2)))
-
-# (Horizontally-averaged) buoyancy gradient ∂b/∂z
-db_dz_avg = ∂z(b_avg)
+# Horizontally-averaged buoyancy gradient
+b_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 # JLD2 output file
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz=db_dz_avg),
                 filename="Data/Average b gradient 2D.jld2",
-                schedule=TimeInterval(25),
+                schedule=IterationInterval(2),
                 overwrite_existing=true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
 #     NetCDFWriter(model, (; db_dz=db_dz_avg),
 #                 filename="Data/Average b gradient 2D.nc",
-#                 schedule=TimeInterval(20),
+#                 schedule=IterationInterval(2),
 #                 overwrite_existing=true)
 
 nothing # hide

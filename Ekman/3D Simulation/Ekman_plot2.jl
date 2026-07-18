@@ -30,10 +30,10 @@ end
 zbconcat = zb[findall(<(5),zb)]
 Nzconcat = length(zbconcat)
 
-heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :],
+heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         xlabel="tf",
         ylabel="Height z (δ)",
-        title="Horizontally-Averaged Buoyancy Gradient",
+        title="(∂b/∂z)/N²",
         color=:thermal) # :thermal is great for highlighting intensifying gradients
 savefig("Ekman/3D Simulation/Buoyancy gradient plot.png")
 

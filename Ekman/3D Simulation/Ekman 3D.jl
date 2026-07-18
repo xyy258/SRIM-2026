@@ -158,7 +158,7 @@ simulation.output_writers[:xz_velocity] =
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:xz_b_c] =
-    JLD2Writer(model, (; b, c),
+    JLD2Writer(model, (; b),
                filename = filename * "_b_c.jld2",
                indices = (:, 1, :),
                schedule = TimeInterval(200),
@@ -168,35 +168,26 @@ simulation.output_writers[:xz_b_c] =
 # Horizontally-averaged velocities & buoyancy
 u_avg = Field(Average(u, dims=(1, 2)))
 v_avg = Field(Average(v, dims=(1, 2)))
-b_avg = Field(Average(b, dims=(1, 2)))
 
-# (Horizontally-averaged) buoyancy gradient ∂b/∂z
-db_dz_avg = ∂z(b_avg)
+# Horizontally-averaged buoyancy gradient
+b_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = "Data/Average buoyancy gradient.jld2",
-                schedule = TimeInterval(15),
+                schedule = IterationInterval(2),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = "Data/Average velocity.jld2",
-                schedule = TimeInterval(15),
+                schedule = IterationInterval(2),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
 #     NetCDFWriter(model, (; db_dz=db_dz_avg),
 #                 filename = "Data/Average buoyancy gradient.nc",
-#                 schedule = TimeInterval(2),
+#                 schedule = IterationInterval(2),
 #                 overwrite_existing = true)
-
-# If you are running in 3D, you could save an xy slice like this:
-#simulation.output_writers[:xy_slices] =
-#    JLD2Writer(model, (; u, v, w, b),
-                    #     filename = filename * "_xy.jld2",
-                    #     indices = (:,:,10),
-                    #     schedule = TimeInterval(2),
-                    #     overwrite_existing = true)
 
 nothing # hide
 
