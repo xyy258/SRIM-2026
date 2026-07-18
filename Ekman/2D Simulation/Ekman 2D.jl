@@ -8,7 +8,7 @@ arch = GPU()
 # include("Ekman/2D Simulation/Ekman 2D.jl")
 
 # Dimensions
-Lx, Lz = 70, 30
+Lx, Lz = 72.8, 27.3
 
 # Grid size
 Nx, Nz = 128, 256
