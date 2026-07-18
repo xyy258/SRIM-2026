@@ -23,10 +23,6 @@ f₀ = 1e-4
 # Buoyancy frequency
 N² = (r*f₀)^2
 
-@info "3D simulation parameters"
-@printf("Dimensions %.1f m × %.1f m × %.1f m\nGrid size  %.1f × %.1f × %.1f\n", Lx, Ly, Lz, Nx, Ny, Nz)
-@printf("Square buoyancy frequency:  N² = %.2e, \nCoriolis parameter:  f = %.2e, \nRatio:  r = N/f = %.1f\n", N², f₀, r)
-
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
 refinement = 2 # controls spacing near surface (higher means finer spaced)
@@ -70,15 +66,7 @@ Pr = 10 # Prandtl number
 u_star = 0.049*U∞ # friction velocity
 δ = u_star/f₀ # boundary layer lengthscale
 
-@printf("Molecular kinematic viscosity:  ν = %.2e, \nReynolds number:  = %.2e, \nPrandtl number:  = %.1f, \nMolecular diffusivity:  = %.2e, \nDrag coefficient:  cᴰ = %.4f, \nδ = %.2f\n", ν₀, Re∞, Pr, κ₀, cᴰ, δ)
-
 # Quadratic drag
-
-# @inline drag_u(x, y, t, u, v, p) = - p.c_drag * √(u^2 + v^2) * u
-# @inline drag_v(x, y, t, u, v, p) = - p.c_drag * √(u^2 + v^2) * v
-# drag_bc_u = FluxBoundaryCondition(drag_u, field_dependencies=(:u, :v), parameters=(c_drag = cᴰ,))
-# drag_bc_v = FluxBoundaryCondition(drag_v, field_dependencies=(:u, :v), parameters=(c_drag = cᴰ,))
-
 drag_bc_u = BulkDrag(coefficient=cᴰ)
 drag_bc_v = BulkDrag(coefficient=cᴰ)
 
