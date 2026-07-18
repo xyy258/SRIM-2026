@@ -77,7 +77,7 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 model = NonhydrostaticModel(grid;
     advection=WENO(order=5),
     timestepper=:RungeKutta3, # Timestep scheme
-    tracers=(:b, :c),  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
+    tracers=:b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
     buoyancy=BuoyancyTracer(),
     closure=ScalarDiffusivity(ν=ν₀, κ=κ₀),
     boundary_conditions=(u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
@@ -90,7 +90,6 @@ uᵢ(x, z) = U∞ + kick * randn()
 vᵢ(x, z) = 0
 wᵢ(x, z) = kick * randn()
 bᵢ(x, z) = N² * z
-cᵢ(x, z) = exp(-((x-Lx/2)/(Lx/200))^2) # Initialize with a thin tracer (dye) streak in the center of the domain
 
 @info "2D simulation parameters"
 @printf("
@@ -108,7 +107,7 @@ Layer lengthscale:              δ = %.2f\n",
 Lx, Lz, Nx, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 
 # Send the initial conditions to the model to initialize the variables
-set!(model, u=uᵢ, v=vᵢ, w=wᵢ, b=bᵢ, c=cᵢ)
+set!(model, u=uᵢ, v=vᵢ, w=wᵢ, b=bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
 simulation = Simulation(model, Δt=max_Δt, stop_time=duration)
@@ -141,7 +140,6 @@ simulation.callbacks[:progress] = Callback(progress, IterationInterval(50))
 
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
-c = model.tracers.c # extract the tracer
 
 # Set the name of the output file
 filename = "Data/Ekman_2D"
