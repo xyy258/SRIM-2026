@@ -3,7 +3,7 @@ using Oceananigans, Printf
 # using NCDatasets
 
 # Running on GPU or CPU
-arch = CPU()
+arch = GPU()
 # Command to run file in Julia
 # include("Ekman/2D Simulation/Ekman 2D.jl")
 
@@ -11,10 +11,10 @@ arch = CPU()
 Lx, Lz = 70, 30
 
 # Grid size
-Nx, Nz = 64, 256
+Nx, Nz = 256, 256
 
 # Duration and timestep
-max_Δt = 7.5 # maximum allowable timestep
+max_Δt = 2.5 # maximum allowable timestep
 duration = 5e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)

@@ -33,13 +33,15 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    zbconcat = zb[findall(x -> x < 5, zb)]
+    zbconcat = zb[findall(x -> x < 5*δ, zb)]
     Nzconcat = length(zbconcat)
 
-    b_xz_plot = heatmap(xb, zbconcat, b_xz[:, 1:Nzconcat]'; color = :thermal, xlabel = "x", ylabel = "z",
-                        xlims = (0, Lx), ylims = (0,zb[Nzconcat]));
-    b_diff_xz_plot = heatmap(xb, zbconcat, b_xz[:, 1:Nzconcat]' .- reshape(N².*zbconcat, Nzconcat, 1); color = :thermal, xlabel = "x", ylabel = "z",
-                        xlims = (0, Lx), ylims = (0,zb[Nzconcat]));
+    b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
+        color = :thermal, xlabel = "x", ylabel = "z/δ",
+        xlims = (0, Lx), ylims = (0,zbconcat[end]));
+    b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
+        color = :thermal, xlabel = "x", ylabel = "z/δ",
+        xlims = (0, Lx), ylims = (0,zbconcat[end]));
 
     b_title = @sprintf("b, t = %s", round(t));
     b_diff_title = @sprintf("b, t = %s", round(t));
