@@ -18,10 +18,6 @@ f₀ = 1e-4
 # Buoyancy frequency
 N² = (r*f₀)^2
 
-@info "2D simulation parameters"
-@printf("Dimensions %.1f m × %.1f m\nGrid size  %.1f × %.1f\n", Lx, Lz, Nx, Nz)
-@printf("Square buoyancy frequency:  N² = %.2e, \nCoriolis parameter:  f = %.2e, \nRatio:  r = N/f = %.1f\n", N², f₀, r)
-
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
 refinement = 2 # controls spacing near surface (higher means finer spaced)
@@ -63,8 +59,6 @@ Pr = 10 # Prandtl number
 u_star = 0.049*U∞ # friction velocity
 δ = u_star/f₀ # boundary layer lengthscale
 
-@printf("Molecular kinematic viscosity:  ν = %.2e, \nReynolds number:  = %.2e, \nPrandtl number:  = %.1f, \nMolecular diffusivity:  = %.2e, \nDrag coefficient:  cᴰ = %.4f, \nδ = %.2f\n", ν₀, Re∞, Pr, κ₀, cᴰ, δ)
-
 # Drag boundary condition
 
 # @inline drag_u(x, t, u, p) = - p.c_drag * abs(u) * u
@@ -101,6 +95,21 @@ vᵢ(x, z) = 0
 wᵢ(x, z) = kick * randn()
 bᵢ(x, z) = N² * z
 cᵢ(x, z) = exp(-((x-Lx/2)/(Lx/200))^2) # Initialize with a thin tracer (dye) streak in the center of the domain
+
+@info "2D simulation parameters"
+@printf("
+Dimensions      %.1f m × %.1f m
+Grid size       %.1f × %.1f
+Square buoyancy frequency:      N² = %.2e,
+Coriolis parameter:             f = %.2e,
+Ratio:                          r = N/f = %.1f
+Molecular kinematic viscosity:  ν = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr = %.1f,
+Molecular diffusivity:          κ = %.2e,
+Drag coefficient:               cᴰ = %.4f,
+Layer lengthscale:              δ = %.2f\n",
+Lx, Lz, Nx, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 
 # Send the initial conditions to the model to initialize the variables
 set!(model, u=uᵢ, v=vᵢ, w=wᵢ, b=bᵢ, c=cᵢ)
