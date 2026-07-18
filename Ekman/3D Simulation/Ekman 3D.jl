@@ -1,11 +1,16 @@
-using Oceananigans, Printf
+using Oceananigans, Printf, CUDA
 using NCDatasets
+
+# Running on GPU or CPU
+architecture = GPU()
+# Command to run file in Julia
+# include("Ekman/3D Simulation/Ekman 3D.jl")
 
 # Dimensions
 Lx, Ly, Lz = 72.8,72.8,27.3
 
 # Grid size
-Nx, Ny, Nz = 32,32,64
+Nx, Ny, Nz = 64,64,256
 
 # Duration and timestep
 max_Δt = 15 # maximum allowable timestep
@@ -39,7 +44,8 @@ h(k) = (Nz + 1 - k) / Nz
 # Generating function
 z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
 
-grid = RectilinearGrid(topology = (Periodic, Periodic, Bounded),
+grid = RectilinearGrid(architecture;
+                        topology = (Periodic, Periodic, Bounded),
                         size = (Nx, Ny, Nz),
                         x = (0, Lx),
                         y = (0, Ly),
@@ -53,7 +59,7 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(znodes(grid, Center()))) # Closest grid center to the bottom
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ν₀ = 1e-6 # molecular kinematic viscosity
@@ -92,7 +98,7 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
             advection = WENO(order=5),
-            timestepper = :RungeKutta3, # # Timestepping scheme
+            timestepper = :RungeKutta3, # Timestepping scheme
             tracers = (:b, :c),  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
             buoyancy = BuoyancyTracer(),
             closure = ScalarDiffusivity(ν=ν₀, κ=κ₀),
@@ -106,7 +112,7 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 bᵢ(x,y,z) = N² * z
-cᵢ(x,y,z) = exp(-((x-Lx/2)/(Lx/200))^2) # Initialize with a thin tracer (dye) streak in the center of the domain
+cᵢ(x,y,z) = exp(-((x - Lx/2) / (Lx/200))^2) # Initialize with a thin tracer (dye) streak in the center of the domain
 
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ, c = cᵢ)

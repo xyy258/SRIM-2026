@@ -1,14 +1,19 @@
-using Oceananigans, Printf
+using Oceananigans, Printf, CUDA
 using NCDatasets
+
+# Running on GPU or CPU
+architecture = GPU()
+# Command to run file in Julia
+# include("Ekman/2D Simulation/Ekman 2D.jl")
 
 # Dimensions
 Lx, Lz = 70, 30
 
 # Grid size
-Nx, Nz = 64, 256
+Nx, Nz = 256, 512
 
 # Duration and timestep
-max_Δt = 7.5 # maximum allowable timestep
+max_Δt = 2 # maximum allowable timestep
 duration = 5e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
@@ -39,7 +44,8 @@ h(k) = (Nz + 1 - k) / Nz
 # Generating function
 z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
 
-grid = RectilinearGrid(topology=(Periodic, Flat, Bounded),
+grid = RectilinearGrid(architecture;
+                        topology=(Periodic, Flat, Bounded),
                         size=(Nx, Nz),
                         x=(0, Lx),
                         z=z_faces)
@@ -52,7 +58,7 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(znodes(grid, Center()))) # Closest grid center to the bottom
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ν₀ = 1e-6 # molecular kinematic viscosity

@@ -1,2 +1,3 @@
-Data/
+Data/*.jld2
+Data/*.nc
 Papers/
