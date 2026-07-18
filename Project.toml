@@ -1,6 +1,7 @@
-authors =["Xing Yu Yi <yixingyu05@gmail.com>"]
+authors = ["Xing Yu Yi <yixingyu05@gmail.com>"]
 
 [deps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"

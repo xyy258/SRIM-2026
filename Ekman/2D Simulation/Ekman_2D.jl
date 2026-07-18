@@ -1,5 +1,11 @@
 using Oceananigans, Printf
-using NCDatasets
+# using CUDA
+# using NCDatasets
+
+# Running on GPU or CPU
+arch = CPU()
+# Command to run file in Julia
+# include("Ekman/2D Simulation/Ekman 2D.jl")
 
 # Dimensions
 Lx, Lz = 70, 30
@@ -35,7 +41,8 @@ h(k) = (Nz + 1 - k) / Nz
 # Generating function
 z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
 
-grid = RectilinearGrid(topology=(Periodic, Flat, Bounded),
+grid = RectilinearGrid(arch;
+                        topology=(Periodic, Flat, Bounded),
                         size=(Nx, Nz),
                         x=(0, Lx),
                         z=z_faces)
@@ -48,7 +55,7 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(znodes(grid, Center()))) # Closest grid center to the bottom
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ν₀ = 1e-6 # molecular kinematic viscosity
@@ -63,10 +70,11 @@ u_star = 0.049*U∞ # friction velocity
 drag_bc_u = BulkDrag(coefficient=cᴰ)
 
 # No slip
-# drag_bc_u = ValueBoudaryCondition(0.0)
+# drag_bc_u = ValueBoudaryCondition(0)
 
 u_bcs = FieldBoundaryConditions(bottom=drag_bc_u)
-b_bcs = FieldBoundaryConditions(top=GradientBoundaryCondition(N²))
+b_bcs = FieldBoundaryConditions(top=GradientBoundaryCondition(N²),
+                                bottom = GradientBoundaryCondition(0))
 
 ## Forcing
 v_forcing_fn(x, z, t, p) = p.f * p.s  # to balance for initial geostrophic balance
@@ -75,14 +83,14 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
-    advection=WENO(order=5),
-    timestepper=:RungeKutta3, # Timestep scheme
-    tracers=:b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
-    buoyancy=BuoyancyTracer(),
-    closure=ScalarDiffusivity(ν=ν₀, κ=κ₀),
-    boundary_conditions=(u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
-    coriolis=FPlane(f=f₀), # Coriolis with Coriolis parameter f₀
-    forcing=(v=v_forcing,) # Forcing due to constant pressure gradient to balance initial velocity U
+    advection = WENO(order=5),
+    timestepper = :RungeKutta3, # Timestep scheme
+    tracers = :b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
+    buoyancy = BuoyancyTracer(),
+    closure = ScalarDiffusivity(ν=ν₀, κ=κ₀),
+    boundary_conditions = (u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
+    coriolis = FPlane(f=f₀), # Coriolis with Coriolis parameter f₀
+    forcing = (v=v_forcing,) # Forcing due to constant pressure gradient to balance initial velocity U
 )
 
 ## Initial conditions
@@ -120,7 +128,7 @@ simulation = Simulation(model, Δt=max_Δt, stop_time=duration)
 wizard = TimeStepWizard(cfl=0.85, max_change=1.2, max_Δt=max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
-simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
+simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(20))
 
 # ## A progress messenger
 # We add a callback that prints out a helpful progress message while the simulation runs.
@@ -161,22 +169,15 @@ simulation.output_writers[:xz_b_c] =
                with_halos = false)
 
 # NetCDF output file
-# simulation.output_writers[:xz_slices] =
-#     NetCDFWriter(model, (; u, v, w),
-#                filename = filename * "_velocity.nc",
-#                indices = (:, 1, :),
-#                schedule = TimeInterval(500),
-#                overwrite_existing = true,
-#                with_halos = false)
-# simulation.output_writers[:xz_slices] =
-#     NetCDFWriter(model, (; b, c),
+# simulation.output_writers[:xz_b_c] =
+#     NetCDFWriter(model, (; b),
 #                filename = filename * "_velocity.nc",
 #                indices = (:, 1, :),
 #                schedule = TimeInterval(500),
 #                overwrite_existing = true,
 #                with_halos = false)
 
-# Horizontally-averaged buoyancy gradient
+# Horizontally-averaged buoyancy
 db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 # JLD2 output file
@@ -189,7 +190,7 @@ simulation.output_writers[:avg_db_dz] =
 # simulation.output_writers[:avg_db_dz] =
 #     NetCDFWriter(model, (; db_dz=db_dz_avg),
 #                 filename="Data/Average b gradient 2D.nc",
-#                 schedule=IterationInterval(2),
+#                 schedule=TimeInterval(20),
 #                 overwrite_existing=true)
 
 nothing # hide

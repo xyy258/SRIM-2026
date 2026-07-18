@@ -1,5 +1,11 @@
 using Oceananigans, Printf
-using NCDatasets
+# using CUDA
+# using NCDatasets
+
+# Running on GPU or CPU
+arch = CPU()
+# Command to run file in Julia
+# include("Ekman/3D Simulation/Ekman 3D.jl")
 
 # Dimensions
 Lx, Ly, Lz = 72.8,72.8,27.3
@@ -35,7 +41,8 @@ h(k) = (Nz + 1 - k) / Nz
 # Generating function
 z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
 
-grid = RectilinearGrid(topology = (Periodic, Periodic, Bounded),
+grid = RectilinearGrid(arch;
+                        topology = (Periodic, Periodic, Bounded),
                         size = (Nx, Ny, Nz),
                         x = (0, Lx),
                         y = (0, Ly),
@@ -49,7 +56,7 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(znodes(grid, Center()))) # Closest grid center to the bottom
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ν₀ = 1e-6 # molecular kinematic viscosity
@@ -70,7 +77,8 @@ drag_bc_v = BulkDrag(coefficient=cᴰ)
 
 u_bcs = FieldBoundaryConditions(bottom=drag_bc_u)
 v_bcs = FieldBoundaryConditions(bottom=drag_bc_v)
-b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²))
+b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
+                                bottom = GradientBoundaryCondition(0))
 
 ## Forcing
 v_forcing_fn(x, y, z, t, p) = p.f * p.s  # to balance for initial geostrophic balance
@@ -80,7 +88,7 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
             advection = WENO(order=5),
-            timestepper = :RungeKutta3, # # Timestepping scheme
+            timestepper = :RungeKutta3, # Timestepping scheme
             tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
             buoyancy = BuoyancyTracer(),
             closure = ScalarDiffusivity(ν=ν₀, κ=κ₀),
@@ -94,21 +102,6 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 bᵢ(x,y,z) = N² * z
-
-@info "3D simulation parameters"
-@printf("
-Dimensions      %.1f m × %.1f m × %.1f m
-Grid size       %.1f × %.1f × %.1f
-Square buoyancy frequency:      N² = %.2e,
-Coriolis parameter:             f = %.2e,
-Ratio:                          r = N/f = %.1f
-Molecular kinematic viscosity:  ν = %.2e,
-Reynolds number:                Re∞ = %.2e,
-Prandtl number:                 Pr = %.1f,
-Molecular diffusivity:          κ = %.2e,
-Drag coefficient:               cᴰ = %.4f,
-Layer lengthscale:              δ = %.2f\n",
-Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
@@ -138,7 +131,7 @@ progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, C
                         sim.Δt,
                         AdvectiveCFL(sim.Δt)(sim.model))
 
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(5))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(20))
 
 # ## Output
 
@@ -167,7 +160,7 @@ simulation.output_writers[:xz_b_c] =
 u_avg = Field(Average(u, dims=(1, 2)))
 v_avg = Field(Average(v, dims=(1, 2)))
 
-# Horizontally-averaged buoyancy gradient
+# Horizontally-averaged buoyancy gradient ∂b/∂z
 db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 simulation.output_writers[:avg_db_dz] =
