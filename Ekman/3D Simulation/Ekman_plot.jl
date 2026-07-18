@@ -14,7 +14,7 @@ xb, yb, zb = nodes(b_ic)
 
 ## Now, open the file with our data
 file_vel = jldopen(filename * "_velocity.jld2")
-file_b      = jldopen(filename * "_b_c.jld2")
+file_b   = jldopen(filename * "_b_c.jld2")
 
 ## Extract a vector of iterations
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
