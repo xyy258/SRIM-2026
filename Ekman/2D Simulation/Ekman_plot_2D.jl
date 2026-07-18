@@ -22,7 +22,9 @@ iterations = parse.(Int, keys(file_vel["timeseries/t"]))
 @info "Making an animation from saved data..."
 
 t_save = zeros(length(iterations))
-b_bottom = zeros(length(xb), length(iterations))
+
+zbconcat = zb[findall(x -> x < 5, zb)]
+Nzconcat = length(zbconcat)
 
 # Here, we loop over all iterations
 anim = @animate for (i, iter) in enumerate(iterations)
@@ -33,18 +35,15 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    zbconcat = zb[findall(x -> x < 5, zb)]
-    Nzconcat = length(zbconcat)
-
     b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]));
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
     b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]));
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
 
-    b_title = @sprintf("b, t = %s", round(t));
-    b_diff_title = @sprintf("b, t = %s", round(t));
+    b_title = @sprintf("b/N², t = %s", round(t));
+    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])
