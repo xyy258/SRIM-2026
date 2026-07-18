@@ -170,7 +170,7 @@ u_avg = Field(Average(u, dims=(1, 2)))
 v_avg = Field(Average(v, dims=(1, 2)))
 
 # Horizontally-averaged buoyancy gradient
-b_avg = Field(Average(∂z(b), dims=(1, 2)))
+db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),

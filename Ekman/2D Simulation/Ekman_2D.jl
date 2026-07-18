@@ -179,7 +179,7 @@ simulation.output_writers[:xz_b_c] =
 #                with_halos = false)
 
 # Horizontally-averaged buoyancy gradient
-b_avg = Field(Average(∂z(b), dims=(1, 2)))
+db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 # JLD2 output file
 simulation.output_writers[:avg_db_dz] =
