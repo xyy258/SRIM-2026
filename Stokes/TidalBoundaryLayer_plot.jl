@@ -1,4 +1,3 @@
-
 # This script reads in output from file, makes a plot, and saves an animation
 
 using Oceananigans, JLD2, Plots, Printf

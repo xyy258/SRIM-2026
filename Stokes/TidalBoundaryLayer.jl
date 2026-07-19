@@ -43,7 +43,7 @@ grid = RectilinearGrid(topology = (Periodic, Flat, Bounded),
                         x = (0, Lx),
                         z = z_faces)
 
-                    
+
 # Set the amplitude of the random perturbation (kick)
 kick = 0.05
 
@@ -196,4 +196,4 @@ simulation.output_writers[:avg_db_dz] =
 
 run!(simulation)
 
-#include("TidalBoundaryLayer_plot.jl")
+# include("TidalBoundaryLayer_plot.jl")
