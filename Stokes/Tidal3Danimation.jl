@@ -73,7 +73,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
     iter == iterations[end] && close(file_xz)
 end
 
-mp4(anim, "Stokes/TidalBoundaryLayer3D.mp4", fps = 12)
+mp4(anim, "Stokes/TidalBoundaryLayer3D.mp4", fps = 20)
 
 # ---- Bottom buoyancy Hovmöller diagram ----
 # Scale by 1e6 so the colorbar labels are readable.
