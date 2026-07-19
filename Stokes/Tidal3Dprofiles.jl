@@ -16,7 +16,7 @@ U₀ = 0.05
 δ  = sqrt(2ν / ω)
 T_tide = 2π / ω
 
-fname = "TidalBoundaryLayer3D_profiles.jld2"
+fname = "Stokes/TidalBoundaryLayer3D_profiles.jld2"
 
 B_ts = FieldTimeSeries(fname, "B")     # mean buoyancy on cell CENTERS
 U_ts = FieldTimeSeries(fname, "U")     # mean velocity on cell centers
@@ -54,7 +54,7 @@ heatmap(times ./ T_tide, zg[ks], G[ks, :] ./ N²;
         ylabel = "z (m)",
         title = "∂b/∂z / N² (bottom $(zmax) m)",
         colorbar_title = "∂b/∂z / N²")
-savefig("buoyancy_gradient_normalized3D.png")
+savefig("Stokes/buoyancy_gradient_normalized3D.png")
 
 # ---- 2. Mixed-layer depth vs time ----
 # Two metrics:
@@ -93,7 +93,7 @@ plot!(times ./ T_tide, mld_thr;
 plot!(times ./ T_tide, sqrt.(2κ .* times);
       lw = 2, ls = :dash, label = "pure diffusion √(2κt)")
 hline!([δ]; ls = :dot, label = "Stokes layer δ")
-savefig("mixed_layer_depth3D.png")
+savefig("Stokes/mixed_layer_depth3D.png")
 
 
 # ---- 3. Stratification profiles at the end of each tidal period ----
@@ -105,7 +105,7 @@ for p in 0:floor(Int, times[end] / T_tide)
     plot!(plt, G[ks, n] ./ N², zg[ks]; lw = 2,
           label = @sprintf("t = %d periods", p))
 end
-savefig("stratification_profiles3D.png")
+savefig("Stokes/stratification_profiles3D.png")
 
 # ---- 4. Mean velocity vs laminar Stokes solution ----
 # Laminar solution for an oscillating free stream U₀ sin(ωt) over a wall:
@@ -128,6 +128,6 @@ for (i, ϕ) in enumerate(phases)
     plot!(plt2, u_laminar.(zc[kc], times[n]), zc[kc]; lw = 1.5, ls = :dash,
           c = i, label = "")
 end
-savefig("velocity_vs_stokes3D.png")
+savefig("Stokes/velocity_vs_stokes3D.png")
 
-@info "Saved: buoyancy_gradient_normalized3D.png, mixed_layer_depth3D.png, stratification_profile3D.png, velocity_vs_stokes3D.png"
+@info "Saved: buoyancy_gradient_normalized3D.png, mixed_layer_depth3D.png, stratification_profile3D.png, velocity_vs_stokes3D.png in Stokes folder"

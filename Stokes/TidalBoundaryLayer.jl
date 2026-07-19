@@ -1,6 +1,10 @@
 using Printf
 using Oceananigans
 using NCDatasets
+using CUDA
+
+arch = CPU()
+
 # Resolved LES, constant viscocity, no slip
 # want thickness O(1), reynolds number
 # viscocity order 10e-5, stokes length approx 0.4
@@ -38,7 +42,8 @@ h(k) = (Nz + 1 - k) / Nz
 # Generating function
 z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
 
-grid = RectilinearGrid(topology = (Periodic, Flat, Bounded),
+grid = RectilinearGrid(arch;
+                        topology = (Periodic, Flat, Bounded),
                         size = (Nx, Nz),
                         x = (0, Lx),
                         z = z_faces)
@@ -136,7 +141,7 @@ progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, C
                         sim.Δt,
                         AdvectiveCFL(sim.Δt)(sim.model))
 
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(50))
 #add_callback!(simulation, progress, IterationInterval(10), name = :progress)
 ### Output
 
@@ -145,7 +150,7 @@ b = model.tracers.b # extract the buoyancy
 c = model.tracers.c # extract the tracer
 
 # Set the name of the output file
-filename = "TidalBoundaryLayer"
+filename = "Stokes/TidalBoundaryLayer"
 
 # simulation.output_writers[:xz_slices] =
 #     JLD2Writer(model, (; u, v, w, b, c),
@@ -190,10 +195,10 @@ db_dz_avg = ∂z(b_avg)
 # JLD2 output file
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz=db_dz_avg),
-                filename="Average buoyancy gradient.jld2",
+                filename="Stokes/Average buoyancy gradient.jld2",
                 schedule = TimeInterval(duration / n_frames),
                 overwrite_existing=true)
 
 run!(simulation)
 
-# include("TidalBoundaryLayer_plot.jl")
+#include("TidalBoundaryLayer_plot.jl")
