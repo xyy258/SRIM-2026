@@ -1,7 +1,7 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
 # Set the new filename
-filename = "Data/Average buoyancy gradient"
+filename = "Ekman/Data/Average buoyancy gradient"
 
 # 1. Load the FieldTimeSeries for the gradient
 # The key "db_dz" matches what we named it in the JLD2Writer tuple above
@@ -38,8 +38,8 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
 savefig("Ekman/3D Simulation/Buoyancy gradient plot.png")
 
 
-u_series = FieldTimeSeries("Data/Average velocity.jld2", "u_avg")
-v_series = FieldTimeSeries("Data/Average velocity.jld2", "v_avg")
+u_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "u_avg")
+v_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "v_avg")
 
 xu, yu, zu = nodes(u_series)
 zC = znodes(u_series.grid, Center())

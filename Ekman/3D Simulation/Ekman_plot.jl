@@ -2,7 +2,7 @@ using Oceananigans, JLD2, Plots, Printf
 # using NCDatasets
 
 # Set the filename (without the extension)
-filename = "Data/Ekman"
+filename = "Ekman/Data/Ekman"
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
@@ -42,10 +42,8 @@ anim = @animate for (i, iter) in enumerate(iterations)
         color = :thermal, xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
 
-    b_title = @sprintf("b/N², t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
-    b_title = @sprintf("b/N², t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
+    b_title = @sprintf("b/N² at t = %s", round(t));
+    b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])

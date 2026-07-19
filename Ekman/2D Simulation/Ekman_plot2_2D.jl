@@ -1,7 +1,7 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
 # Set the new filename
-filename = "Data/Average b gradient 2D"
+filename = "Ekman/Data/Average b gradient 2D"
 
 # Load the FieldTimeSeries for the gradient
 # The key "db_dz" matches what we named it in the JLD2Writer tuple above

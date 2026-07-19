@@ -11,10 +11,10 @@ arch = GPU()
 Lx, Lz = 72.8, 27.3
 
 # Grid size
-Nx, Nz = 128, 256
+Nx, Nz = 256, 256
 
 # Duration and timestep
-max_Δt = 5 # maximum allowable timestep
+max_Δt = 2.5 # maximum allowable timestep
 duration = 5e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
@@ -150,7 +150,7 @@ u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
 
 # Set the name of the output file
-filename = "Data/Ekman_2D"
+filename = "Ekman/Data/Ekman_2D"
 
 # JLD2 output file
 simulation.output_writers[:xz_velocity] =
@@ -183,13 +183,13 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 # JLD2 output file
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz=db_dz_avg),
-                filename="Data/Average b gradient 2D.jld2",
+                filename="Ekman/Data/Average b gradient 2D.jld2",
                 schedule=IterationInterval(2),
                 overwrite_existing=true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
 #     NetCDFWriter(model, (; db_dz=db_dz_avg),
-#                 filename="Data/Average b gradient 2D.nc",
+#                 filename="Ekman/Data/Average b gradient 2D.nc",
 #                 schedule=TimeInterval(20),
 #                 overwrite_existing=true)
 
