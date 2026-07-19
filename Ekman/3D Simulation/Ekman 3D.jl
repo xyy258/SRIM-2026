@@ -14,8 +14,8 @@ Lx, Ly, Lz = 72.8,72.8,27.3
 Nx, Ny, Nz = 64,64,128
 
 # Duration and timestep
-max_Δt = 5 # maximum allowable timestep
-duration = 5e4 # The non-dimensional duration of the simulation
+max_Δt = 7.5 # maximum allowable timestep
+duration = 8e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
 r = 75
