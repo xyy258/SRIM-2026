@@ -1,5 +1,5 @@
-using Printf
-using Oceananigans
+using Oceananigans, Printf
+using CUDA
 
 # 3D Tidal (Stokes) boundary layer following Gayen et al. (2009)
 # z runs from 0 (bottom wall) to Lz (top), grid refined near the bottom.
@@ -25,7 +25,7 @@ const Lx = 20.0                # domain size (m)
 const Ly = 20.0
 const Lz = 30.0
 
-Nx, Ny, Nz = 48, 48, 192
+Nx, Ny, Nz = 48, 48, 150
 
 const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
 const U₀ = 0.05                # tidal velocity amplitude (m s⁻¹)
@@ -150,7 +150,7 @@ u, v, w = model.velocities
 b = model.tracers.b
 c = model.tracers.c
 
-filename = "TidalBoundaryLayer3D"
+filename = "Stokes/TidalBoundaryLayer3D"
 
 n_frames = 1200
 slice_schedule = TimeInterval(duration / n_frames)
@@ -212,15 +212,15 @@ simulation.output_writers[:fields3d] =
 
 # (5) Checkpointer: keeps only the most recent checkpoint (cleanup = true).
 # If the run dies or hits the wall-time limit, restart with
-    #run!(simulation, pickup = true)
-simulation.output_writers[:checkpoint] =
-    Checkpointer(model,
-                 schedule = TimeInterval(T_tide / 2),
-                 prefix = filename * "_checkpoint",
-                 cleanup = true)
+    # run!(simulation, pickup = true)
+# simulation.output_writers[:checkpoint] =
+#     Checkpointer(model,
+#                  schedule = TimeInterval(T_tide / 2),
+#                  prefix = filename * "_checkpoint",
+#                  cleanup = true)
 
 run!(simulation)
 # To resume an interrupted run, comment out the line above and use:
 # run!(simulation, pickup = true)
-include("Tidal3Danimation.jl")
-include("Tidal3Dprofiles.jl")
+include("Stokes/Tidal3Danimation.jl")
+include("Stokes/Tidal3Dprofiles.jl")

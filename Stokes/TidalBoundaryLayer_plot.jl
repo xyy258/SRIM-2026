@@ -4,21 +4,21 @@
 using Oceananigans, JLD2, Plots, Printf
 
 # Set the filename (without the extension)
-filename = "TidalBoundaryLayer"
+filename = "Stokes/TidalBoundaryLayer"
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
-u_ic = FieldTimeSeries(filename * ".jld2", "u", iterations = 0)
-v_ic = FieldTimeSeries(filename * ".jld2", "v", iterations = 0)
-w_ic = FieldTimeSeries(filename * ".jld2", "w", iterations = 0)
+# u_ic = FieldTimeSeries(filename * ".jld2", "u", iterations = 0)
+# v_ic = FieldTimeSeries(filename * ".jld2", "v", iterations = 0)
+# w_ic = FieldTimeSeries(filename * ".jld2", "w", iterations = 0)
 b_ic = FieldTimeSeries(filename * ".jld2", "b", iterations = 0)
 c_ic = FieldTimeSeries(filename * ".jld2", "c", iterations = 0)
 
 ## Load in coordinate arrays
 ## We do this separately for each variable since Oceananigans uses a staggered grid
-xu, yu, zu = nodes(u_ic)
-xv, yv, zv = nodes(v_ic)
-xw, yw, zw = nodes(w_ic)
+# xu, yu, zu = nodes(u_ic)
+# xv, yv, zv = nodes(v_ic)
+# xw, yw, zw = nodes(w_ic)
 xb, yb, zb = nodes(b_ic)
 xc, yc, zc = nodes(c_ic)
 
@@ -42,9 +42,9 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     @info "Drawing frame $i from iteration $iter..."
 
-    u_xz = file_xz["timeseries/u/$iter"][:, 1, :];
-    v_xz = file_xz["timeseries/v/$iter"][:, 1, :];
-    w_xz = file_xz["timeseries/w/$iter"][:, 1, :];
+    # u_xz = file_xz["timeseries/u/$iter"][:, 1, :];
+    # v_xz = file_xz["timeseries/v/$iter"][:, 1, :];
+    # w_xz = file_xz["timeseries/w/$iter"][:, 1, :];
     b_xz = file_xz["timeseries/b/$iter"][:, 1, :];
     c_xz = file_xz["timeseries/c/$iter"][:, 1, :];
 
@@ -52,10 +52,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
     # b_xy = file_xy["timeseries/b/$iter"][:, :, 1];
 
     t = file_xz["timeseries/t/$iter"];
-
-    # Save some variables to plot at the end
-    #b_bottom[:,i] = b_xz[:, 1, 1];
-    b_bottom[:, i] = b_xz[:, 1]; # This is the buouyancy along the bottom wall
     t_save[i] = t # save the time
 
     # u_xz_plot = heatmap(xu, zu, u_xz'; color = :balance, xlabel = "x", ylabel = "z",
@@ -69,9 +65,9 @@ anim = @animate for (i, iter) in enumerate(iterations)
     c_xz_plot = heatmap(xc, zc, c_xz'; color = :thermal, xlabel = "x", ylabel = "z",
                         xlims = (0, Lx), ylims = (0,Lz ));
 
-    u_title = @sprintf("u, t = %s", round(t));
-    v_title = @sprintf("v, t = %s", round(t));
-    w_title = @sprintf("w, t = %s", round(t));
+    # u_title = @sprintf("u, t = %s", round(t));
+    # v_title = @sprintf("v, t = %s", round(t));
+    # w_title = @sprintf("w, t = %s", round(t));
     b_title = @sprintf("b, t = %s", round(t));
     c_title = @sprintf("c, t = %s", round(t));
 
@@ -82,7 +78,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 # Save the animation to a file
-mp4(anim, "Tidal Boundary Layer Plot.mp4", fps = 8) # hide
+mp4(anim, "Stokes/Tidal Boundary Layer Plot.mp4", fps = 8) # hide
 
 # Now, make a plot of our saved variables
 # In this case, plot the buoyancy at the bottom of the domain as a function of x and t

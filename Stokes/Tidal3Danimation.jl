@@ -15,7 +15,7 @@ N² = 1e-7
 U₀ = 0.05
 T_tide = 2π / ω
 
-filename = "TidalBoundaryLayer3D"
+filename = "Stokes/TidalBoundaryLayer3D"
 
 zoom_height = 30.0    # set to Lz to see the whole domain
 stride      = 1      # plot every `stride`-th saved frame (increase to speed up)
@@ -73,7 +73,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
     iter == iterations[end] && close(file_xz)
 end
 
-mp4(anim, "TidalBoundaryLayer3D.mp4", fps = 12)
+mp4(anim, "Stokes/TidalBoundaryLayer3D.mp4", fps = 12)
 
 # ---- Bottom buoyancy Hovmöller diagram ----
 # Scale by 1e6 so the colorbar labels are readable.
@@ -81,4 +81,4 @@ heatmap(xb, t_save ./ T_tide, 1e6 .* b_bottom';
         xlabel = "x", ylabel = "t / tidal period",
         title = "buoyancy in lowest grid cell (×10⁻⁶)",
         color = :thermal)
-savefig("bottom_buoyancy3D.png")
+savefig("Stokes/bottom_buoyancy3D.png")
