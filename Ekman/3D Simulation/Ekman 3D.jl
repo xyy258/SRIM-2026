@@ -11,10 +11,10 @@ arch = GPU()
 Lx, Ly, Lz = 72.8,72.8,27.3
 
 # Grid size
-Nx, Ny, Nz = 64,64,256
+Nx, Ny, Nz = 64,64,150
 
 # Duration and timestep
-max_Δt = 4 # maximum allowable timestep
+max_Δt = 5 # maximum allowable timestep
 duration = 8e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
@@ -91,9 +91,12 @@ model = NonhydrostaticModel(grid;
             timestepper = :RungeKutta3, # Timestepping scheme
             tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
             buoyancy = BuoyancyTracer(),
+
+            # Closures for LES
             closure = AnisotropicMinimumDissipation(),
-            # DynamicSmagorinsky(Pr=Pr),
-            # SmagorinskyLilly()(Pr=Pr),        Alternative closures for LES
+            # closure = DynamicSmagorinsky(Pr=Pr),
+            # closure = SmagorinskyLilly(Pr=Pr),
+
             boundary_conditions = (u = u_bcs, v = v_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
             coriolis = FPlane(f=f₀),
             forcing = (v=v_forcing,)
@@ -109,14 +112,14 @@ bᵢ(x,y,z) = N² * z
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.9 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.8 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.8, max_change = 1.25, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -147,20 +150,21 @@ simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
                filename = filename * "_velocity.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(200),
+               schedule = TimeInterval(150),
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:xz_b_c] =
     JLD2Writer(model, (; b),
                filename = filename * "_b_c.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(200),
+               schedule = TimeInterval(150),
                overwrite_existing = true,
                with_halos = false)
 
 # Horizontally-averaged velocities & buoyancy
 u_avg = Field(Average(u, dims=(1, 2)))
 v_avg = Field(Average(v, dims=(1, 2)))
+b_avg = Field(Average(b, dims=(1, 2)))
 
 # Horizontally-averaged buoyancy gradient ∂b/∂z
 db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
@@ -168,6 +172,11 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = "Ekman/Data/Average buoyancy gradient.jld2",
+                schedule = IterationInterval(2),
+                overwrite_existing = true)
+simulation.output_writers[:avg_g] =
+    JLD2Writer(model, (; b = b_avg),
+                filename = "Ekman/Data/Average buoyancy.jld2",
                 schedule = IterationInterval(2),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
