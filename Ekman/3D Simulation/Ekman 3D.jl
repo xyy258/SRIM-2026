@@ -187,5 +187,5 @@ nothing # hide
 # Now, run the simulation
 run!(simulation)
 
+include("Ekman_anim.jl")
 include("Ekman_plot.jl")
-include("Ekman_plot2.jl")

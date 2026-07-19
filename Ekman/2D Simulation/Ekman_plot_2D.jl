@@ -1,58 +1,38 @@
-using Oceananigans, JLD2, Plots, Printf
-# using NCDatasets
+using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
-# Set the filename (without the extension)
-filename = "Ekman/Data/Ekman_2D"
+# Set the new filename
+filename = "Ekman/Data/Average b gradient 2D"
 
-# Read in the first iteration.  We do this to load the grid
-# filename * ".jld2" concatenates the extension to the end of the filename
-b_ic = FieldTimeSeries(filename * "_b_c.jld2", "b")
+# Load the FieldTimeSeries for the gradient
+# The key "db_dz" matches what we named it in the JLD2Writer tuple above
+db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
-## Load in coordinate arrays
-## We do this separately for each variable since Oceananigans uses a staggered grid
-xb, yb, zb = nodes(b_ic)
+# Extract the grid nodes (zb will contain the vertical grid levels)
+xb, yb, zb = nodes(db_dz_timeseries)
 
-## Now, open the file with our data
-file_vel = jldopen(filename * "_velocity.jld2")
-file_b   = jldopen(filename * "_b_c.jld2")
+## Open the file to extract the time array
+file_xz = jldopen(filename * ".jld2")
+iterations = parse.(Int, keys(file_xz["timeseries/t"]))
 
-## Extract a vector of iterations
-iterations = parse.(Int, keys(file_vel["timeseries/t"]))
+# Extract the actual simulation times
+t_save = [file_xz["timeseries/t/$i"] for i in iterations]
+close(file_xz)
 
-@info "Making an animation from saved data..."
+# Extract the data slice into a 2D matrix [Nz, Nt]
+Nz = length(zb)
+Nt = length(iterations)
+gradient_data = zeros(Nz, Nt)
 
-t_save = zeros(length(iterations))
-
-zbconcat = zb[findall(x -> x < 0.5*δ, zb)]
-Nzconcat = length(zbconcat)
-
-# Here, we loop over all iterations
-anim = @animate for (i, iter) in enumerate(iterations)
-
-    @info "Drawing frame $i from iteration $iter..."
-    b_xz = file_b["timeseries/b/$iter"][:, 1, :];
-
-    t = file_vel["timeseries/t/$iter"];
-    t_save[i] = t # save the time
-
-    b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
-        color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
-    b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
-        color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
-
-    b_title = @sprintf("b/N², t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
-
-# Combine the sub-plots into a single figure
-    plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])
-
-    if iter == iterations[end]
-        close(file_vel)
-        close(file_b)
-    end
+for (t_idx, iter) in enumerate(iterations)
+    gradient_data[:, t_idx] = db_dz_timeseries[t_idx].data[1, 1, 1:Nz]
 end
 
-# Save the animation to a file
-mp4(anim, "Ekman/2D Simulation/Ekman Plot 2D.mp4", fps = 20) # hide
+zbconcat = zb[findall(<(5),zb)]
+Nzconcat = length(zbconcat)
+
+heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat,:]/N²,
+        xlabel="tf",
+        ylabel="Height z/δ",
+        title="2D (∂b/∂z)/N²",
+        color=:thermal) # :thermal is great for highlighting intensifying gradients
+savefig("Ekman/2D Simulation/Buoyancy gradient plot 2D.png")
