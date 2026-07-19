@@ -55,6 +55,7 @@ z_slice = zC[slice] / δ
 plot(u_slice/U∞, v_slice/U∞,
     linewidth = 2,
     line_z = z_slice,          # Colors the line based on depth z
+    smooth = true,
     color = :thermal,          # Colormap for the line/markers
     marker = :circle,
     markersize = 3,            # Smaller markers (default is usually 4 or 5)
