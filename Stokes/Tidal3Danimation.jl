@@ -40,7 +40,6 @@ ulim  = 1.2 * U₀
 bplim = 2N²           # b' scale: N² × (a couple of metres of displacement)
 
 t_save   = zeros(length(iterations))
-b_bottom = zeros(length(xb), length(iterations))
 
 @info "Making an animation from $(length(iterations)) frames..."
 
@@ -53,7 +52,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t    = file_xz["timeseries/t/$iter"]
 
     t_save[i] = t
-    b_bottom[:, i] = b_xz[:, 1]          # buoyancy in the lowest grid cell
 
     # Buoyancy perturbation: subtract the background ramp N²z
     bp_xz = b_xz .- reshape(N² .* zb, 1, :)
