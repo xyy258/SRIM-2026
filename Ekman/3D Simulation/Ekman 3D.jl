@@ -139,7 +139,7 @@ u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
 
 # Set the name of the output file
-filename = "Data/Ekman"
+filename = "Ekman/Data/Ekman"
 
 simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
@@ -165,18 +165,18 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
-                filename = "Data/Average buoyancy gradient.jld2",
+                filename = "Ekman/Data/Average buoyancy gradient.jld2",
                 schedule = IterationInterval(2),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
-                filename = "Data/Average velocity.jld2",
+                filename = "Ekman/Data/Average velocity.jld2",
                 schedule = IterationInterval(2),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
 #     NetCDFWriter(model, (; db_dz=db_dz_avg),
-#                 filename = "Data/Average buoyancy gradient.nc",
+#                 filename = "Ekman/Data/Average buoyancy gradient.nc",
 #                 schedule = IterationInterval(2),
 #                 overwrite_existing = true)
 

@@ -2,7 +2,7 @@ using Oceananigans, JLD2, Plots, Printf
 # using NCDatasets
 
 # Set the filename (without the extension)
-filename = "Data/Ekman"
+filename = "Ekman/Data/Ekman"
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
