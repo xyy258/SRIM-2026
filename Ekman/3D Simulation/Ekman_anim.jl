@@ -22,7 +22,9 @@ iterations = parse.(Int, keys(file_vel["timeseries/t"]))
 @info "Making an animation from saved data..."
 
 t_save = zeros(length(iterations))
-b_bottom = zeros(length(xb), length(iterations))
+
+zbconcat = zb[findall(x -> x < 0.5*δ, zb)]
+Nzconcat = length(zbconcat)
 
 # Here, we loop over all iterations
 anim = @animate for (i, iter) in enumerate(iterations)
@@ -33,15 +35,12 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    zbconcat = zb[findall(x -> x < 5*δ, zb)]
-    Nzconcat = length(zbconcat)
-
     b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]));
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
     b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]));
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
 
     b_title = @sprintf("b/N² at t = %s", round(t));
     b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
