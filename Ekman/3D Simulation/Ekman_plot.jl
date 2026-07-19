@@ -1,6 +1,6 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
-## Plot of average buoyancy gradient with depth over time
+## Plot of average buoyancy gradient with depth over time ##
 
 # Set the filename
 filename = "Ekman/Data/Average buoyancy gradient"
@@ -37,41 +37,46 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         color=:thermal) # :thermal is great for highlighting intensifying gradients
 savefig("Ekman/3D Simulation/Buoyancy gradient plot.png")
 
+
 ## Horizontally averaged buoyancy profile
 
-# Set the filename
 filename = "Ekman/Data/Average buoyancy"
-
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
 
-# Extract the data - adjust based on your actual structure
+# Extract grid coordinates using znodes
+zb = znodes(b_avg_timeseries.grid, Center())
 
-b_avg = b_avg_timeseries["b"][:, end]  # Adjust indexing as needed
-
-# Define your boundary layer thickness
-δ = 0.1  # Set to your actual value
-
-# Get grid info (you may need to get this from your model)
-# If you saved it, load it; otherwise reconstruct
-zb = range(start=0, stop=10, length=size(b_avg)[1])  # Adjust to match your domain
+# Get initial and final profiles
+b_initial = vec(interior(b_avg_timeseries[1], 1, 1, :))    # First saved time step
+b_final = vec(interior(b_avg_timeseries[end], 1, 1, :))    # Last time step
 
 # Normalize depth
 z_normalized = zb / δ
 
+# Create mask for the boundary layer region
 z_mask = findall(<(0.4*δ), zb)
-b_plot = b_avg[z_mask]
+b_plot_final = b_final[z_mask]
+b_plot_initial = b_initial[z_mask]
 z_plot = z_normalized[z_mask]
 
 # Plot
-plot(b_plot/N², z_plot,
+plot(b_plot_initial/N², z_plot,
      xlabel = "b/N²",
      ylabel = "Height z/δ",
      title = "Horizontally Averaged Buoyancy Profile",
      linewidth = 2,
-     legend = false)
+     label = "Initial",
+     linestyle = :dash,
+     legend = :bottomright)
+
+plot!(b_plot_final/N², z_plot,
+      linewidth = 2,
+      label = "Final")
+
 savefig("Ekman/3D Simulation/Averaged buoyancy profile.png")
 
-## Hodograph plot
+
+## Hodograph plot ##
 
 u_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "u_avg")
 v_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "v_avg")
