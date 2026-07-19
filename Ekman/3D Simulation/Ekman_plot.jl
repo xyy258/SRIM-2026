@@ -38,10 +38,8 @@ anim = @animate for (i, iter) in enumerate(iterations)
     b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
         color = :thermal, xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
     b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
 
     b_title = @sprintf("b/N², t = %s", round(t));

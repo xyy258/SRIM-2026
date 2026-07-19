@@ -1,5 +1,5 @@
 using Oceananigans, Printf
-# using CUDA
+using CUDA
 # using NCDatasets
 
 # Running on GPU or CPU
@@ -87,7 +87,7 @@ model = NonhydrostaticModel(grid;
     timestepper = :RungeKutta3, # Timestep scheme
     tracers = :b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
     buoyancy = BuoyancyTracer(),
-    closure = ScalarDiffusivity(ν=ν₀, κ=κ₀),
+    closure = AnisotropicMinimumDissipation(\),
     boundary_conditions = (u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
     coriolis = FPlane(f=f₀), # Coriolis with Coriolis parameter f₀
     forcing = (v=v_forcing,) # Forcing due to constant pressure gradient to balance initial velocity U
@@ -118,7 +118,7 @@ Lx, Lz, Nx, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 set!(model, u=uᵢ, v=vᵢ, w=wᵢ, b=bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt=max_Δt, stop_time=duration)
+simulation = Simulation(model, Δt=0.9 * max_Δt, stop_time=duration)
 
 ## The `TimeStepWizard`
 #
