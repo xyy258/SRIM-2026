@@ -37,10 +37,10 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     b_xz_plot = heatmap(xb, zb/δ, b_xz'/N²;
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,Lz/δ));
-    b_diff_xz_plot = heatmap(xb, zb/δ, b_xz'/N² .- zb;
+        xlims = (0, Lx), ylims = (0,Lz/δ)); # Shows entire height of domain
+    b_diff_xz_plot = heatmap(xb, zb/δ, (b_xz' .- N²*zb)/N²;
         color = :balance, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ)); # Shows lower part of domain near the rigid boundary
 
     b_title = @sprintf("b/N² at t = %s", round(t));
     b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
