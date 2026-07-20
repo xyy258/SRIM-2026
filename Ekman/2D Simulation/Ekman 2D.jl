@@ -1,5 +1,5 @@
 using Oceananigans, Printf
-# using CUDA
+using CUDA
 # using NCDatasets
 
 # Running on GPU or CPU
@@ -8,7 +8,7 @@ arch = GPU()
 # include("Ekman/2D Simulation/Ekman 2D.jl")
 
 # Dimensions
-Lx, Lz = 70, 30
+Lx, Lz = 72.8, 27.3
 
 # Grid size
 Nx, Nz = 256, 256
@@ -55,8 +55,9 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
-cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
+# z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
+# cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
+cᴰ = 2e-3
 
 ν₀ = 1e-6 # molecular kinematic viscosity
 D = U∞/f₀
@@ -87,7 +88,12 @@ model = NonhydrostaticModel(grid;
     timestepper = :RungeKutta3, # Timestep scheme
     tracers = :b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
     buoyancy = BuoyancyTracer(),
-    closure = ScalarDiffusivity(ν=ν₀, κ=κ₀),
+
+    # Closures for LES
+    closure = AnisotropicMinimumDissipation(),
+    # closure = DynamicSmagorinsky(Pr=Pr),
+    # closure = SmagorinskyLilly(Pr=Pr),
+
     boundary_conditions = (u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
     coriolis = FPlane(f=f₀), # Coriolis with Coriolis parameter f₀
     forcing = (v=v_forcing,) # Forcing due to constant pressure gradient to balance initial velocity U
@@ -118,7 +124,7 @@ Lx, Lz, Nx, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 set!(model, u=uᵢ, v=vᵢ, w=wᵢ, b=bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt=max_Δt, stop_time=duration)
+simulation = Simulation(model, Δt=0.9 * max_Δt, stop_time=duration)
 
 ## The `TimeStepWizard`
 #

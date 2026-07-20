@@ -1,1 +1,1 @@
-# Ekman model (xyy22)
+# Ekman model
