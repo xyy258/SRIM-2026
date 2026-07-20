@@ -123,6 +123,7 @@ Drag coefficient:               cᴰ = %.4f,
 Layer lengthscale:              δ = %.2f\n",
 
 Lx, Ly, Lz, Nx,Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
+
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
