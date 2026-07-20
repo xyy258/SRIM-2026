@@ -87,7 +87,12 @@ model = NonhydrostaticModel(grid;
     timestepper = :RungeKutta3, # Timestep scheme
     tracers = :b,  # Tracers: b is buoyancy, c is a passive tracer (e.g. dye)
     buoyancy = BuoyancyTracer(),
-    closure = AnisotropicMinimumDissipation(\),
+
+    # Closures for LES
+    closure = AnisotropicMinimumDissipation(),
+    # closure = DynamicSmagorinsky(Pr=Pr),
+    # closure = SmagorinskyLilly(Pr=Pr),
+
     boundary_conditions = (u=u_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
     coriolis = FPlane(f=f₀), # Coriolis with Coriolis parameter f₀
     forcing = (v=v_forcing,) # Forcing due to constant pressure gradient to balance initial velocity U

@@ -35,15 +35,15 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    b_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N²;
+    b_xz_plot = heatmap(xb, zb/δ, b_xz'/N²;
         color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
-    b_diff_xz_plot = heatmap(xb, zbconcat/δ, b_xz[:, 1:Nzconcat]'/N² .- reshape(zbconcat, Nzconcat, 1);
-        color = :thermal, xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ));
+        xlims = (0, Lx), ylims = (0,Lz/δ)); # Shows entire height of domain
+    b_diff_xz_plot = heatmap(xb, zb/δ, (b_xz' .- N²*zb)/N²;
+        color = :balance, xlabel = "x", ylabel = "z/δ",
+        xlims = (0, Lx), ylims = (0,zbconcat[end]/δ)); # Shows lower part of domain near the rigid boundary
 
-    b_title = @sprintf("b/N², t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N², t = %s", round(t));
+    b_title = @sprintf("b/N² at t = %s", round(t));
+    b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])
