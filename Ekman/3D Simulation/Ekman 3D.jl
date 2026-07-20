@@ -15,7 +15,7 @@ Nx, Ny, Nz = 64,64,150
 
 # Duration and timestep
 max_Δt = 5 # maximum allowable timestep
-duration = 8e4 # The non-dimensional duration of the simulation
+duration = 6e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
 r = 75
@@ -107,6 +107,22 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 bᵢ(x,y,z) = N² * z
+
+@info "3D simulation parameters"
+@printf("
+Dimensions      %.1f m × %.1f m × %.1f m
+Grid size       %.1f × %.1f × %.1f
+Square buoyancy frequency:      N² = %.2e,
+Coriolis parameter:             f = %.2e,
+Ratio:                          r = N/f = %.1f
+Molecular kinematic viscosity:  ν = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr = %.1f,
+Molecular diffusivity:          κ = %.2e,
+Drag coefficient:               cᴰ = %.4f,
+Layer lengthscale:              δ = %.2f\n",
+
+Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
 
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
