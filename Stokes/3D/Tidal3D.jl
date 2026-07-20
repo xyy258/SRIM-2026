@@ -1,5 +1,6 @@
 using Printf
 using Oceananigans
+using CUDA
 
 # 3D Tidal (Stokes) boundary layer following Gayen, Sarkar & Taylor (2010).
 # Run one case with:   julia -t auto --project=. Tidal3D.jl Ri0
@@ -25,9 +26,9 @@ using Oceananigans
 include(joinpath(@__DIR__, "case_params.jl"))
 
 # ---------------- Architecture ----------------
-arch = CPU()          # start Julia with `julia -t auto`
+arch = GPU()          # start Julia with `julia -t auto`
 
-Nx, Ny, Nz = 48, 48, 192
+Nx, Ny, Nz = 64, 64, 150
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
@@ -49,7 +50,8 @@ grid = RectilinearGrid(arch;
                        y = (0, Ly),
                        z = z_faces)
 
-Δz_bottom = minimum(Array(zspacings(grid, Center())))
+zf = z_faces.(1:Nz+1)
+Δz_bottom = minimum(abs.(diff(zf)))
 @info @sprintf("Bottom Δz = %.4f m (%.1f points across δ); Δx = %.3f m, Δy = %.3f m",
                Δz_bottom, δ / Δz_bottom, Lx / Nx, Ly / Ny)
 
@@ -142,7 +144,7 @@ if get(ENV, "TIDAL_SMOKE", "0") == "1"
     @info "Smoke test: stopping after 20 iterations"
 end
 
-wizard = TimeStepWizard(cfl = 0.72, max_change = 1.1, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()

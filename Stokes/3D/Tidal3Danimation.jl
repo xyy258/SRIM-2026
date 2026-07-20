@@ -29,7 +29,7 @@ wlim  = 0.2 * U₀
 bplim = N² > 0 ? 2N² : 1.0     # b' scale (unused when N² = 0)
 
 t_save   = zeros(length(iterations))
-b_bottom = zeros(length(xb), length(iterations))
+
 
 @info "Making an animation from $(length(iterations)) frames..."
 
@@ -43,7 +43,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t    = file_xz["timeseries/t/$iter"]
 
     t_save[i] = t
-    b_bottom[:, i] = b_xz[:, 1]          # buoyancy in the lowest grid cell
 
     u_plot = heatmap(xu, zu, u_xz'; color = :balance, clims = (-ulim, ulim),
                      ylims = (0, zoom_height), xlims = (0, Lx),
@@ -77,14 +76,5 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 mp4(anim, joinpath(outdir, "animation_" * case * ".mp4"), fps = 12)
-
-# ---- Bottom buoyancy Hovmöller diagram (stratified cases only) ----
-if N² > 0
-    heatmap(xb, t_save ./ T_tide, 1e6 .* b_bottom';
-            xlabel = "x", ylabel = "t / tidal period",
-            title = "$case: buoyancy in lowest grid cell (×10⁻⁶)",
-            color = :thermal)
-    savefig(joinpath(outdir, "bottom_buoyancy_" * case * ".png"))
-end
 
 @info "Saved animation for $case in $outdir/"
