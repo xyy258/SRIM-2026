@@ -56,4 +56,4 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 # Save the animation to a file
-mp4(anim, "Ekman/3D Simulation/Ekman Plot.mp4", fps = 20) # hide
+mp4(anim, "Ekman/2D Simulation/Ekman Plot.mp4", fps = 20) # hide
