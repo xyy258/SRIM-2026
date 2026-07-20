@@ -93,7 +93,7 @@ model = NonhydrostaticModel(grid;
             buoyancy = BuoyancyTracer(),
 
             # Closures for LES
-            closure = AnisotropicMinimumDissipation(),
+            closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
             # closure = DynamicSmagorinsky(Pr=Pr),
             # closure = SmagorinskyLilly(Pr=Pr),
 
