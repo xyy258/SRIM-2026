@@ -42,8 +42,8 @@ anim = @animate for (i, iter) in enumerate(iterations)
         color = :balance, xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ)); # Shows lower part of domain near the rigid boundary
 
-    b_title = @sprintf("b/N² at t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
+    b_title = @sprintf("b/N² at t = %s, r = N/f = %.1f", round(t), r);
+    b_diff_title = @sprintf("(b-N²z)/N² at t = %s, r = N/f = %.1f", round(t), r);
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])
@@ -55,4 +55,4 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 # Save the animation to a file
-mp4(anim, "Ekman/3D Simulation/Ekman Plot.mp4", fps = 20) # hide
+mp4(anim, "Ekman/3D Simulation/Ekman Plot N/f=$r.mp4", fps = 20) # hide

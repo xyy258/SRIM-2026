@@ -35,7 +35,7 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         ylabel="Height z/δ",
         title="(∂b/∂z)/N²",
         color=:thermal) # :thermal is great for highlighting intensifying gradients
-savefig("Ekman/3D Simulation/Buoyancy gradient plot.png")
+savefig("Ekman/3D Simulation/Buoyancy gradient plot N/f=$r.png")
 
 
 ## Horizontally averaged buoyancy profile
@@ -73,7 +73,7 @@ plot!(b_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig("Ekman/3D Simulation/Averaged buoyancy profile.png")
+savefig("Ekman/3D Simulation/Averaged buoyancy profile N/f=$r.png")
 
 
 ## Hodograph plot ##
@@ -107,4 +107,4 @@ plot(u_slice/U∞, v_slice/U∞,
     legend = false,
     title = "Ekman Hodograph"
 )
-savefig("Ekman/3D Simulation/Hodograph.png")
+savefig("Ekman/3D Simulation/Hodograph N/f=$r.png")
