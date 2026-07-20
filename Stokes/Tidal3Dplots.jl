@@ -6,7 +6,7 @@ N² = 1e-7
 δ  = sqrt(2ν / ω)
 T_tide = 2π / ω
 
-filename = "Stokes/TidalBoundaryLayer3D"
+filename = "TidalBoundaryLayer3D"
 
 # ================================================================
 # 1. Mean stratification profile:  ∂b/∂z / N²  vs  z
@@ -41,7 +41,7 @@ plot(G[ks] ./ N², zg[ks];
      ylims  = (0, zmax),
      title  = "Mean stratification profile", legend = :bottomright)
 vline!([1]; ls = :dash, label = "background (∂b/∂z = N²)")
-savefig("Stokes/stratification_profile3D.png")
+savefig("stratification_profile3D.png")
 
 # Report where the profile crosses halfway (a simple mixed-layer depth).
 kmix = findfirst(g -> g >= 0.5N², G)
@@ -65,6 +65,6 @@ heatmap(x, tt ./ T_tide, b_bottom';
         xlabel = "x (m)", ylabel = "t / tidal period",
         title  = "bottom buoyancy  b(x, t)",
         color  = :thermal)          # sequential: values are all one sign
-savefig("Stokes/bottom_buoyancy_xt3D.png")
+savefig("bottom_buoyancy_xt3D.png")
 
-@info "Saved: stratification_profile3D.png, bottom_buoyancy_xt3D.png in Stokes folder"
+@info "Saved: stratification_profile3D.png, bottom_buoyancy_xt3D.png"
