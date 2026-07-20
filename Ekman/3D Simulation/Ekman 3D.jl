@@ -14,11 +14,11 @@ Lx, Ly, Lz = 72.8,72.8,27.3
 Nx, Ny, Nz = 64,64,150
 
 # Duration and timestep
-max_Δt = 5 # maximum allowable timestep
+max_Δt = 6 # maximum allowable timestep
 duration = 6e4 # The non-dimensional duration of the simulation
 
 # Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
-r = 75
+r = 31.6
 # Coriolis parameter
 f₀ = 1e-4
 # Buoyancy frequency
@@ -56,8 +56,9 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
-cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
+# z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
+# cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
+cᴰ = 2e-3
 
 ν₀ = 1e-6 # molecular kinematic viscosity
 D = U∞/f₀
