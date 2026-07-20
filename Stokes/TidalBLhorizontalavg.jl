@@ -1,7 +1,7 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
 # Set the new filename
-filename = "Stokes/Average buoyancy gradient"
+filename = "Average buoyancy gradient"
 
 # Load the FieldTimeSeries for the gradient
 # The key "db_dz" matches what we named it in the JLD2Writer tuple above
@@ -35,4 +35,4 @@ heatmap(t_save, zbconcat, gradient_data[1:Nzconcat,:],
     ylabel="Depth z (m)",
     title="Horizontally-Averaged Buoyancy Gradient 2D",
     color=:thermal) # :thermal is great for highlighting intensifying gradients
-savefig("Stokes/Buoyancy gradient plot 2D.png")
+savefig("Buoyancy gradient plot 2D.png")

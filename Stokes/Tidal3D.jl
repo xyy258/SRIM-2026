@@ -1,48 +1,37 @@
-using Oceananigans, Printf
-using CUDA
+using Printf
+using Oceananigans
 
-# 3D Tidal (Stokes) boundary layer following Gayen et al. (2009)
-# z runs from 0 (bottom wall) to Lz (top), grid refined near the bottom.
+# 3D Tidal (Stokes) boundary layer following Gayen, Sarkar & Taylor (2010).
+# Run one case with:   julia -t auto --project=. Tidal3D.jl Ri0
+# (then Ri500, Ri2500 — those restart from the Ri0 turbulent state).
 #
-# Changes from the 2D version:
-#   - (Periodic, Periodic, Bounded) topology with a y dimension
-#   - forcing / sponge / IC functions take (x, y, z, ...) signatures
-#   - v is also perturbed initially (spanwise noise is what lets 3D
-#     turbulence develop; without it the flow stays effectively 2D)
-#   - extra outputs: x-y slice at z ≈ δ, full 3D snapshots once per period,
-#     spanwise statistics (V, vw, uu, vv)
-#   - Checkpointer + wall_time_limit so an overnight run can't be lost
+# Changes for fidelity to the paper (vs the earlier exploratory version):
+#   - Cases defined by Ri = N²/ω² ∈ {0, 500, 2500} at Re_s = 1790
+#     (previous N² = 1e-7 was Ri ≈ 5, effectively unstratified)
+#   - Explicit SGS closure: AnisotropicMinimumDissipation alongside the
+#     molecular ScalarDiffusivity (the paper uses a dynamic mixed model and
+#     notes plain Smagorinsky fails for this flow; AMD is the closest
+#     Oceananigans equivalent)
+#   - Molecular Pr = 0.7 (κ = ν/Pr), paper value
+#   - Ly = 10 m ≈ 25 δ_s (halves Δy⁺ toward the paper's ≈30)
+#   - Sponge rate = 20ω (paper's peak damping), previously 6× weaker
+#   - CFL = 0.72 (paper value)
+#   - Paper protocol: stratified cases initialize u, v, w from the final
+#     Ri=0 turbulent snapshot with a fresh linear b = N²z, mimicking
+#     "turn on stratification after turbulent spin-up"
 #
-# Physical parameters are declared `const` so closures that capture them
-# (sponge targets, masks) compile cleanly into GPU kernels.
+# Each case writes everything into output_<case>/ with labeled filenames.
+
+include(joinpath(@__DIR__, "case_params.jl"))
 
 # ---------------- Architecture ----------------
-arch = CPU()          # <-- set to CPU() if you have no CUDA/ROCm GPU
-                      #     (and start Julia with `julia -t auto`)
+arch = CPU()          # start Julia with `julia -t auto`
 
-# ---------------- Physical & numerical parameters ----------------
-const Lx = 20.0                # domain size (m)
-const Ly = 20.0
-const Lz = 30.0
+Nx, Ny, Nz = 48, 48, 192
 
-Nx, Ny, Nz = 48, 48, 150
-
-const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
-const U₀ = 0.05                # tidal velocity amplitude (m s⁻¹)
-const N² = 1e-7                # background stratification (s⁻²)
-const ν  = 1.109e-5            # viscosity (m² s⁻¹)
-const κ  = ν                   # diffusivity
-
-const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness
-const T_tide = 2π / ω
-Re_δ = U₀ * δ / ν              # Stokes Reynolds number (transition ≈ 500-800)
-
-@info @sprintf("Stokes layer δ = %.3f m, Re_δ = %.0f, tidal period = %.0f s",
-               δ, Re_δ, T_tide)
-
-n_periods = 6
-duration  = n_periods * T_tide
-max_Δt    = 100.0
+n_frames = 200 * n_periods          # animation frames (same cadence per period)
+duration = n_periods * T_tide
+max_Δt   = 100.0
 
 # ---------------- Grid (bottom-refined stretching) ----------------
 refinement = 1.8
@@ -69,21 +58,21 @@ grid = RectilinearGrid(arch;
 u_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 
-# Insulating bottom (default anyway, but explicit), fixed gradient N² at top
-# so the background stratification is maintained there.
+# Adiabatic bottom (paper); fixed gradient N² at top so the background
+# stratification is maintained there.
 b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²),
                                 bottom = FluxBoundaryCondition(0))
 
 # ---------------- Forcing ----------------
-# Body force du/dt = U₀ ω cos(ωt) drives a free-stream velocity U₀ sin(ωt)
-# (starting from rest at t = 0). Note the (x, y, z, t, p) signature in 3D.
+# Body force du/dt = U₀ ω cos(ωt) drives a free-stream velocity U₀ sin(ωt).
 @inline tidal_forcing(x, y, z, t, p) = p.U₀ * p.ω * cos(p.ω * t)
 u_tide = Forcing(tidal_forcing, parameters = (; U₀, ω))
 
 # Sponge layer in the top ~5 m: damps internal waves radiated by the boundary
-# layer so they don't reflect off the rigid lid and re-enter the domain.
+# layer so they don't reflect off the rigid lid. Rate = 20ω is the paper's
+# peak damping coefficient.
 const sponge_width = 5.0
-sponge_rate = 1 / 2000                # ≈ 20 damping times per tidal period
+sponge_rate = 20ω
 @inline top_mask(x, y, z) = exp(-(z - Lz)^2 / (2 * sponge_width^2))
 
 u_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
@@ -94,13 +83,16 @@ b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
                       target = (x, y, z, t) -> N² * z)
 
 # ---------------- Model ----------------
+# AMD provides the explicit SGS stresses/fluxes; the ScalarDiffusivity carries
+# the molecular ν and κ = ν/Pr on top of it.
 model = NonhydrostaticModel(grid;
             advection   = WENO(order = 5),
             timestepper = :RungeKutta3,
             tracers     = (:b, :c),
             buoyancy    = BuoyancyTracer(),
-            closure     = ScalarDiffusivity(VerticallyImplicitTimeDiscretization(),
-                                            ν = ν, κ = κ),
+            closure     = (AnisotropicMinimumDissipation(),
+                           ScalarDiffusivity(VerticallyImplicitTimeDiscretization(),
+                                             ν = ν, κ = κ)),
             boundary_conditions = (u = u_bcs, v = v_bcs, b = b_bcs),
             coriolis    = nothing,
             forcing     = (u = (u_tide, u_sponge),
@@ -109,30 +101,48 @@ model = NonhydrostaticModel(grid;
                            b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-# Confine the random kick to the near-wall region (within a few Stokes layers)
-# so we perturb the boundary layer without filling the stratified interior
-# (and the sponge region) with noise. Perturbing v (not just u, w) is
-# essential in 3D: it breaks spanwise symmetry so genuine 3D turbulence can
-# develop instead of a 2D flow replicated in y.
-kick = 0.1 * U₀
-damped_noise(z) = kick * randn() * exp(-z / (4δ))
-
-uᵢ(x, y, z) = damped_noise(z)
-vᵢ(x, y, z) = damped_noise(z)
-wᵢ(x, y, z) = damped_noise(z)
 bᵢ(x, y, z) = N² * z
 cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
-set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ, c = cᵢ)
+spinup_file = joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2")
+
+if Ri > 0 && isfile(spinup_file)
+    # Paper protocol: turbulent unstratified spin-up, then stratification on.
+    # The Ri=0 run ends at t = 6 T_tide where U∞ = 0, the same phase this run
+    # starts from, so the restart is phase-consistent.
+    @info "Initializing velocities from Ri=0 spin-up: $spinup_file"
+    uts = FieldTimeSeries(spinup_file, "u"; backend = OnDisk())
+    vts = FieldTimeSeries(spinup_file, "v"; backend = OnDisk())
+    wts = FieldTimeSeries(spinup_file, "w"; backend = OnDisk())
+    nlast = length(uts.times)
+    @info @sprintf("Using snapshot %d/%d (t = %.2f periods of the spin-up)",
+                   nlast, nlast, uts.times[nlast] / T_tide)
+    set!(model, u = Array(interior(uts[nlast])),
+                v = Array(interior(vts[nlast])),
+                w = Array(interior(wts[nlast])))
+    set!(model, b = bᵢ, c = cᵢ)
+else
+    Ri > 0 && @warn "No Ri=0 spin-up snapshot found — starting $case from rest with noise."
+    # Near-wall random kick; perturbing v breaks spanwise symmetry so genuine
+    # 3D turbulence develops.
+    kick = 0.1 * U₀
+    damped_noise(z) = kick * randn() * exp(-z / (4δ))
+    uᵢ(x, y, z) = damped_noise(z)
+    vᵢ(x, y, z) = damped_noise(z)
+    wᵢ(x, y, z) = damped_noise(z)
+    set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ, c = cᵢ)
+end
 
 # ---------------- Simulation ----------------
-# wall_time_limit stops the run cleanly (all output flushed) before your
-# 8 hours are up; combined with the Checkpointer below you can always
-# resume from the last completed tidal period.
-simulation = Simulation(model, Δt = 1.0, stop_time = duration,
-                        wall_time_limit = 7.5 * 3600)
+simulation = Simulation(model, Δt = 1.0, stop_time = duration)
 
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.1, max_Δt = max_Δt)
+# Quick correctness check without the full run: TIDAL_SMOKE=1 julia Tidal3D.jl
+if get(ENV, "TIDAL_SMOKE", "0") == "1"
+    simulation.stop_iteration = 20
+    @info "Smoke test: stopping after 20 iterations"
+end
+
+wizard = TimeStepWizard(cfl = 0.72, max_change = 1.1, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()
@@ -150,13 +160,9 @@ u, v, w = model.velocities
 b = model.tracers.b
 c = model.tracers.c
 
-filename = "Stokes/TidalBoundaryLayer3D"
-
-n_frames = 1200
 slice_schedule = TimeInterval(duration / n_frames)
 
-# (1) x-z slices at y = 0 for animation — same layout as the 2D run, so the
-# existing animation script works after changing only `filename`.
+# (1) x-z slices at y = 0 for animation.
 simulation.output_writers[:xz_slices] =
     JLD2Writer(model, (; u, w, b, c),
                filename = filename * ".jld2",
@@ -165,9 +171,7 @@ simulation.output_writers[:xz_slices] =
                overwrite_existing = true,
                with_halos = false)
 
-# (2) x-y slice at z ≈ δ: plan view of the near-wall turbulence (streaks,
-# bursts) that simply doesn't exist in 2D — this is one of the main payoffs
-# of going 3D.
+# (2) x-y slice at z ≈ δ: plan view of the near-wall streaks/bursts.
 zc_nodes = Array(znodes(grid, Center()))
 k_δ = searchsortedfirst(zc_nodes, δ)
 @info @sprintf("x-y slice at k = %d (z = %.3f m ≈ δ)", k_δ, zc_nodes[k_δ])
@@ -181,15 +185,14 @@ simulation.output_writers[:xy_slices] =
                with_halos = false)
 
 # (3) Horizontally averaged profiles + turbulence statistics.
-# In 3D the averages are over both x and y, so ⟨uw⟩, variances etc. are
-# proper turbulence statistics. Second moments are saved raw (⟨u²⟩, ⟨uw⟩...);
-# subtract the mean in post-processing, e.g. u'w' = ⟨uw⟩ − U W.
-U  = Field(Average(u, dims = (1, 2)))          # mean streamwise velocity
-V  = Field(Average(v, dims = (1, 2)))          # mean spanwise velocity
-B  = Field(Average(b, dims = (1, 2)))          # mean buoyancy
-uw = Field(Average(u * w, dims = (1, 2)))      # vertical momentum flux
+# Second moments are saved raw (⟨u²⟩, ⟨uw⟩...); subtract the mean in
+# post-processing, e.g. u'w' = ⟨uw⟩ − U W.
+U  = Field(Average(u, dims = (1, 2)))
+V  = Field(Average(v, dims = (1, 2)))
+B  = Field(Average(b, dims = (1, 2)))
+uw = Field(Average(u * w, dims = (1, 2)))
 vw = Field(Average(v * w, dims = (1, 2)))
-wb = Field(Average(w * b, dims = (1, 2)))      # turbulent buoyancy flux
+wb = Field(Average(w * b, dims = (1, 2)))
 uu = Field(Average(u^2,  dims = (1, 2)))
 vv = Field(Average(v^2,  dims = (1, 2)))
 ww = Field(Average(w^2,  dims = (1, 2)))
@@ -201,8 +204,8 @@ simulation.output_writers[:profiles] =
                overwrite_existing = true,
                with_halos = false)
 
-# (4) Full 3D snapshots once per tidal period, for volume rendering /
-# later re-analysis. ~170 MB per snapshot at 128×128×256 with 5 fields.
+# (4) Full 3D snapshots twice per tidal period — used both for re-analysis
+# and as the turbulent initial condition for the stratified cases.
 simulation.output_writers[:fields3d] =
     JLD2Writer(model, (; u, v, w, b, c),
                filename = filename * "_fields.jld2",
@@ -210,17 +213,14 @@ simulation.output_writers[:fields3d] =
                overwrite_existing = true,
                with_halos = false)
 
-# (5) Checkpointer: keeps only the most recent checkpoint (cleanup = true).
-# If the run dies or hits the wall-time limit, restart with
-    # run!(simulation, pickup = true)
-# simulation.output_writers[:checkpoint] =
-#     Checkpointer(model,
-#                  schedule = TimeInterval(T_tide / 2),
-#                  prefix = filename * "_checkpoint",
-#                  cleanup = true)
+# (5) Checkpointer: keeps only the most recent checkpoint.
+simulation.output_writers[:checkpoint] =
+    Checkpointer(model,
+                 schedule = TimeInterval(T_tide / 2),
+                 dir = outdir,
+                 prefix = "TidalBL3D_" * case * "_checkpoint",
+                 cleanup = true)
 
 run!(simulation)
-# To resume an interrupted run, comment out the line above and use:
-# run!(simulation, pickup = true)
-include("Stokes/Tidal3Danimation.jl")
-include("Stokes/Tidal3Dprofiles.jl")
+# To resume an interrupted run, use:  run!(simulation, pickup = true)
+# (and set overwrite_existing = false in the writers first)
