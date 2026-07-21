@@ -28,7 +28,7 @@ include(joinpath(@__DIR__, "case_params.jl"))
 # ---------------- Architecture ----------------
 arch = GPU()          # start Julia with `julia -t auto`
 
-Nx, Ny, Nz = 64, 64, 150
+Nx, Ny, Nz = 48, 48, 192
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
@@ -144,7 +144,7 @@ if get(ENV, "TIDAL_SMOKE", "0") == "1"
     @info "Smoke test: stopping after 20 iterations"
 end
 
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.95, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()

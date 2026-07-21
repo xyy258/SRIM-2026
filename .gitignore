@@ -1,2 +1,7 @@
-Ekman/Data/*.jld2
-Stokes/*.jld2
+# Simulation output is stored separately (see README) — these files run to
+# hundreds of MB each and exceed GitHub's 100 MB per-file limit.
+*.jld2
+*.nc
+
+# Julia checkpoints
+**/*_checkpoint_iteration*.jld2

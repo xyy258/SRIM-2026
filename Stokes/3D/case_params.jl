@@ -44,7 +44,7 @@ const Lz = 30.0                # test section + sponge
 # figure 4 shows growth still slowly evolving out to ωt ≈ 28, i.e. ~4.5
 # periods, but our first 4-period attempt hadn't saturated — 8 gives more
 # margin to see whether/where it levels off).
-const n_periods = Ri == 0 ? 15 : 8
+const n_periods = 15
 
 # ---------------- Output naming ----------------
 const outdir   = "output_" * case
