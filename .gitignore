@@ -1,7 +1,12 @@
-# Simulation output is stored separately (see README) — these files run to
-# hundreds of MB each and exceed GitHub's 100 MB per-file limit.
+# Simulation output is stored separately (see README) — the 3D field and slice
+# files run to hundreds of MB each and exceed GitHub's 100 MB per-file limit.
 *.jld2
 *.nc
 
 # Julia checkpoints
 **/*_checkpoint_iteration*.jld2
+
+# ...but keep the horizontally-averaged profile statistics. These are small
+# (~25 MB each) and are the data every figure is computed from, so they are
+# worth version-controlling alongside the analysis scripts.
+!*_profiles.jld2
