@@ -22,9 +22,8 @@ iterations = parse.(Int, keys(file_vel["timeseries/t"]))
 @info "Making an animation from saved data..."
 
 t_save = zeros(length(iterations))
-b_bottom = zeros(length(xb), length(iterations))
 
-zbconcat = zb[findall(x -> x < 5*δ, zb)]
+zbconcat = zb[findall(x -> x < 0.5*δ, zb)]
 Nzconcat = length(zbconcat)
 
 # Here, we loop over all iterations
@@ -43,8 +42,8 @@ anim = @animate for (i, iter) in enumerate(iterations)
         color = :balance, xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ)); # Shows lower part of domain near the rigid boundary
 
-    b_title = @sprintf("b/N² at t = %s", round(t));
-    b_diff_title = @sprintf("(b-N²z)/N² at t = %s", round(t));
+    b_title = @sprintf("b/N² at t = %s, N/f = %.1f", round(t), r);
+    b_diff_title = @sprintf("(b-N²z)/N² at t = %s, N/f = %.1f", round(t), r);
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 400), title = [b_title b_diff_title])
@@ -56,4 +55,4 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 # Save the animation to a file
-mp4(anim, "Ekman/2D Simulation/Ekman Plot.mp4", fps = 20) # hide
+mp4(anim, @sprintf("Ekman/2D Simulation/Ekman Plot 2D r = %.1f.mp4",r), fps = 20) # hide

@@ -1,9 +1,14 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
-## Plot of average buoyancy gradient with depth over time ##
+# Import parameters
+# if isempty(r)
+    include("Parameters.jl")
+# end
+
+    ## Plot of average buoyancy gradient with depth over time ##
 
 # Set the filename
-filename = "Ekman/Data/Average buoyancy gradient"
+filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
 
 db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
@@ -27,20 +32,22 @@ for (t_idx, iter) in enumerate(iterations)
     gradient_data[:, t_idx] = db_dz_timeseries[t_idx].data[1, 1, 1:Nz]
 end
 
-zbconcat = zb[findall(<(0.4*δ),zb)]
+# Reduce range of z
+zbconcat = zb[findall(<(0.5*δ),zb)]
 Nzconcat = length(zbconcat)
 
 heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         xlabel="tf",
         ylabel="Height z/δ",
-        title="(∂b/∂z)/N²",
+        title=@sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
+        size = (1000,400),
         color=:thermal) # :thermal is great for highlighting intensifying gradients
-savefig("Ekman/3D Simulation/Buoyancy gradient plot.png")
+savefig(@sprintf("Ekman/3D Simulation/Buoyancy gradient plot r = %.1f.png",r))
 
 
-## Horizontally averaged buoyancy profile
+    ## Horizontally averaged buoyancy profile
 
-filename = "Ekman/Data/Average buoyancy"
+filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy",r)
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
 
 # Extract grid coordinates using znodes
@@ -54,32 +61,79 @@ b_final = vec(interior(b_avg_timeseries[end], 1, 1, :))    # Last time step
 z_normalized = zb / δ
 
 # Create mask for the boundary layer region
-z_mask = findall(<(0.4*δ), zb)
+z_mask = findall(<(0.5*δ), zb)
+# Otherwise, use the following for full domain plot
+# z_mask = 1:length(zb)
+
 b_plot_final = b_final[z_mask]
 b_plot_initial = b_initial[z_mask]
 z_plot = z_normalized[z_mask]
+
 
 # Plot
 plot(b_plot_initial/N², z_plot,
      xlabel = "b/N²",
      ylabel = "Height z/δ",
-     title = "Horizontally Averaged Buoyancy Profile",
+     title = @sprintf("<b> profile for N/f = %.1f", r),
      linewidth = 2,
      label = "Initial",
      linestyle = :dash,
-     legend = :bottomright)
+     legend = :bottomright,
+     size=(800,400))
 
 plot!(b_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig("Ekman/3D Simulation/Averaged buoyancy profile.png")
+savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy profile r = %.1f.png",r))
 
 
-## Hodograph plot ##
+    ## Horizontally averaged buoyancy profile
 
-u_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "u_avg")
-v_series = FieldTimeSeries("Ekman/Data/Average velocity.jld2", "v_avg")
+filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
+db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
+
+# Extract grid coordinates using znodes
+zb = znodes(db_dz_timeseries.grid, Center())
+
+# Get initial and final profiles
+db_dz_initial = vec(interior(db_dz_avg_timeseries[1], 1, 1, :))    # First saved time step
+db_dz_final = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))    # Last time step
+
+# Normalize depth
+z_normalized = zb / δ
+
+# Create mask for the boundary layer region
+z_mask = findall(<(0.5*δ), zb)
+# Otherwise, use the following for full domain plot
+# z_mask = 1:length(zb)
+
+db_dz_plot_final = db_dz_final[z_mask]
+db_dz_plot_initial = db_dz_initial[z_mask]
+z_plot = z_normalized[z_mask]
+
+
+# Plot
+plot(db_dz_plot_initial/N², z_plot,
+     xlabel = "∂b/∂z/N²",
+     ylabel = "Height z/δ",
+     title = @sprintf("∂<b>/∂z Profile for N/f = %.1f", r),
+     linewidth = 2,
+     label = "Initial",
+     linestyle = :dash,
+     legend = :bottomright,
+     size=(800,400))
+
+plot!(db_dz_plot_final/N², z_plot,
+      linewidth = 2,
+      label = "Final")
+
+savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy gradient profile r = %.1f.png",r))
+
+
+    ## Hodograph plot
+u_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "u_avg")
+v_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "v_avg")
 
 xu, yu, zu = nodes(u_series)
 zC = znodes(u_series.grid, Center())
@@ -105,6 +159,6 @@ plot(u_slice/U∞, v_slice/U∞,
     colorbar = true,
     size = (800,600),
     legend = false,
-    title = "Ekman Hodograph"
+    title = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
 )
-savefig("Ekman/3D Simulation/Hodograph.png")
+savefig(@sprintf("Ekman/3D Simulation/Hodograph r = %.1f.png",r))

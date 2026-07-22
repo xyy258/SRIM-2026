@@ -32,7 +32,7 @@ Nzconcat = length(zbconcat)
 
 heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat,:]/N²,
         xlabel="tf",
-        ylabel="Height z (δ)",
-        title="2D (∂b/∂z)/N²",
+        ylabel="Height z/δ",
+        title=@sprintf("2D (∂b/∂z)/N² for N/f = %.1f",r),
         color=:thermal) # :thermal is great for highlighting intensifying gradients
-savefig("Ekman/2D Simulation/Buoyancy gradient plot 2D.png")
+savefig(@sprintf("Ekman/2D Simulation/Buoyancy gradient plot 2D r = %.1f.png",r))
