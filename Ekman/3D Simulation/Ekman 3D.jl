@@ -32,7 +32,7 @@ grid = RectilinearGrid(arch;
     y = (0, Ly),
     z = z_faces)
 
-# # Calculating drag coefficient
+# Calculating drag coefficient
 z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
