@@ -3,7 +3,9 @@ using Oceananigans, JLD2, NCDatasets, Plots, Printf
 # Import parameters
 include("Parameters.jl")
 
-    ##----- Plot of average buoyancy gradient with depth over time -----##
+## ====================================================== ##
+## Plot of average buoyancy gradient with depth over time ##
+## ====================================================== ##
 
 # Set the filename
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
@@ -42,8 +44,9 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         color=:thermal) # :thermal is great for highlighting intensifying gradients
 savefig(@sprintf("Ekman/3D Simulation/Buoyancy gradient plot r = %.1f.png",r))
 
-
-    ##-----  Horizontally averaged buoyancy profile -----#
+## ======================================= ##
+##  Horizontally averaged buoyancy profile ##
+## ======================================= ##
 
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy",r)
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
@@ -85,8 +88,9 @@ plot!(b_plot_final/N², z_plot,
 
 savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy profile r = %.1f.png",r))
 
-
-    ##----- Horizontally averaged buoyancy gradient profile -----#
+## =============================================== ##
+## Horizontally averaged buoyancy gradient profile ##
+## =============================================== ##
 
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
 db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
@@ -128,8 +132,9 @@ plot!(db_dz_plot_final/N², z_plot,
 
 savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy gradient profile r = %.1f.png",r))
 
-
-    ##----- Hodograph plot -----#
+## ================== ##
+##   Hodograph plot   ##
+## ================== ##
 
 u_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "u_avg")
 v_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "v_avg")

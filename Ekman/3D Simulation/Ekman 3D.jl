@@ -9,6 +9,7 @@ arch = GPU()
 
 # Import parameters
 include("Parameters.jl")
+H = Lz + S # domain height, with sponge layer
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
@@ -22,7 +23,7 @@ h(k) = (Nz + 1 - k) / Nz
 Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
 
 # Generating function
-z_faces(k) = - Lz * (ζ(k) * Σ(k) - 1)
+z_faces(k) = - H * (ζ(k) * Σ(k) - 1)
 
 grid = RectilinearGrid(arch;
                         topology = (Periodic, Periodic, Bounded),
@@ -62,11 +63,12 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
 sponge_width = 5.0
-sponge_rate  =
-@inline top_mask(x, y, z) = exp(-((z - Lz)/sponge_width)^2)
+sponge_rate  = 10*r*f₀ # set to 10*(buoyancy frequency)
+sponge_mask = GaussianMask{:z}(center=H, width=S)
 
 u_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
-v_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
+v_sponge = Relaxation(rate = sponge_rate, mask = top_mask
+                      target = (x,y,z) -> )
 w_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
 b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
                       target = (x, y, z) -> bᵢ(x,y,z))
@@ -85,7 +87,10 @@ model = NonhydrostaticModel(grid;
 
             boundary_conditions = (u = u_bcs, v = v_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
             coriolis = FPlane(f=f₀),
-            forcing = (v=v_forcing,)
+            u = u_sponge,
+            v = (v_forcing, v_sponge),
+            w = w_sponge,
+            b = b_sponge
 )
 
 @info "3D simulation parameters"
@@ -185,6 +190,11 @@ b_avg = Field(Average(b, dims=(1, 2)))
 # Horizontally-averaged buoyancy gradient ∂b/∂z
 db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
+# Horizontally-averaged vorticity
+ωx_avg = Field(Average(∂y(w)-∂z(v), dims=(1, 2)))
+ωy_avg = Field(Average(∂z(u)-∂x(w), dims=(1, 2)))
+ωz_avg = Field(Average(∂x(v)-∂y(u), dims=(1, 2)))
+
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = filename * " average buoyancy gradient.jld2",
@@ -198,6 +208,11 @@ simulation.output_writers[:avg_b] =
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = filename * " average velocity.jld2",
+                schedule = IterationInterval(20),
+                overwrite_existing = true)
+simulation.output_writers[:avg_vorticity] =
+    JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
+                filename = filename * " average vorticity.jld2",
                 schedule = IterationInterval(20),
                 overwrite_existing = true)
 # NetCDF output file
