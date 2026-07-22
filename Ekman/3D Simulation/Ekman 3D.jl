@@ -26,13 +26,13 @@ h(k) = (Nz + 1 - k) / Nz
 z_faces(k) = - H * (ζ(k) * Σ(k) - 1)
 
 grid = RectilinearGrid(arch;
-                        topology = (Periodic, Periodic, Bounded),
-                        size = (Nx, Ny, Nz),
-                        x = (0, Lx),
-                        y = (0, Ly),
-                        z = z_faces)
+    topology = (Periodic, Periodic, Bounded),
+    size = (Nx, Ny, Nz),
+    x = (0, Lx),
+    y = (0, Ly),
+    z = z_faces)
 
-# Calculating drag coefficient
+# # Calculating drag coefficient
 z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
 cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
@@ -62,35 +62,37 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_width = 5.0
 sponge_rate  = 10*r*f₀ # set to 10*(buoyancy frequency)
 sponge_mask = GaussianMask{:z}(center=H, width=S)
 
-u_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
-v_sponge = Relaxation(rate = sponge_rate, mask = top_mask
-                      target = (x,y,z) -> )
-w_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
-b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
-                      target = (x, y, z) -> bᵢ(x,y,z))
+u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
+                      target = U∞)
+v_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
+w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
+b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
+                      target = LinearTarget{:z}(intercept = 0, gradient = N²))
+
+
 
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
-            advection = Centered(order=2),
-            timestepper = :RungeKutta3, # Timestepping scheme
-            tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
-            buoyancy = BuoyancyTracer(),
+    advection = Centered(order=2),
+    timestepper = :RungeKutta3, # Timestepping scheme
+    tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
+    buoyancy = BuoyancyTracer(),
 
-            # Closures for LES
-            closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
-            # closure = DynamicSmagorinsky(Pr=Pr),
-            # closure = SmagorinskyLilly(Pr=Pr),
+    # Closures for LES
+    closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
+    # closure = DynamicSmagorinsky(Pr=Pr),
+    # closure = SmagorinskyLilly(Pr=Pr),
 
-            boundary_conditions = (u = u_bcs, v = v_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
-            coriolis = FPlane(f=f₀),
-            u = u_sponge,
-            v = (v_forcing, v_sponge),
-            w = w_sponge,
-            b = b_sponge
+    boundary_conditions = (u = u_bcs, v = v_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
+    coriolis = FPlane(f=f₀),
+    forcing = (
+    u = u_sponge,
+    v = (v_forcing, v_sponge),
+    w = w_sponge,
+    b = b_sponge)
 )
 
 @info "3D simulation parameters"
@@ -98,6 +100,7 @@ params_string =
 
 @printf("Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
+Far stream velocity             U∞ = %.4f
 Square buoyancy frequency:      N² = %.2e,
 Coriolis parameter:             f = %.2e,
 Ratio:                          r = N/f = %.1f
@@ -105,16 +108,17 @@ Molecular kinematic viscosity:  ν = %.2e,
 Reynolds number:                Re∞ = %.2e,
 Prandtl number:                 Pr = %.1f,
 Molecular diffusivity:          κ = %.2e,
+Frictional velocity             u* = %.4f
 Drag coefficient:               cᴰ = %.4f,
 Layer lengthscale:              δ = %.2f
 Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f\n",
-Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ, Re_star, Ri_star)
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
 
 open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "w") do file
-    write(file, @sprintf(
-"Dimensions                      %.1f m × %.1f m × %.1f m
+    write(file, @sprintf("Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
+Far stream velocity             U∞ = %.4f
 Square buoyancy frequency:      N² = %.2e,
 Coriolis parameter:             f = %.2e,
 Ratio:                          r = N/f = %.1f
@@ -122,11 +126,12 @@ Molecular kinematic viscosity:  ν = %.2e,
 Reynolds number:                Re∞ = %.2e,
 Prandtl number:                 Pr = %.1f,
 Molecular diffusivity:          κ = %.2e,
+Frictional velocity             u* = %.4f
 Drag coefficient:               cᴰ = %.4f,
 Layer lengthscale:              δ = %.2f
 Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f",
-Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ, Re_star, Ri_star))
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
 end
 
 # Send the initial conditions to the model to initialize the variables
@@ -151,11 +156,11 @@ simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
 start_time = time_ns()
 
 progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, CFL: %.2e\n",
-                        sim.model.clock.iteration,
-                        sim.model.clock.time,
-                        prettytime(1e-9 * (time_ns() - start_time)),
-                        sim.Δt,
-                        AdvectiveCFL(sim.Δt)(sim.model))
+    sim.model.clock.iteration,
+    sim.model.clock.time,
+    prettytime(1e-9 * (time_ns() - start_time)),
+    sim.Δt,
+    AdvectiveCFL(sim.Δt)(sim.model))
 
 simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 
