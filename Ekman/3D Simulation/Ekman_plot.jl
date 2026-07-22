@@ -42,7 +42,7 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         title=@sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
         size = (1000,400),
         color=:thermal) # :thermal is great for highlighting intensifying gradients
-savefig(@sprintf("Ekman/3D Simulation/Buoyancy gradient plot r = %.1f.png",r))
+savefig(@sprintf("Ekman/3D Simulation/Plots/Buoyancy gradient plot r = %.1f.png",r))
 
 ## ======================================= ##
 ##  Horizontally averaged buoyancy profile ##
@@ -86,7 +86,7 @@ plot!(b_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy profile r = %.1f.png",r))
+savefig(@sprintf("Ekman/3D Simulation/Plots/Averaged buoyancy profile r = %.1f.png",r))
 
 ## =============================================== ##
 ## Horizontally averaged buoyancy gradient profile ##
@@ -130,7 +130,7 @@ plot!(db_dz_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy gradient profile r = %.1f.png",r))
+savefig(@sprintf("Ekman/3D Simulation/PLots/Averaged buoyancy gradient profile r = %.1f.png",r))
 
 ## ================== ##
 ##   Hodograph plot   ##
@@ -165,4 +165,4 @@ plot(u_slice/U∞, v_slice/U∞,
     legend = false,
     title = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
 )
-savefig(@sprintf("Ekman/3D Simulation/Hodograph r = %.1f.png",r))
+savefig(@sprintf("Ekman/3D Simulation/Plots/Hodograph r = %.1f.png",r))
