@@ -55,9 +55,8 @@ U∞ = 0.0674
 z₀ = 0.0016 # m (roughness length)
 κ = 0.41  # von Karman constant
 
-# z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
-# cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
-cᴰ = 2e-3
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
+cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ν₀ = 1e-6 # molecular kinematic viscosity
 D = U∞/f₀

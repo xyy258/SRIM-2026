@@ -7,34 +7,17 @@ arch = GPU()
 # Command to run file in Julia
 # include("Ekman/3D Simulation/Ekman 3D.jl")
 
-# Dimensions
-Lx, Ly, Lz = 72.8,72.8,27.3
-
-# Grid size
-Nx, Ny, Nz = 64,64,150
-
-# Duration and timestep
-max_Δt = 6 # maximum allowable timestep
-duration = 6e4 # The non-dimensional duration of the simulation
-
-# Ratio of N/f (compare with profiles in Taylor & Sarkar 2008)
-r = 31.6
-# Coriolis parameter
-f₀ = 1e-4
-# Buoyancy frequency
-N² = (r*f₀)^2
+# Import parameters
+include("Parameters.jl")
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
-refinement = 2 # controls spacing near surface (higher means finer spaced)
+refinement = 1.8 # controls spacing near surface (higher means finer spaced)
 stretching = 10 # controls rate of stretching at bottom
-
 # "Warped" height coordinate
 h(k) = (Nz + 1 - k) / Nz
-
 # Linear near-surface generator
 ζ(k) = 1 + (h(k) - 1) / refinement
-
 # Bottom-intensified stretching function
 Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
 
@@ -48,26 +31,11 @@ grid = RectilinearGrid(arch;
                         y = (0, Ly),
                         z = z_faces)
 
-# Set the amplitude of the random perturbation (kick)
-kick = 0.05
+# Calculating drag coefficient
+z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
+cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
 
 ## Boundary conditions
-U∞ = 0.0674
-z₀ = 0.0016 # m (roughness length)
-κ = 0.41  # von Karman constant
-
-# z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
-# cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
-cᴰ = 2e-3
-
-ν₀ = 1e-6 # molecular kinematic viscosity
-D = U∞/f₀
-Re∞ = U∞*D/ν₀ # Reynolds number
-Pr = 10 # Prandtl number
-κ₀ = ν₀/Pr # molecular diffusivity
-u_star = 0.049*U∞ # friction velocity
-δ = u_star/f₀ # boundary layer lengthscale
-
 # Quadratic drag
 drag_bc_u = BulkDrag(coefficient=cᴰ)
 drag_bc_v = BulkDrag(coefficient=cᴰ)
@@ -88,13 +56,13 @@ v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
-            advection = WENO(order=5),
+            advection = Centered(order=2),
             timestepper = :RungeKutta3, # Timestepping scheme
             tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
             buoyancy = BuoyancyTracer(),
 
             # Closures for LES
-            closure = AnisotropicMinimumDissipation(),
+            closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
             # closure = DynamicSmagorinsky(Pr=Pr),
             # closure = SmagorinskyLilly(Pr=Pr),
 
@@ -110,9 +78,11 @@ wᵢ(x,y,z) = kick * randn()
 bᵢ(x,y,z) = N² * z
 
 @info "3D simulation parameters"
-@printf("
-Dimensions      %.1f m × %.1f m × %.1f m
-Grid size       %.1f × %.1f × %.1f
+params_string =
+
+
+@printf("Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %.1f × %.1f × %.1f
 Square buoyancy frequency:      N² = %.2e,
 Coriolis parameter:             f = %.2e,
 Ratio:                          r = N/f = %.1f
@@ -121,22 +91,41 @@ Reynolds number:                Re∞ = %.2e,
 Prandtl number:                 Pr = %.1f,
 Molecular diffusivity:          κ = %.2e,
 Drag coefficient:               cᴰ = %.4f,
-Layer lengthscale:              δ = %.2f\n",
+Layer lengthscale:              δ = %.2f
+Frictional Reynolds             Re* = %.2e
+Frictional Richardson           Ri* = %.1f\n",
+Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ, Re_star, Ri_star)
 
-Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ)
+open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "w") do file
+    write(file, @sprintf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %.1f × %.1f × %.1f
+Square buoyancy frequency:      N² = %.2e,
+Coriolis parameter:             f = %.2e,
+Ratio:                          r = N/f = %.1f
+Molecular kinematic viscosity:  ν = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr = %.1f,
+Molecular diffusivity:          κ = %.2e,
+Drag coefficient:               cᴰ = %.4f,
+Layer lengthscale:              δ = %.2f
+Frictional Reynolds             Re* = %.2e
+Frictional Richardson           Ri* = %.1f",
+Lx, Ly, Lz, Nx, Ny, Nz, N², f₀, r, ν₀, Re∞, Pr, κ₀, cᴰ, δ, Re_star, Ri_star))
+end
 
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.8 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.5 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.8, max_change = 1.25, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.85, max_change = 1.25, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -153,7 +142,7 @@ progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, C
                         sim.Δt,
                         AdvectiveCFL(sim.Δt)(sim.model))
 
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(20))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 
 # ## Output
 
@@ -161,20 +150,20 @@ u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
 
 # Set the name of the output file
-filename = "Ekman/Data/Ekman"
+filename = @sprintf("Ekman/Data/Ekman r=%.1f",r)
 
 simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
                filename = filename * "_velocity.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(150),
+               schedule = TimeInterval(100),
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:xz_b_c] =
     JLD2Writer(model, (; b),
-               filename = filename * "_b_c.jld2",
+               filename = filename * "_b.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(150),
+               schedule = TimeInterval(100),
                overwrite_existing = true,
                with_halos = false)
 
@@ -188,18 +177,18 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
-                filename = "Ekman/Data/Average buoyancy gradient.jld2",
-                schedule = IterationInterval(2),
+                filename = filename * " average buoyancy gradient.jld2",
+                schedule = IterationInterval(5),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
-                filename = "Ekman/Data/Average buoyancy.jld2",
-                schedule = IterationInterval(2),
+                filename = filename * " average buoyancy.jld2",
+                schedule = IterationInterval(20),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
-                filename = "Ekman/Data/Average velocity.jld2",
-                schedule = IterationInterval(2),
+                filename = filename * " average velocity.jld2",
+                schedule = IterationInterval(20),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
