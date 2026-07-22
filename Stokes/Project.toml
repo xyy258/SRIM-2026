@@ -1,4 +1,4 @@
-authors = ["Xing Yu Yi <yixingyu05@gmail.com>"]
+authors = ["Tian Lang Liu <tll46@cam.ac.uk>"]
 
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
