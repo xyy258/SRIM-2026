@@ -49,10 +49,27 @@ v_bcs = FieldBoundaryConditions(bottom=drag_bc_v)
 b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
                                 bottom = GradientBoundaryCondition(0))
 
+## Initial conditions
+uᵢ(x,y,z) = U∞ + kick * randn()
+vᵢ(x,y,z) = kick * randn()
+wᵢ(x,y,z) = kick * randn()
+bᵢ(x,y,z) = N² * z
+
 ## Forcing
 v_forcing_fn(x, y, z, t, p) = p.f * p.s  # to balance for initial geostrophic balance
 forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
+
+## Sponge layers
+sponge_width = 5.0
+sponge_rate  =
+@inline top_mask(x, y, z) = exp(-((z - Lz)/sponge_width)^2)
+
+u_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
+v_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
+w_sponge = Relaxation(rate = sponge_rate, mask = top_mask)
+b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
+                      target = (x, y, z) -> bᵢ(x,y,z))
 
 # Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
 model = NonhydrostaticModel(grid;
@@ -71,15 +88,8 @@ model = NonhydrostaticModel(grid;
             forcing = (v=v_forcing,)
 )
 
-## Initial conditions
-uᵢ(x,y,z) = U∞ + kick * randn()
-vᵢ(x,y,z) = kick * randn()
-wᵢ(x,y,z) = kick * randn()
-bᵢ(x,y,z) = N² * z
-
 @info "3D simulation parameters"
 params_string =
-
 
 @printf("Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
