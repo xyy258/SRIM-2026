@@ -2,9 +2,7 @@ using Oceananigans, JLD2, Plots, Printf
 # using NCDatasets
 
 # Import parameters
-if isempty(r)
-    include("Parameters.jl")
-end
+include("Parameters.jl")
 
 # Set the filename (without the extension)
 filename = @sprintf("Ekman/Data/Ekman r=%.1f",r)
@@ -50,7 +48,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
     clim_min = minimum(diff)
 
     b_diff_xz_plot = heatmap(xb, zbconcat/δ, (b_xz[:,1:Nzconcat]' .- N²*zbconcat)/N²;
-        color = :coolwarm, clims = (clim_min,clim_max).*1.4,
+        color = :coolwarm, clims = (-5,5),
         xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,zbconcat[end]/δ)); # Shows lower part of domain near the rigid boundary
 
