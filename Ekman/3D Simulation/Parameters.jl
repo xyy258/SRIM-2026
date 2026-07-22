@@ -13,7 +13,7 @@ U∞ = 0.0674             # far stream velocity
 f₀ = 1e-4               # Coriolis parameter
 
 Re∞ = 4.55e7            # Reynolds number
-r = 31.6               # ratio N/f
+r = 75               # ratio N/f
 Pr = 10                 # Prandtl number
 z₀ = 0.0016             # m (roughness length)
 

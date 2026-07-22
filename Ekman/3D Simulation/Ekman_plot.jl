@@ -1,18 +1,16 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
 
 # Import parameters
-# if isempty(r)
-    include("Parameters.jl")
-# end
+include("Parameters.jl")
 
-    ## Plot of average buoyancy gradient with depth over time ##
+    ##----- Plot of average buoyancy gradient with depth over time -----##
 
 # Set the filename
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
 
 db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
-# 2. Extract the grid nodes (zb will contain the vertical grid levels)
+# Extract the grid nodes (zb will contain the vertical grid levels)
 xb, yb, zb = nodes(db_dz_timeseries)
 
 ## Open the file to extract the time array
@@ -23,7 +21,7 @@ iterations = parse.(Int, keys(file_xz["timeseries/t"]))
 t_save = [file_xz["timeseries/t/$i"] for i in iterations]
 close(file_xz)
 
-# 3. Extract the data slice into a 2D matrix [Nz, Nt]
+# Extract the data slice into a 2D matrix [Nz, Nt]
 Nz = length(zb)
 Nt = length(iterations)
 gradient_data = zeros(Nz, Nt)
@@ -45,7 +43,7 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
 savefig(@sprintf("Ekman/3D Simulation/Buoyancy gradient plot r = %.1f.png",r))
 
 
-    ## Horizontally averaged buoyancy profile
+    ##-----  Horizontally averaged buoyancy profile -----#
 
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy",r)
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
@@ -88,7 +86,7 @@ plot!(b_plot_final/N², z_plot,
 savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy profile r = %.1f.png",r))
 
 
-    ## Horizontally averaged buoyancy profile
+    ##----- Horizontally averaged buoyancy gradient profile -----#
 
 filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
 db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
@@ -131,7 +129,8 @@ plot!(db_dz_plot_final/N², z_plot,
 savefig(@sprintf("Ekman/3D Simulation/Averaged buoyancy gradient profile r = %.1f.png",r))
 
 
-    ## Hodograph plot
+    ##----- Hodograph plot -----#
+
 u_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "u_avg")
 v_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity",r), "v_avg")
 
@@ -148,11 +147,11 @@ z_slice = zC[slice] / δ
 
 plot(u_slice/U∞, v_slice/U∞,
     linewidth = 2,
-    line_z = z_slice,          # Colors the line based on depth z
-    color = :viridis,          # Colormap for the line/markers
+    line_z = z_slice,          # Colour line based on z
+    color = :viridis,          # Colour for the line/markers
     marker = :circle,
-    markersize = 3,            # Smaller markers (default is usually 4 or 5)
-    marker_z = z_slice,        # Colors the markers based on depth z
+    markersize = 3,            # Smaller marker
+    marker_z = z_slice,        # Colours markers based on z
     xlabel = "<u>/U∞",
     ylabel = "<v>/U∞",
     colorbar_title = "Height z/δ", # Adds a label to the colorbar
