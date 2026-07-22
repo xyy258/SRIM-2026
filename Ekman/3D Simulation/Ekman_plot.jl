@@ -130,7 +130,7 @@ plot!(db_dz_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig(@sprintf("Ekman/3D Simulation/PLots/Averaged buoyancy gradient profile r = %.1f.png",r))
+savefig(@sprintf("Ekman/3D Simulation/Plots/Averaged buoyancy gradient profile r = %.1f.png",r))
 
 ## ================== ##
 ##   Hodograph plot   ##
