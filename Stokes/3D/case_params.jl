@@ -20,7 +20,7 @@ const Ri = Ri_targets[case]
 
 # ---------------- Physical parameters ----------------
 const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
-const U₀ = 0.05                # tidal velocity amplitude (m s⁻¹)
+const U₀ = 0.15                # tidal velocity amplitude (m s⁻¹)
 const N² = Ri * ω^2            # background stratification from Ri = N²/ω²
 const ν  = 1.109e-5            # molecular viscosity (m² s⁻¹) → Re_s = 1790
 const Pr = 0.7                 # molecular Prandtl number (paper value)

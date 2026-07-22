@@ -155,7 +155,8 @@ model = NonhydrostaticModel(grid;
                            b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-bᵢ(x, y, z) = N² * z
+bᵢ(x, y, z) = N² * z ## change to exponential profile
+## plot vorticity
 cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
 spinup_file = joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2")
