@@ -20,7 +20,7 @@ const Ri = Ri_targets[case]
 
 # ---------------- Physical parameters ----------------
 const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
-const U₀ = 0.05                # tidal velocity amplitude (m s⁻¹)
+const U₀ = 0.15                # tidal velocity amplitude (m s⁻¹)
 const N² = Ri * ω^2            # background stratification from Ri = N²/ω²
 const ν  = 1.109e-5            # molecular viscosity (m² s⁻¹) → Re_s = 1790
 const Pr = 0.7                 # molecular Prandtl number (paper value)
@@ -44,7 +44,7 @@ const Lz = 30.0                # test section + sponge
 # figure 4 shows growth still slowly evolving out to ωt ≈ 28, i.e. ~4.5
 # periods, but our first 4-period attempt hadn't saturated — 8 gives more
 # margin to see whether/where it levels off).
-const n_periods = Ri == 0 ? 15 : 8
+const n_periods = 15
 
 # ---------------- Output naming ----------------
 const outdir   = "output_" * case

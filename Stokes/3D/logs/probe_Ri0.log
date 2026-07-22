@@ -1,0 +1,82 @@
+PROBE Ri0  t=3.900 periods  iter=25302  (establishing rate)
+PROBE Ri0  t=4.270 periods  iter=27609  rate=3.70 periods/hr  eta_15=2.9 hr
+PROBE Ri0  t=4.630 periods  iter=29923  rate=3.60 periods/hr  eta_15=2.9 hr
+PROBE Ri0  t=4.945 periods  iter=32243  rate=3.15 periods/hr  eta_15=3.2 hr
+PROBE Ri0  t=5.305 periods  iter=34543  rate=3.60 periods/hr  eta_15=2.7 hr
+PROBE Ri0  t=5.670 periods  iter=36902  rate=3.65 periods/hr  eta_15=2.6 hr
+PROBE Ri0  t=5.960 periods  iter=39224  rate=2.90 periods/hr  eta_15=3.1 hr
+PROBE Ri0  t=6.320 periods  iter=41551  rate=3.60 periods/hr  eta_15=2.4 hr
+PROBE Ri0  t=6.705 periods  iter=43880  rate=3.85 periods/hr  eta_15=2.2 hr
+PROBE Ri0  t=7.055 periods  iter=46185  rate=3.50 periods/hr  eta_15=2.3 hr
+PROBE Ri0  t=7.360 periods  iter=48536  rate=3.05 periods/hr  eta_15=2.5 hr
+PROBE Ri0  t=7.745 periods  iter=50868  rate=3.85 periods/hr  eta_15=1.9 hr
+PROBE Ri0  t=8.095 periods  iter=53185  rate=3.50 periods/hr  eta_15=2.0 hr
+PROBE Ri0  t=8.395 periods  iter=55545  rate=3.00 periods/hr  eta_15=2.2 hr
+PROBE Ri0  t=8.765 periods  iter=57859  rate=3.70 periods/hr  eta_15=1.7 hr
+PROBE Ri0  t=9.125 periods  iter=60203  rate=3.60 periods/hr  eta_15=1.6 hr
+PROBE Ri0  t=9.405 periods  iter=62544  rate=2.80 periods/hr  eta_15=2.0 hr
+PROBE Ri0  t=9.780 periods  iter=64881  rate=3.75 periods/hr  eta_15=1.4 hr
+PROBE Ri0  t=10.155 periods  iter=67207  rate=3.75 periods/hr  eta_15=1.3 hr
+PROBE Ri0  t=10.465 periods  iter=69557  rate=3.10 periods/hr  eta_15=1.5 hr
+PROBE Ri0  t=10.820 periods  iter=71908  rate=3.55 periods/hr  eta_15=1.2 hr
+PROBE Ri0  t=11.195 periods  iter=74242  rate=3.75 periods/hr  eta_15=1.0 hr
+PROBE Ri0  t=11.535 periods  iter=76582  rate=3.40 periods/hr  eta_15=1.0 hr
+PROBE Ri0  t=11.860 periods  iter=78909  rate=3.25 periods/hr  eta_15=1.0 hr
+PROBE Ri0  t=12.245 periods  iter=81233  rate=3.85 periods/hr  eta_15=0.7 hr
+
+[921080] signal 15: Terminated
+in expression starting at /home/tll46/SRIM-2026/Stokes/3D/logs/probe.jl:35
+unknown function (ip: 0x702eaa098d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+#wait#398 at ./condition.jl:141
+wait at ./condition.jl:136 [inlined]
+_trywait at ./asyncevent.jl:185
+profile_printing_listener at ./Base.jl:332
+#start_profile_listener##0 at ./Base.jl:352
+jfptr_YY.start_profile_listenerYY.YY.0_16003.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1252
+unknown function (ip: (nil)) at (unknown file)
+epoll_pwait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv__io_poll at /workspace/srcdir/libuv/src/unix/linux.c:1404
+uv_run at /workspace/srcdir/libuv/src/unix/core.c:430
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:457
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+#wait#398 at ./condition.jl:141
+wait at ./condition.jl:136 [inlined]
+_trywait at ./asyncevent.jl:185
+wait at ./asyncevent.jl:202 [inlined]
+sleep at ./asyncevent.jl:312 [inlined]
+probe at /home/tll46/SRIM-2026/Stokes/3D/logs/probe.jl:31
+unknown function (ip: 0x702e87b032c9) at (unknown file)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+do_call at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:123
+eval_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:243
+eval_stmt_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:194 [inlined]
+eval_body at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:707
+jl_interpret_toplevel_thunk at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:898
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1035
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:975
+ijl_toplevel_eval at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1047
+ijl_toplevel_eval_in at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1092
+eval at ./boot.jl:489
+include_string at ./loading.jl:2874
+_include at ./loading.jl:2934
+include at ./Base.jl:306
+exec_options at ./client.jl:317
+_start at ./client.jl:550
+jfptr__start_63319.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+true_main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:971
+jl_repl_entrypoint at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:1139
+main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/cli/loader_exe.c:58
+unknown function (ip: 0x702eaa02a1c9) at /lib/x86_64-linux-gnu/libc.so.6
+__libc_start_main at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+unknown function (ip: 0x4010b8) at /workspace/srcdir/glibc-2.17/csu/../sysdeps/x86_64/start.S
+unknown function (ip: (nil)) at (unknown file)
+Allocations: 2222898 (Pool: 2222801; Big: 97); GC: 3

@@ -50,5 +50,5 @@ for (case, N²) in cases
 end
 
 plot(panels...; layout = (2, 1), size = (900, 900))
-savefig("Figure4_reproduction.png")
-@info "Saved Figure4_reproduction.png (Ri500 top, Ri2500 bottom — cf. paper Fig. 4a,b)"
+savefig("Figure4_reproduction2.png")
+@info "Saved Figure4_reproduction2.png (Ri500 top, Ri2500 bottom — cf. paper Fig. 4a,b)"

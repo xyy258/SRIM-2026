@@ -28,29 +28,74 @@ include(joinpath(@__DIR__, "case_params.jl"))
 # ---------------- Architecture ----------------
 arch = GPU()          # start Julia with `julia -t auto`
 
-Nx, Ny, Nz = 64, 64, 150
+Nx, Ny, Nz = 48, 48, 192
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
 max_Δt   = 100.0
 
 # ---------------- Grid (bottom-refined stretching) ----------------
-refinement = 1.8
-stretching = 10
+# OLD: the two-parameter Oceananigans stretching below was effectively inert —
+# it gave Δz = 0.0869 m at the wall growing only to 0.0925 m at z = 8 m, i.e. a
+# uniform grid. That put the first cell face at Δz⁺ ≈ 11 against the paper's
+# Δz_min⁺ = 2, leaving the wall layer unresolved: turbulence relaminarized
+# during the accelerating phase (u_rms/U₀ ≈ 0.037 at φ = 0–30° vs the paper's
+# ≈ 0.10 in their figure 3) and re-transitioned each half-cycle, which is what
+# produced the staircase mixed-layer growth in Figure4_reproduction2.
+#
+# refinement = 1.8
+# stretching = 10
+#
+# h(k) = (Nz + 1 - k) / Nz
+# ζ(k) = 1 + (h(k) - 1) / refinement
+# Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
+# z_faces(k) = -Lz * (ζ(k) * Σ(k) - 1)
 
-h(k) = (Nz + 1 - k) / Nz
-ζ(k) = 1 + (h(k) - 1) / refinement
-Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
-z_faces(k) = -Lz * (ζ(k) * Σ(k) - 1)
+# NEW: build the faces by integrating a prescribed Δz(z) so resolution can be
+# placed per region rather than by fitting one analytic curve:
+#   wall layer      Δz ≈ 0.020 m  (first cell centre z⁺ ≈ 2.5, paper: 2)
+#   mixed layer     Δz ≈ 0.095 m at z/δ = 15  (Δz⁺ ≈ 24, paper's max: 20)
+#   wave region     Δz ≈ 0.28 m at z/δ = 40
+#   sponge          Δz ≈ 0.8 m   (coarse on purpose — damped, not analysed)
+# Still Nz = 192, so no extra cost: 105 cells now sit below z/δ = 15 (was 69)
+# and 17 below z/δ = 1 (was ~5). Neighbouring cells differ by ≤ 3.7 %, keeping
+# the second-order vertical truncation error small.
+const dz_control = [(0.0, 0.020), (0.5, 0.030), (2.0, 0.065),
+                    (6.0, 0.095), (16.0, 0.280), (30.0, 0.800)]
+
+function dz_target(z)
+    for i in 1:length(dz_control)-1
+        (z0, d0) = dz_control[i]
+        (z1, d1) = dz_control[i+1]
+        z <= z1 && return d0 + (d1 - d0) * (z - z0) / (z1 - z0)
+    end
+    return dz_control[end][2]
+end
+
+# March out Nz cells, then rescale Δz uniformly (bisection on the scale factor)
+# so the last face lands exactly on Lz.
+function build_z_faces(Nz, Lz)
+    march(m) = (g = [0.0]; while length(g) - 1 < Nz
+                    push!(g, g[end] + m * dz_target(g[end]))
+                end; g)
+    lo, hi = 0.5, 3.0
+    for _ in 1:80
+        m = (lo + hi) / 2
+        march(m)[end] < Lz ? (lo = m) : (hi = m)
+    end
+    g = march((lo + hi) / 2)
+    return g .* (Lz / g[end])
+end
+
+zf = build_z_faces(Nz, Lz)
 
 grid = RectilinearGrid(arch;
                        topology = (Periodic, Periodic, Bounded),
                        size = (Nx, Ny, Nz),
                        x = (0, Lx),
                        y = (0, Ly),
-                       z = z_faces)
+                       z = zf)
 
-zf = z_faces.(1:Nz+1)
 Δz_bottom = minimum(abs.(diff(zf)))
 @info @sprintf("Bottom Δz = %.4f m (%.1f points across δ); Δx = %.3f m, Δy = %.3f m",
                Δz_bottom, δ / Δz_bottom, Lx / Nx, Ly / Ny)
@@ -88,7 +133,14 @@ b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
 # AMD provides the explicit SGS stresses/fluxes; the ScalarDiffusivity carries
 # the molecular ν and κ = ν/Pr on top of it.
 model = NonhydrostaticModel(grid;
-            advection   = WENO(order = 5),
+            # OLD: advection = WENO(order = 5) — WENO's upwind stencil adds
+            # numerical dissipation on top of the AMD closure, so the SGS model
+            # is no longer the only sink. With marginally turbulent phases that
+            # double-damping helps kill the flow during acceleration. The paper
+            # uses a non-dissipative pseudo-spectral/central scheme and lets the
+            # dynamic mixed model carry all the dissipation.
+            # advection   = WENO(order = 5),
+            advection   = Centered(order = 2),
             timestepper = :RungeKutta3,
             tracers     = (:b, :c),
             buoyancy    = BuoyancyTracer(),
@@ -103,7 +155,8 @@ model = NonhydrostaticModel(grid;
                            b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-bᵢ(x, y, z) = N² * z
+bᵢ(x, y, z) = N² * z ## change to exponential profile
+## plot vorticity
 cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
 spinup_file = joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2")
@@ -144,7 +197,11 @@ if get(ENV, "TIDAL_SMOKE", "0") == "1"
     @info "Smoke test: stopping after 20 iterations"
 end
 
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
+# OLD: cfl = 0.95 — contradicted the paper value quoted in the header, and is
+# aggressive now that advection is centered (non-dissipative, so grid-scale
+# noise is no longer damped by an upwind stencil).
+# wizard = TimeStepWizard(cfl = 0.95, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.72, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()
