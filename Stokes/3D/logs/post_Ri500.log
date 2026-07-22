@@ -1,0 +1,36 @@
+[ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ = 0.397 m, Re_δ = 1790, 15 periods
+[ Info: Saved profile plots for Ri500 in output_Ri500/
+[ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ = 0.397 m, Re_δ = 1790, 15 periods
+[ Info: Making an animation from 3001 frames...
+[ Info: Frame 100 / 3001
+[ Info: Frame 200 / 3001
+[ Info: Frame 300 / 3001
+[ Info: Frame 400 / 3001
+[ Info: Frame 500 / 3001
+[ Info: Frame 600 / 3001
+[ Info: Frame 700 / 3001
+[ Info: Frame 800 / 3001
+[ Info: Frame 900 / 3001
+[ Info: Frame 1000 / 3001
+[ Info: Frame 1100 / 3001
+[ Info: Frame 1200 / 3001
+[ Info: Frame 1300 / 3001
+[ Info: Frame 1400 / 3001
+[ Info: Frame 1500 / 3001
+[ Info: Frame 1600 / 3001
+[ Info: Frame 1700 / 3001
+[ Info: Frame 1800 / 3001
+[ Info: Frame 1900 / 3001
+[ Info: Frame 2000 / 3001
+[ Info: Frame 2100 / 3001
+[ Info: Frame 2200 / 3001
+[ Info: Frame 2300 / 3001
+[ Info: Frame 2400 / 3001
+[ Info: Frame 2500 / 3001
+[ Info: Frame 2600 / 3001
+[ Info: Frame 2700 / 3001
+[ Info: Frame 2800 / 3001
+[ Info: Frame 2900 / 3001
+[ Info: Frame 3000 / 3001
+[ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/output_Ri500/animation_Ri500.mp4
+[ Info: Saved animation for Ri500 in output_Ri500/
