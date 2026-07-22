@@ -7,6 +7,8 @@ Nx, Ny, Nz = 100,100,180
 max_Δt = 4 # maximum allowable timestep
 duration = 18e4 # The non-dimensional duration of the simulation
 
+# Sponge layer thickness
+S = 10
 
 # Input parameters
 U∞ = 0.0674             # far stream velocity
