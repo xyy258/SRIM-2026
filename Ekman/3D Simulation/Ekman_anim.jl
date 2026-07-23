@@ -98,6 +98,7 @@ filename = @sprintf("Ekman/Data/Ekman r=%.1f", r)
 
 # Load FieldTimeSeries directly
 u_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "u_avg")
+v_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "u_avg")
 
 # Extract simulation times and interior vertical nodes (strips halos, matching length 180)
 times = u_avg_series.times
@@ -113,12 +114,13 @@ anim = @animate for i in 1:length(times)
 
     # Extract 1D interior velocity vectors (guaranteed length 180)
     u_prof = vec(interior(u_avg_series[i], 1, 1, :))
+    v_prof = vec(interior(v_avg_series[i], 1, 1, :))
 
-    # Plot u_avg profile normalized by U∞
-    p = plot(u_prof / U∞, zu / δ,
+    # Plot u_avg profile normalized by U*
+    p1 = plot( (u_prof.-U∞)/u_star, zu / δ,
              linewidth = 3,
              color     = :navy,
-             xlabel    = "<u>/U∞",
+             xlabel    = "(<u>-U∞)/u_star",
              ylabel    = "Height z / δ",
              xlims     = (-0.5, 1.5),
              ylims     = (0, Lz / δ),
@@ -127,8 +129,24 @@ anim = @animate for i in 1:length(times)
              size      = (750, 500),
              margin    = 10px)
 
-    # Dynamic title
-    title!(p, @sprintf("Plane-Averaged Velocity Profile (N/f = %.1f) | t = %.1f", r, t))
+    # Plot u_avg profile normalized by U*
+    p2 = plot( v_prof/u_star, zu / δ,
+            linewidth = 3,
+            color     = :crimson,
+            xlabel    = "<v>/u_star",
+            ylabel    = "Height z / δ",
+            xlims     = (-0.5, 1.5),
+            ylims     = (0, Lz / δ),
+            legend    = :bottomright,
+            grid      = true,
+            size      = (750, 500),
+            margin    = 10px)
+
+    plot(p1,p2,
+        layout     = (2,1),
+        size       = (1000,500),
+        margin     = 10px,
+        plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
 end
 
 mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)

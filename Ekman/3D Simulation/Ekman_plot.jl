@@ -159,13 +159,13 @@ plot(u_slice/U∞, v_slice/U∞,
     line_z         = z_slice,       # Colour line based on z
     color          = :viridis,      # Colour for the line/markers
     marker         = :circle,
-    markersize     = 3,             # Smaller marker
+    markersize     = 2,             # Smaller marker
     marker_z       = z_slice,       # Colours markers based on z
     xlabel         = "<u>/U∞",
     ylabel         = "<v>/U∞",
     colorbar_title = "Height z/δ",  # Adds a label to colour bar
     colorbar       = true,
-    size           = (800,600),
+    size           = (1000,500),
     margin         = 10px,
     legend         = false,
     title          = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
