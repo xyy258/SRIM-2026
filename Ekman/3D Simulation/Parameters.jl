@@ -1,7 +1,7 @@
 # Dimensions
 Lx, Ly, Lz = 72.8,72.8,27.3
 # Grid size
-Nx, Ny, Nz = 100,100,180
+Nx, Ny, Nz = 100,100,256
 
 # Duration and timestep
 max_Δt = 5 # maximum allowable timestep

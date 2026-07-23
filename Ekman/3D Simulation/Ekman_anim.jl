@@ -1,4 +1,5 @@
 using Oceananigans, JLD2, Plots, Printf
+using Plots.PlotMeasures # using units for borders
 # using CairoMakie
 # using NCDatasets
 
@@ -70,7 +71,11 @@ anim = @animate for (i, iter) in enumerate(iterations)
     b_diff_title = @sprintf("(b-N²z)/N² at t = %s, N/f = %.1f", round(t), r);
 
 # Combine the sub-plots into a single figure
-    plot(b_xz_plot, b_diff_xz_plot, layout = (2, 1), size = (1000, 500), title = [b_title b_diff_title])
+    plot(b_xz_plot, b_diff_xz_plot,
+        layout = (2, 1),
+        size = (1000, 500),
+        title = [b_title b_diff_title],
+        margin = 10px)
 
     if iter == iterations[end]
         close(file_vel)
@@ -119,7 +124,8 @@ anim = @animate for i in 1:length(times)
              ylims     = (0, Lz / δ),
              legend    = :bottomright,
              grid      = true,
-             size      = (750, 500))
+             size      = (750, 500),
+             margin    = 10px)
 
     # Dynamic title
     title!(p, @sprintf("Plane-Averaged Velocity Profile (N/f = %.1f) | t = %.1f", r, t))
@@ -194,6 +200,7 @@ anim_vort = @animate for i in 1:length(vort_times)
     plot(p_x, p_y,
          layout     = (1, 2),
          size       = (1000, 600),
+         margin     = 10px,
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
 end
 
