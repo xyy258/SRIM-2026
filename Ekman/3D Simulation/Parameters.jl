@@ -10,13 +10,13 @@ Pr  = 10                    # Prandtl number
 z₀  = 0.0016                # m (roughness length)
 
 # Dimensions
-Lx, Ly, Lz = 256,256,256
+Lx, Ly, Lz = 80,80,50
 # Grid size
-Nx, Ny, Nz = 100,100,80
+Nx, Ny, Nz = 150,150,512
 
 # Duration and timestep
-max_Δt = 20 # maximum allowable timestep
-duration = 50f₀ # The non-dimensional duration of the simulation
+max_Δt = 5 # maximum allowable timestep
+duration = 50*f₀ # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
 S = 10
@@ -27,7 +27,7 @@ N²      = (r*f₀)^2          # buoyancy frequency
 ν₀      = 1e-6              # molecular kinematic viscosity
 D       = U∞/f₀             # Rossby lengthscale
 κ₀      = ν₀/Pr             # molecular diffusivity
-u_star  = 0.049U∞          # friction velocity
+u_star  = 0.049*U∞          # friction velocity
 δ       = u_star/f₀         # boundary layer lengthscale
 Re_star = u_star*δ/ν₀       # frictional Reynolds
 Ri_star = N²/f₀^2           # frictional Richardson
@@ -36,4 +36,4 @@ Ri_star = N²/f₀^2           # frictional Richardson
 # z₁ = abs(Array(znodes(grid, Center()))[1])
 # cᴰ = (κ/log(z₁/z₀))^2
 
-kick = 0.01U∞           # amplitude of random perturbation
+kick = 0.01*U∞           # amplitude of random perturbation

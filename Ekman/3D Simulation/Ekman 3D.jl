@@ -20,7 +20,7 @@ H = Lz + S # domain height, with sponge layer
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
-refinement = 1.8 # controls spacing near surface (higher means finer spaced)
+refinement = 2 # controls spacing near surface (higher means finer spaced)
 stretching = 10 # controls rate of stretching at bottom
 # "Warped" height coordinate
 h(k) = (Nz + 1 - k) / Nz
@@ -250,18 +250,6 @@ nothing # hide
 
 # Now, run the simulation
 run!(simulation)
-
-ν = model.diffusivity_fields[2].νₑ + ν₀
-κ = model.diffusivity_fields[2].κₑ + κ₀
-
-open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "a") do file
-    write(file, @sprintf("
-Kinematic viscosity:            ν = νᵀ+ν₀ = %.2e,
-Diffusivity:                    κ = κᵀ+κ₀ = %.2e,",
-Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
-end
-
-@sprintf("Kinematic viscosity = %.2e, Diffusivity = %.2e",ν,κ)
 
 include("Ekman_anim.jl")
 include("Ekman_plot.jl")
