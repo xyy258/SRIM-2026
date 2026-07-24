@@ -2,6 +2,16 @@ using Pkg
 Pkg.activate(".")   # Change to current folder
 Pkg.instantiate()
 
+# Parse command-line argument for the ratio r, when running on Swirles
+if length(ARGS) > 0
+    r = parse(Float64, ARGS[1])
+    @info "Running with r = $r"
+else
+    error("Usage: julia script.jl <r_value>")
+end
+
+## Start code
+
 using Oceananigans, Printf
 using CUDA
 # using NCDatasets

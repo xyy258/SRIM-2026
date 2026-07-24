@@ -7,9 +7,9 @@ using ProgressMeter
 # Import parameters
 include("Parameters.jl")
 
-##============================ ##
+# ============================  #
 ## Buoyancy gradient animation ##
-##============================ ##
+# ============================  #
 
 # Set the filename (without the extension)
 filename = @sprintf("Ekman/Data/Ekman r=%.1f",r)
@@ -93,9 +93,9 @@ end
 # Save the animation to a file
 mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Plot r = %.1f.mp4", r), fps = 20) # hide
 
-## ========================== ##
+#  ==========================  #
 ## Average velocity animation ##
-## ========================== ##
+#  ==========================  #
 
 # Import parameters
 include("Parameters.jl")
@@ -162,9 +162,9 @@ end
 mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)
 
 
-## ==============================
+# ============================= #
 ## Average vorticity animation ##
-## ==============================
+# ============================= #
 
 # Set the filename path prefix
 filename = @sprintf("Ekman/Data/Ekman r=%.1f", r)
