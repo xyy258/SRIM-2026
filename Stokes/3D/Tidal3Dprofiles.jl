@@ -6,8 +6,8 @@ using Oceananigans, JLD2, Plots, Printf
 #   1. Mean velocity profiles vs the laminar Stokes solution
 #   2. Friction velocity u_τ over the tidal cycle
 #   3. Turbulence intensity + Reynolds stress profiles at peak flow
-# and for stratified cases additionally:
-#   4. Heatmap of ∂b/∂z normalized by N²
+# and from the thermal field (active for Ri > 0, passive for Ri = 0):
+#   4. Heatmap of ∂b/∂z normalized by the background gradient
 #   5. Mixed-layer depth vs time (threshold + integral metrics)
 #   6. Stratification profiles at the end of each tidal period
 
@@ -34,7 +34,10 @@ end
 zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])         # midpoints, length Nz-1
 G  = diff(Bmean, dims = 1) ./ diff(zc)         # ∂b/∂z at midpoints
 
-zmax = 3.0                       # near-wall zoom for profile plots
+# Near-wall zoom for the profile plots. Expressed in Stokes thicknesses so it
+# tracks any change of dimensional scaling; 8 δ_s covers the unstratified
+# boundary layer (the paper quotes 15 δ_s for its full thickness).
+zmax = 8δ
 
 # ---- 1. Mean velocity vs laminar Stokes solution ----
 # Laminar solution: u(z, t) = U₀ [sin(ωt) − e^(−z/δ) sin(ωt − z/δ)].
@@ -46,7 +49,7 @@ phases = (0.25, 0.5, 0.75, 1.0)  # fractions of the final tidal period
 plt1 = plot(xlabel = "u (m/s)", ylabel = "z (m)", ylims = (0, zmax),
             title = "$case: mean velocity — simulation (solid) vs laminar (dashed)",
             legend = :bottomright)
-t0 = (floor(times[end] / T_tide) - 1) * T_tide   # start of final full period
+t0 = max(0.0, (floor(times[end] / T_tide) - 1) * T_tide)  # start of final full period
 kc = findall(z -> z <= zmax, zc)
 for (i, ϕ) in enumerate(phases)
     t = t0 + ϕ * T_tide
@@ -88,7 +91,7 @@ vrms = sqrt.(max.(vec(interior(vv_ts[n_pk])) .- Vpk.^2, 0))
 wrms = sqrt.(max.(vec(interior(ww_ts[n_pk]))[1:length(zc)], 0))
 uwpk = vec(interior(uw_ts[n_pk]))[1:length(zc)]
 
-zstat = 6.0
+zstat = 15δ                      # the paper's unstratified boundary-layer height
 ks6 = findall(z -> z <= zstat, zc)
 plt3a = plot(xlabel = "rms velocity / U₀", ylabel = "z (m)",
              title = "$case: turbulence intensities at peak flow",
@@ -104,17 +107,20 @@ plt3b = plot(uwpk[ks6] ./ U₀^2, zc[ks6]; lw = 2, label = "⟨u′w′⟩/U₀�
 plot(plt3a, plt3b, layout = (1, 2), size = (1100, 500))
 savefig(joinpath(outdir, "turbulence_stats_" * case * ".png"))
 
-# ============ Stratified-case diagnostics ============
-if N² > 0
+# ============ Thermal-field diagnostics ============
+# Normalized by N²_ref, the background gradient the tracer actually carries, so
+# these run for Ri = 0 as well — there the scalar is passive and the mixed layer
+# grows unopposed, which is the reference the stratified cases are read against.
+begin
     ks = findall(z -> z <= zmax, zg)
 
     # ---- 4. Normalized gradient heatmap, zoomed to the bottom ----
-    heatmap(times ./ T_tide, zg[ks], G[ks, :] ./ N²;
+    heatmap(times ./ T_tide, zg[ks], G[ks, :] ./ N²_ref;
             clims = (0, 2),   # 1 = unmixed, 0 = mixed, >1 = sharpened pycnocline
             color = :thermal,
             xlabel = "t / tidal period",
             ylabel = "z (m)",
-            title = "$case: ∂b/∂z / N² (bottom $(zmax) m)",
+            title = @sprintf("%s: ∂b/∂z / N² (bottom %.1f δ_s)", case, zmax / δ),
             colorbar_title = "∂b/∂z / N²")
     savefig(joinpath(outdir, "buoyancy_gradient_normalized_" * case * ".png"))
 
@@ -123,7 +129,7 @@ if N² > 0
     #      stratification is below half background (can spike on bursts)
     #  (b) integral "mixing thickness": ∫ (1 − ∂b/∂z / N²)₊ dz — smooth and
     #      the more trustworthy measure.
-    function threshold_depth(g, z; threshold = 0.5N²)
+    function threshold_depth(g, z; threshold = 0.5N²_ref)
         k = 1
         while k <= length(z) && g[k] < threshold
             k += 1
@@ -132,7 +138,7 @@ if N² > 0
     end
 
     function mixing_thickness(g, z)
-        deficit = clamp.(1 .- g ./ N², 0, 1)
+        deficit = clamp.(1 .- g ./ N²_ref, 0, 1)
         dz = diff(z)
         body = sum(0.5 .* (deficit[1:end-1] .+ deficit[2:end]) .* dz)
         wall = deficit[1] * z[1]
@@ -159,7 +165,7 @@ if N² > 0
                 title = "$case: stratification profiles", legend = :bottomright)
     for p in 0:floor(Int, times[end] / T_tide)
         n = argmin(abs.(times .- p * T_tide))
-        plot!(plt6, G[ks, n] ./ N², zg[ks]; lw = 2,
+        plot!(plt6, G[ks, n] ./ N²_ref, zg[ks]; lw = 2,
               label = @sprintf("t = %d periods", p))
     end
     savefig(plt6, joinpath(outdir, "stratification_profiles_" * case * ".png"))

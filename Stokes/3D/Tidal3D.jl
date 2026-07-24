@@ -14,9 +14,14 @@ using CUDA
 #     notes plain Smagorinsky fails for this flow; AMD is the closest
 #     Oceananigans equivalent)
 #   - Molecular Pr = 0.7 (κ = ν/Pr), paper value
-#   - Ly = 10 m ≈ 25 δ_s (halves Δy⁺ toward the paper's ≈30)
+#   - Paper's own dimensional parameters and domain (see case_params.jl):
+#     U₀ = 1.5 cm/s, ν = 10⁻⁶, δ_s = 0.119 m, 50 δ_s × 25 δ_s × 90 δ_s with
+#     the sponge occupying 70 δ_s – 90 δ_s
 #   - Sponge rate = 20ω (paper's peak damping), previously 6× weaker
 #   - CFL = 0.72 (paper value)
+#   - Ri = 0 carries the thermal field as a genuine passive scalar (buoyancy
+#     term off, background gradient retained), as the paper does — so its
+#     figure 4/5 panels contain real data
 #   - Paper protocol: stratified cases initialize u, v, w from the final
 #     Ri=0 turbulent snapshot with a fresh linear b = N²z, mimicking
 #     "turn on stratification after turbulent spin-up"
@@ -52,16 +57,20 @@ max_Δt   = 100.0
 # z_faces(k) = -Lz * (ζ(k) * Σ(k) - 1)
 
 # NEW: build the faces by integrating a prescribed Δz(z) so resolution can be
-# placed per region rather than by fitting one analytic curve:
-#   wall layer      Δz ≈ 0.020 m  (first cell centre z⁺ ≈ 2.5, paper: 2)
-#   mixed layer     Δz ≈ 0.095 m at z/δ = 15  (Δz⁺ ≈ 24, paper's max: 20)
-#   wave region     Δz ≈ 0.28 m at z/δ = 40
-#   sponge          Δz ≈ 0.8 m   (coarse on purpose — damped, not analysed)
-# Still Nz = 192, so no extra cost: 105 cells now sit below z/δ = 15 (was 69)
-# and 17 below z/δ = 1 (was ~5). Neighbouring cells differ by ≤ 3.7 %, keeping
-# the second-order vertical truncation error small.
-const dz_control = [(0.0, 0.020), (0.5, 0.030), (2.0, 0.065),
-                    (6.0, 0.095), (16.0, 0.280), (30.0, 0.800)]
+# placed per region rather than by fitting one analytic curve. Control points
+# are given in Stokes thicknesses, (z/δ_s, Δz/δ_s), so the grid is defined in
+# wall-relevant units and survives any change of dimensional scaling:
+#   wall layer      Δz = 0.050 δ_s  (Δz⁺ ≈ 5, first centre z⁺ ≈ 2.5; paper: 2)
+#   mixed layer     Δz = 0.24  δ_s at z/δ = 15  (Δz⁺ ≈ 24, paper's max: 20)
+#   wave region     Δz = 0.70  δ_s at z/δ = 40
+#   sponge          Δz = 2.0   δ_s above z/δ = 70 (damped, not analysed)
+# With Nz = 192 the uniform rescale factor comes out ≈ 1.02, i.e. essentially
+# the profile above: ~103 cells sit below z/δ = 15 and ~19 below z/δ = 1.
+# Neighbouring cells differ by ≤ 4 %, keeping the second-order vertical
+# truncation error small.
+const dz_control_δ = [(0.0, 0.050), (1.25, 0.075), (5.0, 0.165),
+                      (15.0, 0.240), (40.0, 0.700), (70.0, 2.000)]
+const dz_control = [(zδ * δ, dδ * δ) for (zδ, dδ) in dz_control_δ]
 
 function dz_target(z)
     for i in 1:length(dz_control)-1
@@ -97,17 +106,25 @@ grid = RectilinearGrid(arch;
                        z = zf)
 
 Δz_bottom = minimum(abs.(diff(zf)))
-@info @sprintf("Bottom Δz = %.4f m (%.1f points across δ); Δx = %.3f m, Δy = %.3f m",
-               Δz_bottom, δ / Δz_bottom, Lx / Nx, Ly / Ny)
+n_test = count(z -> z <= Lz_test, zf) - 1
+@info @sprintf("Bottom Δz = %.4f m = %.3f δ_s (%.1f points across δ_s); %d of %d cells below the sponge",
+               Δz_bottom, Δz_bottom / δ, δ / Δz_bottom, n_test, Nz)
+# Horizontal resolution, for the record: at u_τ/U₀ ≈ 0.056 the Stokes layer is
+# δ_s⁺ ≈ 100, so Δx⁺ ≈ 104 and Δy⁺ ≈ 52 here against the paper's 60 and 30
+# (they afford 64×64 with spectral horizontal accuracy). This is the main
+# resolution compromise made to fit three cases into one night.
+@info @sprintf("Δx = %.4f m = %.2f δ_s, Δy = %.4f m = %.2f δ_s",
+               Lx / Nx, Lx / (Nx * δ), Ly / Ny, Ly / (Ny * δ))
 
 # ---------------- Boundary conditions ----------------
 # No-slip bottom for u and v; free-slip top (default).
 u_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 
-# Adiabatic bottom (paper); fixed gradient N² at top so the background
-# stratification is maintained there.
-b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²),
+# Adiabatic bottom (paper); fixed gradient at top so the background
+# stratification is maintained there. N²_ref rather than N² so the Ri = 0
+# passive scalar keeps its background gradient too.
+b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_ref),
                                 bottom = FluxBoundaryCondition(0))
 
 # ---------------- Forcing ----------------
@@ -115,10 +132,15 @@ b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²),
 @inline tidal_forcing(x, y, z, t, p) = p.U₀ * p.ω * cos(p.ω * t)
 u_tide = Forcing(tidal_forcing, parameters = (; U₀, ω))
 
-# Sponge layer in the top ~5 m: damps internal waves radiated by the boundary
-# layer so they don't reflect off the rigid lid. Rate = 20ω is the paper's
-# peak damping coefficient.
-const sponge_width = 5.0
+# Sponge layer at the top of the domain: damps internal waves radiated by the
+# boundary layer so they don't reflect off the rigid lid. Rate = 20ω is the
+# paper's peak damping coefficient.
+#
+# The Gaussian shape is unchanged; only its width is rescaled to the paper's
+# domain, where the sponge occupies 70 δ_s – 90 δ_s. σ = 8 δ_s puts the mask at
+# 4.4 % on the sponge floor (z = Lz_test) and below 10⁻⁸ anywhere in the
+# analysed region z < 40 δ_s, so the test section evolves freely.
+const sponge_width = 8δ
 sponge_rate = 20ω
 @inline top_mask(x, y, z) = exp(-(z - Lz)^2 / (2 * sponge_width^2))
 
@@ -127,7 +149,7 @@ u_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
 v_sponge = Relaxation(rate = sponge_rate, mask = top_mask)          # target 0
 w_sponge = Relaxation(rate = sponge_rate, mask = top_mask)          # target 0
 b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
-                      target = (x, y, z, t) -> N² * z)
+                      target = (x, y, z, t) -> N²_ref * z)
 
 # ---------------- Model ----------------
 # AMD provides the explicit SGS stresses/fluxes; the ScalarDiffusivity carries
@@ -143,7 +165,12 @@ model = NonhydrostaticModel(grid;
             advection   = Centered(order = 2),
             timestepper = :RungeKutta3,
             tracers     = (:b, :c),
-            buoyancy    = BuoyancyTracer(),
+            # Ri = 0 is the paper's "passive scalar case": the thermal field is
+            # advected and diffused with the same background gradient but exerts
+            # no buoyancy force. Dropping the buoyancy term (rather than setting
+            # N² = 0 and leaving b ≡ 0) is what makes the Ri = 0 panels of
+            # figures 4 and 5 show an actual scalar field.
+            buoyancy    = passive_scalar ? nothing : BuoyancyTracer(),
             closure     = (AnisotropicMinimumDissipation(),
                            ScalarDiffusivity(VerticallyImplicitTimeDiscretization(),
                                              ν = ν, κ = κ)),
@@ -155,8 +182,7 @@ model = NonhydrostaticModel(grid;
                            b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-bᵢ(x, y, z) = N² * z ## change to exponential profile
-## plot vorticity
+bᵢ(x, y, z) = N²_ref * z
 cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
 spinup_file = joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2")
@@ -205,13 +231,17 @@ wizard = TimeStepWizard(cfl = 0.72, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()
-progress(sim) = @printf("i: %6d, t: %10.1f s (%.2f periods), wall: %10s, Δt: %6.2f, CFL: %.2e\n",
-                        sim.model.clock.iteration,
-                        sim.model.clock.time,
-                        sim.model.clock.time / T_tide,
-                        prettytime(1e-9 * (time_ns() - start_time)),
-                        sim.Δt,
-                        AdvectiveCFL(sim.Δt)(sim.model))
+# flush: stdout is block-buffered when redirected to a file, so without this an
+# overnight run's log stays empty for tens of minutes and the driver cannot read
+# how far along the case is.
+progress(sim) = (@printf("i: %6d, t: %10.1f s (%.2f periods), wall: %10s, Δt: %6.2f, CFL: %.2e\n",
+                         sim.model.clock.iteration,
+                         sim.model.clock.time,
+                         sim.model.clock.time / T_tide,
+                         prettytime(1e-9 * (time_ns() - start_time)),
+                         sim.Δt,
+                         AdvectiveCFL(sim.Δt)(sim.model));
+                 flush(stdout))
 simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 
 # ---------------- Output ----------------

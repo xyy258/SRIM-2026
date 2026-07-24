@@ -1,30 +1,41 @@
-[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ = 0.397 m, Re_δ = 1790, 15 periods
+[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ_s = 0.1192 m, Re_s = 1788
+[ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods (b is a passive scalar)
 [ Info: Saved profile plots for Ri0 in output_Ri0/
-[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ = 0.397 m, Re_δ = 1790, 15 periods
-[ Info: Making an animation from 2463 frames...
-[ Info: Frame 100 / 2463
-[ Info: Frame 200 / 2463
-[ Info: Frame 300 / 2463
-[ Info: Frame 400 / 2463
-[ Info: Frame 500 / 2463
-[ Info: Frame 600 / 2463
-[ Info: Frame 700 / 2463
-[ Info: Frame 800 / 2463
-[ Info: Frame 900 / 2463
-[ Info: Frame 1000 / 2463
-[ Info: Frame 1100 / 2463
-[ Info: Frame 1200 / 2463
-[ Info: Frame 1300 / 2463
-[ Info: Frame 1400 / 2463
-[ Info: Frame 1500 / 2463
-[ Info: Frame 1600 / 2463
-[ Info: Frame 1700 / 2463
-[ Info: Frame 1800 / 2463
-[ Info: Frame 1900 / 2463
-[ Info: Frame 2000 / 2463
-[ Info: Frame 2100 / 2463
-[ Info: Frame 2200 / 2463
-[ Info: Frame 2300 / 2463
-[ Info: Frame 2400 / 2463
+[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ_s = 0.1192 m, Re_s = 1788
+[ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods (b is a passive scalar)
+[ Info: Saved figures/MeanVelocity_Ri0.png
+[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ_s = 0.1192 m, Re_s = 1788
+[ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods (b is a passive scalar)
+[ Info: Ri0: |ω_y| colour limit = 2.79 U₀/δ_s (from 41 sampled frames)
+[ Info: Saved figures/Vorticity_Ri0.png
+[ Info: Animating 800 frames...
+[ Info:   frame 100 / 800
+[ Info:   frame 200 / 800
+[ Info:   frame 300 / 800
+[ Info:   frame 400 / 800
+[ Info:   frame 500 / 800
+[ Info:   frame 600 / 800
+[ Info:   frame 700 / 800
+[ Info:   frame 800 / 800
+[ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/figures/Vorticity_Ri0.mp4
+[ Info: Saved figures/Vorticity_Ri0.mp4
+[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ_s = 0.1192 m, Re_s = 1788
+[ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods (b is a passive scalar)
+[ Info: Making an animation from 1599 frames...
+[ Info: Frame 100 / 1599
+[ Info: Frame 200 / 1599
+[ Info: Frame 300 / 1599
+[ Info: Frame 400 / 1599
+[ Info: Frame 500 / 1599
+[ Info: Frame 600 / 1599
+[ Info: Frame 700 / 1599
+[ Info: Frame 800 / 1599
+[ Info: Frame 900 / 1599
+[ Info: Frame 1000 / 1599
+[ Info: Frame 1100 / 1599
+[ Info: Frame 1200 / 1599
+[ Info: Frame 1300 / 1599
+[ Info: Frame 1400 / 1599
+[ Info: Frame 1500 / 1599
 [ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/output_Ri0/animation_Ri0.mp4
 [ Info: Saved animation for Ri0 in output_Ri0/
