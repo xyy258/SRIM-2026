@@ -91,7 +91,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 end
 
 # Save the animation to a file
-mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Plot r = %.1f.mp4", r), fps = 20) # hide
+mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Plot r = %.1f.mp4", r), fps = 25) # hide
 
 #  ==========================  #
 ## Average velocity animation ##
@@ -161,7 +161,7 @@ anim = @animate for i in 1:length(times)
     # next!(p)
 end
 
-mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)
+mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 45)
 
 
 # ============================= #
@@ -243,4 +243,4 @@ anim_vort = @animate for i in 1:length(vort_times)
     # next!(p)
 end
 
-mp4(anim_vort, @sprintf("Ekman/3D Simulation/Animations/Ekman Vorticity Plot r = %.1f.mp4", r), fps = 30)
+mp4(anim_vort, @sprintf("Ekman/3D Simulation/Animations/Ekman Vorticity Plot r = %.1f.mp4", r), fps = 45)
