@@ -47,12 +47,12 @@ clim_abs = maximum(
     for iter in iterations
 )
 # Progress meter
-p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for (i, iter) in enumerate(iterations)
-    # if i % 100 == 0
-    # @info "Drawing frame $i / $(length(iterations))..."
-    # end
+    if i % 100 == 0
+    @info "Drawing frame $i / $(length(iterations))..."
+    end
 
     b_xz = file_b["timeseries/b/$iter"][:, 1, 1:NLzmask];
 
@@ -87,7 +87,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
     end
 
     # Advance progress meter
-    next!(p)
+    # next!(p)
 end
 
 # Save the animation to a file
@@ -114,12 +114,14 @@ zu    = znodes(u_avg_series[1])
 @info "Making animation of plane-averaged velocity profiles..."
 
 # Progress meter
-p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for i in 1:length(times)
 
     t = times[i]
-    # @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
+    if i % 100 == 0
+        @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
+    end
 
     # Extract 1D interior velocity vectors
     u_prof = vec(interior(u_avg_series[i], 1, 1, :))
@@ -156,7 +158,7 @@ anim = @animate for i in 1:length(times)
         plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
 
     # Progress
-    next!(p)
+    # next!(p)
 end
 
 mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)
@@ -187,12 +189,14 @@ zz = znodes(ωz_avg_series[1])
 @info "Making animation of plane-averaged vorticity profiles..."
 
 # Progress meter
-p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
 
 anim_vort = @animate for i in 1:length(vort_times)
 
     t = vort_times[i]
-    # @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
+    if i % 100 == 0
+        @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
+    end
 
     # Extract 1D interior vorticity vectors (stripping halo cells)
     ωx_prof = vec(interior(ωx_avg_series[i], 1, 1, :))
@@ -236,7 +240,7 @@ anim_vort = @animate for i in 1:length(vort_times)
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
 
     # Progress
-    next!(p)
+    # next!(p)
 end
 
 mp4(anim_vort, @sprintf("Ekman/3D Simulation/Animations/Ekman Vorticity Plot r = %.1f.mp4", r), fps = 30)

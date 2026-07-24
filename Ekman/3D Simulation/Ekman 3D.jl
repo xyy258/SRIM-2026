@@ -81,7 +81,7 @@ b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
-    advection = Centered(order=2),
+    advection = Centered(order=4),
     timestepper = :RungeKutta3, # Timestepping scheme
     tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
     buoyancy = BuoyancyTracer(),
