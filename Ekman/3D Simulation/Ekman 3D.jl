@@ -1,3 +1,8 @@
+using Pkg
+Pkg.activate(".")   # Change to current folder
+Pkg.instantiate()
+## Start code
+
 using Oceananigans, Printf
 using CUDA
 # using NCDatasets
@@ -33,8 +38,8 @@ grid = RectilinearGrid(arch;
     z = z_faces)
 
 # Calculating drag coefficient
-z₁ = abs(first(Array(znodes(grid, Center())))) # Closest grid center to the bottom
-cᴰ = (κ / log(z₁ / z₀))^2 # drag coefficient
+z₁ = abs(Array(znodes(grid, Center()))[1]) # Closest grid center to the bottom
+cᴰ = (κ/log(z₁/z₀))^2 # drag coefficient
 
 ## Boundary conditions
 # Quadratic drag
@@ -62,8 +67,10 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate  = 10*r*f₀ # set to 10*(buoyancy frequency)
-sponge_mask = GaussianMask{:z}(center=H, width=S)
+sponge_rate = 20*r*f₀ # set to 10*(buoyancy frequency)
+# sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
+# or alternatively, we can use a Gaussian mask for a smoother transition
+sponge_mask = GaussianMask{:z}(center=H, width=0.6S)
 
 u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = U∞)
@@ -72,9 +79,7 @@ w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = LinearTarget{:z}(intercept = 0, gradient = N²))
 
-
-
-# Now, define a 'model' where we specify the grid, advection scheme, bcs, and other settings
+# Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
     advection = Centered(order=2),
     timestepper = :RungeKutta3, # Timestepping scheme

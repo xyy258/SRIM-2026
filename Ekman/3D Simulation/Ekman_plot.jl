@@ -1,4 +1,5 @@
 using Oceananigans, JLD2, NCDatasets, Plots, Printf
+using Plots.PlotMeasures
 
 # Import parameters
 include("Parameters.jl")
@@ -16,7 +17,7 @@ db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 xb, yb, zb = nodes(db_dz_timeseries)
 
 ## Open the file to extract the time array
-file_xz = jldopen(filename * ".jld2")
+file_xz    = jldopen(filename * ".jld2")
 iterations = parse.(Int, keys(file_xz["timeseries/t"]))
 
 # Extract the actual simulation times
@@ -37,11 +38,12 @@ zbconcat = zb[findall(<(0.5*δ),zb)]
 Nzconcat = length(zbconcat)
 
 heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
-        xlabel="tf",
-        ylabel="Height z/δ",
-        title=@sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
-        size = (1000,400),
-        color=:thermal) # :thermal is great for highlighting intensifying gradients
+        xlabel = "tf",
+        ylabel = "Height z/δ",
+        title  = @sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
+        size   = (1000,400),
+        margin = 25px,
+        color  = :thermal) # :thermal is great for highlighting intensifying gradients
 savefig(@sprintf("Ekman/3D Simulation/Plots/Buoyancy gradient plot r = %.1f.png",r))
 
 ## ======================================= ##
@@ -56,7 +58,7 @@ zb = znodes(b_avg_timeseries.grid, Center())
 
 # Get initial and final profiles
 b_initial = vec(interior(b_avg_timeseries[1], 1, 1, :))    # First saved time step
-b_final = vec(interior(b_avg_timeseries[end], 1, 1, :))    # Last time step
+b_final   = vec(interior(b_avg_timeseries[end], 1, 1, :))    # Last time step
 
 # Normalize depth
 z_normalized = zb / δ
@@ -66,25 +68,26 @@ z_mask = findall(<(0.5*δ), zb)
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
 
-b_plot_final = b_final[z_mask]
+b_plot_final   = b_final[z_mask]
 b_plot_initial = b_initial[z_mask]
 z_plot = z_normalized[z_mask]
 
 
 # Plot
 plot(b_plot_initial/N², z_plot,
-     xlabel = "b/N²",
-     ylabel = "Height z/δ",
-     title = @sprintf("<b> profile for N/f = %.1f", r),
-     linewidth = 2,
-     label = "Initial",
-     linestyle = :dash,
-     legend = :bottomright,
-     size=(800,400))
+     xlabel     = "b/N²",
+     ylabel     = "Height z/δ",
+     title      = @sprintf("<b> profile for N/f = %.1f", r),
+     linewidth  = 2,
+     label      = "Initial",
+     linestyle  = :dash,
+     legend     = :bottomright,
+     size       = (800,400),
+     margin     = 25px)
 
 plot!(b_plot_final/N², z_plot,
       linewidth = 2,
-      label = "Final")
+      label     = "Final")
 
 savefig(@sprintf("Ekman/3D Simulation/Plots/Averaged buoyancy profile r = %.1f.png",r))
 
@@ -100,7 +103,7 @@ zb = znodes(db_dz_timeseries.grid, Center())
 
 # Get initial and final profiles
 db_dz_initial = vec(interior(db_dz_avg_timeseries[1], 1, 1, :))    # First saved time step
-db_dz_final = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))    # Last time step
+db_dz_final   = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))    # Last time step
 
 # Normalize depth
 z_normalized = zb / δ
@@ -110,21 +113,22 @@ z_mask = findall(<(0.5*δ), zb)
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
 
-db_dz_plot_final = db_dz_final[z_mask]
 db_dz_plot_initial = db_dz_initial[z_mask]
+db_dz_plot_final   = db_dz_final[z_mask]
 z_plot = z_normalized[z_mask]
 
 
 # Plot
 plot(db_dz_plot_initial/N², z_plot,
-     xlabel = "∂b/∂z/N²",
-     ylabel = "Height z/δ",
-     title = @sprintf("∂<b>/∂z Profile for N/f = %.1f", r),
+     xlabel    = "∂b/∂z/N²",
+     ylabel    = "Height z/δ",
+     title     = @sprintf("∂<b>/∂z Profile for N/f = %.1f", r),
      linewidth = 2,
-     label = "Initial",
+     label     = "Initial",
      linestyle = :dash,
-     legend = :bottomright,
-     size=(800,400))
+     legend    = :bottomright,
+     size      = (800,400),
+     margin    = 25px)
 
 plot!(db_dz_plot_final/N², z_plot,
       linewidth = 2,
@@ -151,18 +155,19 @@ v_slice = v_profile[slice]
 z_slice = zC[slice] / δ
 
 plot(u_slice/U∞, v_slice/U∞,
-    linewidth = 2,
-    line_z = z_slice,          # Colour line based on z
-    color = :viridis,          # Colour for the line/markers
-    marker = :circle,
-    markersize = 3,            # Smaller marker
-    marker_z = z_slice,        # Colours markers based on z
-    xlabel = "<u>/U∞",
-    ylabel = "<v>/U∞",
-    colorbar_title = "Height z/δ", # Adds a label to the colorbar
-    colorbar = true,
-    size = (800,600),
-    legend = false,
-    title = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
+    linewidth      = 2,
+    line_z         = z_slice,       # Colour line based on z
+    color          = :viridis,      # Colour for the line/markers
+    marker         = :circle,
+    markersize     = 2,             # Smaller marker
+    marker_z       = z_slice,       # Colours markers based on z
+    xlabel         = "<u>/U∞",
+    ylabel         = "<v>/U∞",
+    colorbar_title = "Height z/δ",  # Adds a label to colour bar
+    colorbar       = true,
+    size           = (1000,500),
+    margin         = 25px,
+    legend         = false,
+    title          = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
 )
 savefig(@sprintf("Ekman/3D Simulation/Plots/Hodograph r = %.1f.png",r))
