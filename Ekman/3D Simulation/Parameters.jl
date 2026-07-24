@@ -8,7 +8,7 @@ max_Δt = 5 # maximum allowable timestep
 duration = 18e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
-S = 10
+S = 8
 
 # Input parameters
 U∞ = 0.0674                 # far stream velocity
@@ -28,11 +28,12 @@ N²      = (r*f₀)^2          # buoyancy frequency
 D       = U∞/f₀             # Rossby lengthscale
 κ₀      = ν₀/Pr             # molecular diffusivity
 u_star  = 0.049*U∞          # friction velocity
-cᴰ      = 2(u_star/U∞)^2    # drag coefficient
 δ       = u_star/f₀         # boundary layer lengthscale
 Re_star = u_star*δ/ν₀       # frictional Reynolds
 Ri_star = N²/f₀^2           # frictional Richardson
 
-# cᴰ drag coefficient calculated later in code, if used
+# Coefficient of drag calculated later:
+# z₁ = abs(Array(znodes(grid, Center()))[1])
+# cᴰ = (κ/log(z₁/z₀))^2
 
 kick = U∞ * 0.05             # amplitude of random perturbation

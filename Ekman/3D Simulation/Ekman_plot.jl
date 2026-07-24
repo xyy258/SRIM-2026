@@ -42,7 +42,7 @@ heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
         ylabel = "Height z/δ",
         title  = @sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
         size   = (1000,400),
-        margin = 10px,
+        margin = 25px,
         color  = :thermal) # :thermal is great for highlighting intensifying gradients
 savefig(@sprintf("Ekman/3D Simulation/Plots/Buoyancy gradient plot r = %.1f.png",r))
 
@@ -83,7 +83,7 @@ plot(b_plot_initial/N², z_plot,
      linestyle  = :dash,
      legend     = :bottomright,
      size       = (800,400),
-     margin     = 10px)
+     margin     = 25px)
 
 plot!(b_plot_final/N², z_plot,
       linewidth = 2,
@@ -128,7 +128,7 @@ plot(db_dz_plot_initial/N², z_plot,
      linestyle = :dash,
      legend    = :bottomright,
      size      = (800,400),
-     margin    = 10px)
+     margin    = 25px)
 
 plot!(db_dz_plot_final/N², z_plot,
       linewidth = 2,
@@ -166,7 +166,7 @@ plot(u_slice/U∞, v_slice/U∞,
     colorbar_title = "Height z/δ",  # Adds a label to colour bar
     colorbar       = true,
     size           = (1000,500),
-    margin         = 10px,
+    margin         = 25px,
     legend         = false,
     title          = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
 )

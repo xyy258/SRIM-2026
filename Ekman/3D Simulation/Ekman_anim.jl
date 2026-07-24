@@ -1,5 +1,6 @@
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures # using units for borders
+using ProgressMeter
 # using CairoMakie
 # using NCDatasets
 
@@ -28,7 +29,7 @@ file_b   = jldopen(filename * "_b.jld2")
 ## Extract a vector of iterations
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
 
-@info "Making an animation from saved data..."
+@info "Making animation of buoyancy gradient heatmaps..."
 
 t_save = zeros(length(iterations))
 
@@ -45,11 +46,14 @@ clim_abs = maximum(
     maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask]' .- N² * zbmask) / N²)
     for iter in iterations
 )
+# Progress meter
+p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
 
-# Here, we loop over all iterations
 anim = @animate for (i, iter) in enumerate(iterations)
+    # if i % 100 == 0
+    # @info "Drawing frame $i / $(length(iterations))..."
+    # end
 
-    @info "Drawing frame $i / $(length(iterations))..."
     b_xz = file_b["timeseries/b/$iter"][:, 1, 1:NLzmask];
 
     t = file_vel["timeseries/t/$iter"];
@@ -75,12 +79,15 @@ anim = @animate for (i, iter) in enumerate(iterations)
         layout = (2, 1),
         size = (1000, 500),
         title = [b_title b_diff_title],
-        margin = 10px)
+        margin = 25px)
 
     if iter == iterations[end]
         close(file_vel)
         close(file_b)
     end
+
+    # Advance progress meter
+    next!(p)
 end
 
 # Save the animation to a file
@@ -98,7 +105,7 @@ filename = @sprintf("Ekman/Data/Ekman r=%.1f", r)
 
 # Load FieldTimeSeries directly
 u_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "u_avg")
-v_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "u_avg")
+v_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "v_avg")
 
 # Extract simulation times and interior vertical nodes (strips halos, matching length 180)
 times = u_avg_series.times
@@ -106,13 +113,15 @@ zu    = znodes(u_avg_series[1])
 
 @info "Making animation of plane-averaged velocity profiles..."
 
-# Generate the animation
+# Progress meter
+p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
+
 anim = @animate for i in 1:length(times)
 
     t = times[i]
-    @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
+    # @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
 
-    # Extract 1D interior velocity vectors (guaranteed length 180)
+    # Extract 1D interior velocity vectors
     u_prof = vec(interior(u_avg_series[i], 1, 1, :))
     v_prof = vec(interior(v_avg_series[i], 1, 1, :))
 
@@ -120,33 +129,34 @@ anim = @animate for i in 1:length(times)
     p1 = plot( (u_prof.-U∞)/u_star, zu / δ,
              linewidth = 3,
              color     = :navy,
-             xlabel    = "(<u>-U∞)/u_star",
+             xlabel    = "(<u>-U∞)/u*",
              ylabel    = "Height z / δ",
-             xlims     = (-0.5, 1.5),
-             ylims     = (0, Lz / δ),
-             legend    = :bottomright,
+             xlims     = (-10, 7.5),
+             ylims     = (0, 0.45),
              grid      = true,
-             size      = (750, 500),
-             margin    = 10px)
+             margin    = 25px,
+             legend    = false)
 
     # Plot u_avg profile normalized by U*
     p2 = plot( v_prof/u_star, zu / δ,
             linewidth = 3,
             color     = :crimson,
-            xlabel    = "<v>/u_star",
+            xlabel    = "<v>/u*",
             ylabel    = "Height z / δ",
-            xlims     = (-0.5, 1.5),
-            ylims     = (0, Lz / δ),
-            legend    = :bottomright,
+            xlims     = (-10, 7.5),
+            ylims     = (0, 0.45),
             grid      = true,
-            size      = (750, 500),
-            margin    = 10px)
+            margin    = 25px,
+            legend    = false)
 
     plot(p1,p2,
         layout     = (2,1),
-        size       = (1000,500),
-        margin     = 10px,
+        size       = (1000,600),
+        margin     = 25px,
         plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
+
+    # Progress
+    next!(p)
 end
 
 mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)
@@ -176,11 +186,13 @@ zz = znodes(ωz_avg_series[1])
 
 @info "Making animation of plane-averaged vorticity profiles..."
 
-# Generate the animation
+# Progress meter
+p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
+
 anim_vort = @animate for i in 1:length(vort_times)
 
     t = vort_times[i]
-    @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
+    # @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
 
     # Extract 1D interior vorticity vectors (stripping halo cells)
     ωx_prof = vec(interior(ωx_avg_series[i], 1, 1, :))
@@ -193,8 +205,9 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :crimson,
                xlabel    = "<ωx> / f₀",
                ylabel    = "Height z / δ",
-               ylims     = (0, Lz / δ),
-               grid      = true)
+               ylims     = (0, 0.45),
+               grid      = true,
+               legend    = false)
 
     # Panel 2: ωy profile
     p_y = plot(ωy_prof / f₀, zy / δ,
@@ -202,8 +215,9 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :teal,
                xlabel    = "<ωy> / f₀",
                ylabel    = "Height z / δ",
-               ylims     = (0, Lz / δ),
-               grid      = true)
+               ylims     = (0, 0.45),
+               grid      = true,
+               legend    = false)
 
     # # Panel 3: ωz profile
     # p_z = plot(ωz_prof / f₀, zz / δ,
@@ -218,8 +232,11 @@ anim_vort = @animate for i in 1:length(vort_times)
     plot(p_x, p_y,
          layout     = (1, 2),
          size       = (1000, 600),
-         margin     = 10px,
+         margin     = 25px,
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
+
+    # Progress
+    next!(p)
 end
 
 mp4(anim_vort, @sprintf("Ekman/3D Simulation/Animations/Ekman Vorticity Plot r = %.1f.mp4", r), fps = 30)
