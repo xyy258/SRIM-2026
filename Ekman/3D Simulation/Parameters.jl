@@ -8,13 +8,13 @@ max_Δt = 5 # maximum allowable timestep
 duration = 18e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
-S = 8
+S = 10
 
 # Input parameters
 U∞ = 0.0674                 # far stream velocity
 f₀ = 1e-4                   # Coriolis parameter
 
-if isnothing(r)
+if !@isdefined(r) || isnothing(r)
 r   = 75                    # ratio N/f
 end
 Re∞ = 4.55e7                # Reynolds number

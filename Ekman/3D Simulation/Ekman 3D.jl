@@ -67,10 +67,10 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = 20*r*f₀ # set to 10*(buoyancy frequency)
-# sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
+sponge_rate = 2*r*f₀ # set to 10*(buoyancy frequency)
+sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
 # or alternatively, we can use a Gaussian mask for a smoother transition
-sponge_mask = GaussianMask{:z}(center=H, width=0.6S)
+# sponge_mask = GaussianMask{:z}(center=H, width=0.6S)
 
 u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = U∞)
@@ -101,7 +101,6 @@ model = NonhydrostaticModel(grid;
 )
 
 @info "3D simulation parameters"
-params_string =
 
 @printf("Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
