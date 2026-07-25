@@ -20,7 +20,7 @@ H = Lz + S # domain height, with sponge layer
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
-refinement = 2 # controls spacing near surface (higher means finer spaced)
+refinement = 1.8 # controls spacing near surface (higher means finer spaced)
 stretching = 10 # controls rate of stretching at bottom
 # "Warped" height coordinate
 h(k) = (Nz + 1 - k) / Nz
@@ -81,7 +81,7 @@ if mask == "piecewise"
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
 # or alternatively, we can use a Gaussian mask for a smoother transition
 elseif mask == "Gaussian"
-    sponge_mask = GaussianMask{:z}(center=H, width=0.65S)
+    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
 end
 @info "Using $mask mask for sponge layer..."
 
@@ -157,17 +157,17 @@ end
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.6 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.2 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.25, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
-simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
+simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
 
 # ## A progress messenger
 # We add a callback that prints out a helpful progress message while the simulation runs.
@@ -181,7 +181,7 @@ progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, C
     sim.Δt,
     AdvectiveCFL(sim.Δt)(sim.model))
 
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(200))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 
 # ## Output
 

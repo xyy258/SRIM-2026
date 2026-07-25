@@ -12,11 +12,11 @@ z₀  = 0.0016                # m (roughness length)
 # Dimensions
 Lx, Ly, Lz = 80,80,50
 # Grid size
-Nx, Ny, Nz = 150,150,512
+Nx, Ny, Nz = 128,128,256
 
 # Duration and timestep
 max_Δt = 5 # maximum allowable timestep
-duration = 50*f₀ # The non-dimensional duration of the simulation
+duration = 25e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
 S = 10

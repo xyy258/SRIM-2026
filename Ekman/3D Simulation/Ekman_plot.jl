@@ -34,7 +34,11 @@ for (t_idx, iter) in enumerate(iterations)
 end
 
 # Reduce range of z
-zbconcat = zb[findall(<(0.5*δ),zb)]
+if r < 30
+    zbconcat = zb[findall(<(δ),zb)]
+else
+    zbconcat = zb[findall(<(0.5*δ),zb)]
+end
 Nzconcat = length(zbconcat)
 
 heatmap(t_save*f₀, zbconcat/δ, gradient_data[1:Nzconcat, :]/N²,
@@ -64,7 +68,11 @@ b_final   = vec(interior(b_avg_timeseries[end], 1, 1, :))    # Last time step
 z_normalized = zb / δ
 
 # Create mask for the boundary layer region
-z_mask = findall(<(0.5*δ), zb)
+if r < 30
+    z_mask = findall(<(δ),zb)
+else
+    z_mask = findall(<(0.5*δ),zb)
+end
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
 
@@ -109,7 +117,11 @@ db_dz_final   = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))    # Last time
 z_normalized = zb / δ
 
 # Create mask for the boundary layer region
-z_mask = findall(<(0.5*δ), zb)
+if r < 30
+    z_mask = findall(<(δ),zb)
+else
+    z_mask = findall(<(0.5*δ),zb)
+end
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
 

@@ -38,7 +38,12 @@ Lzmask  = zb[findall(x -> x < Lz, zb)]
 NLzmask = length(Lzmask)
 
 # Masking for certain height from bottom of domain
-zbmask = zb[findall(x -> x < 0.5*δ, zb)]
+if r < 30
+    z_mask = findall(<(δ),zb)
+else
+    z_mask = findall(<(0.5*δ),zb)
+end
+zbmask = zb[z_mask]
 Nzmask = length(zbmask)
 
 # Fixing colour limits for buoyancy change
@@ -61,7 +66,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     b_xz_plot = heatmap(xb, Lzmask/δ, b_xz'/N²;
         color = :thermal,
-        clims=(0, 1.05).*maximum(abs, b_xz'/N²),
+        clims = (0, 1.05).*maximum(abs, b_xz'/N²),
         xlabel = "x", ylabel = "z/δ",
         xlims = (0, Lx), ylims = (0,Lz/δ)); # Shows entire height of domain
 
@@ -77,7 +82,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot,
         layout = (2, 1),
-        size = (1000, 500),
+        size = (1000, 550),
         title = [b_title b_diff_title],
         margin = 25px)
 
@@ -209,6 +214,7 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :crimson,
                xlabel    = "<ωx> / f₀",
                ylabel    = "Height z / δ",
+               xlims     = (-50, 50),
                ylims     = (0, 0.45),
                grid      = true,
                legend    = false)
@@ -219,6 +225,7 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :teal,
                xlabel    = "<ωy> / f₀",
                ylabel    = "Height z / δ",
+               xlims     = (0, 750),
                ylims     = (0, 0.45),
                grid      = true,
                legend    = false)
