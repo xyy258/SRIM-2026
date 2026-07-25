@@ -1,46 +1,47 @@
 [ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ_s = 0.1192 m, Re_s = 1788
 [ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods
+[ Info: Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = 1.192 m = 10 δ_s (N²_bg/N∞² = 0.095 at z = δ_s, 0.632 at z = 10 δ_s)
 [ Info: Saved profile plots for Ri500 in output_Ri500/
 [ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ_s = 0.1192 m, Re_s = 1788
 [ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods
+[ Info: Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = 1.192 m = 10 δ_s (N²_bg/N∞² = 0.095 at z = δ_s, 0.632 at z = 10 δ_s)
 [ Info: Saved figures/MeanVelocity_Ri500.png
 [ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ_s = 0.1192 m, Re_s = 1788
 [ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods
-[ Info: Ri500: |ω_y| colour limit = 2.94 U₀/δ_s (from 41 sampled frames)
+[ Info: Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = 1.192 m = 10 δ_s (N²_bg/N∞² = 0.095 at z = δ_s, 0.632 at z = 10 δ_s)
+[ Info: Ri500: |ω_y| colour limit = 3.21 U₀/δ_s (from 41 sampled frames)
 [ Info: Saved figures/Vorticity_Ri500.png
-[ Info: Animating 705 frames...
-[ Info:   frame 100 / 705
-[ Info:   frame 200 / 705
-[ Info:   frame 300 / 705
-[ Info:   frame 400 / 705
-[ Info:   frame 500 / 705
-[ Info:   frame 600 / 705
-[ Info:   frame 700 / 705
+[ Info: Animating 892 frames...
+[ Info:   frame 100 / 892
+[ Info:   frame 200 / 892
+[ Info:   frame 300 / 892
+[ Info:   frame 400 / 892
+[ Info:   frame 500 / 892
+[ Info:   frame 600 / 892
+[ Info:   frame 700 / 892
+[ Info:   frame 800 / 892
 [ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/figures/Vorticity_Ri500.mp4
 [ Info: Saved figures/Vorticity_Ri500.mp4
 [ Info: Case Ri500: Ri = 500, N² = 9.906e-06 s⁻², δ_s = 0.1192 m, Re_s = 1788
 [ Info: Domain 5.960 × 2.980 × 10.728 m = 50 × 25 × 90 δ_s, 12 periods
-[ Info: Making an animation from 2114 frames...
-[ Info: Frame 100 / 2114
-[ Info: Frame 200 / 2114
-[ Info: Frame 300 / 2114
-[ Info: Frame 400 / 2114
-[ Info: Frame 500 / 2114
-[ Info: Frame 600 / 2114
-[ Info: Frame 700 / 2114
-[ Info: Frame 800 / 2114
-[ Info: Frame 900 / 2114
-[ Info: Frame 1000 / 2114
-[ Info: Frame 1100 / 2114
-[ Info: Frame 1200 / 2114
-[ Info: Frame 1300 / 2114
-[ Info: Frame 1400 / 2114
-[ Info: Frame 1500 / 2114
-[ Info: Frame 1600 / 2114
-[ Info: Frame 1700 / 2114
-[ Info: Frame 1800 / 2114
-[ Info: Frame 1900 / 2114
-[ Info: Frame 2000 / 2114
-[ Info: Frame 2100 / 2114
+[ Info: Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = 1.192 m = 10 δ_s (N²_bg/N∞² = 0.095 at z = δ_s, 0.632 at z = 10 δ_s)
+[ Info: Making an animation from 1783 frames...
+[ Info: Frame 100 / 1783
+[ Info: Frame 200 / 1783
+[ Info: Frame 300 / 1783
+[ Info: Frame 400 / 1783
+[ Info: Frame 500 / 1783
+[ Info: Frame 600 / 1783
+[ Info: Frame 700 / 1783
+[ Info: Frame 800 / 1783
+[ Info: Frame 900 / 1783
+[ Info: Frame 1000 / 1783
+[ Info: Frame 1100 / 1783
+[ Info: Frame 1200 / 1783
+[ Info: Frame 1300 / 1783
+[ Info: Frame 1400 / 1783
+[ Info: Frame 1500 / 1783
+[ Info: Frame 1600 / 1783
+[ Info: Frame 1700 / 1783
 [ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/output_Ri500/animation_Ri500.mp4
 [ Info: Saved animation for Ri500 in output_Ri500/

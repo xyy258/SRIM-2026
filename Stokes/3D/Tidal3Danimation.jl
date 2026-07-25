@@ -47,13 +47,14 @@ anim = @animate for (i, iter) in enumerate(iterations)
                      ylims = (0, zoom_height), xlims = (0, Lx),
                      ylabel = "z")
 
-    # Thermal perturbation: subtract the background ramp N²_ref z
-    bp_xz = b_xz .- reshape(N²_ref .* zb, 1, :)
+    # Thermal perturbation: subtract the background profile.
+    # OLD (uniform background): bp_xz = b_xz .- reshape(N²_ref .* zb, 1, :)
+    bp_xz = b_xz .- reshape(b_background.(zb), 1, :)
     mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
                        clims = (-bplim, bplim),
                        ylims = (0, zoom_height), xlims = (0, Lx),
                        ylabel = "z")
-    mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − N²z"
+    mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
     c_plot = heatmap(xu, zb, c_xz'; color = :thermal, clims = (0, 1),
                      ylims = (0, zoom_height), xlims = (0, Lx),

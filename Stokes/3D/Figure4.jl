@@ -10,6 +10,14 @@ using Oceananigans, JLD2, Plots, Printf
 # thermal field as a genuine passive scalar (see case_params.jl) and its
 # unrestrained mixing is the natural baseline for the other two.
 #
+# This run uses an exponential background, N²_bg(z) = N∞²[1 − exp(−z/L)] with
+# L = 10 δ_s, instead of the paper's uniform one. The normalization is still the
+# far-field N∞², which keeps the colour scale directly comparable to the linear
+# run in "Centered - Linear/" — but note the consequence: the initial condition
+# is no longer flat at 1. It rises from 0 at the seabed to 1 aloft, so the warm
+# band near the wall at ωt = 0 is the background profile, not mixing. The
+# dashed line marks L, above which the background is within 63 % of N∞².
+#
 # Uses the profile data already saved by Tidal3D.jl; reruns no simulation.
 # Run from this directory:  julia --project=.. Figure4.jl
 
@@ -17,6 +25,7 @@ const ω  = 1.4075235e-4
 const ν  = 1.0e-6
 const δ  = sqrt(2ν / ω)
 const T_tide = 2π / ω
+const L_strat_δ = 10.0         # background scale height, in δ_s (case_params.jl)
 
 const zmax_δ = 40.0            # the paper's z/δ_s axis range
 
@@ -77,6 +86,10 @@ for (case, ttl, N²) in cases
     # it on the contour silently removes the heatmap's colorbar as well.
     contour!(plt, ωt, zδ, Gn; levels = [0.3, 0.5],
              color = RGB(0.15, 0.15, 0.15), linewidth = 1.2)
+    # Background scale height: below this the initial profile is itself weakly
+    # stratified, so warm colours there are partly inherited, not mixed away.
+    hline!(plt, [L_strat_δ]; color = RGB(0.15, 0.15, 0.15), linestyle = :dash,
+           linewidth = 1.0, label = "")
     push!(panels, plt)
 end
 

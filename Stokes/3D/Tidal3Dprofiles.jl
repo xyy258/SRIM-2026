@@ -129,16 +129,24 @@ begin
     #      stratification is below half background (can spike on bursts)
     #  (b) integral "mixing thickness": ∫ (1 − ∂b/∂z / N²)₊ dz — smooth and
     #      the more trustworthy measure.
-    function threshold_depth(g, z; threshold = 0.5N²_ref)
+    #
+    # Both are measured against the *initial background* N²_bg(z) rather than the
+    # far-field constant N∞². With the uniform background these are identical.
+    # With the exponential one they are not: the seabed starts unstratified, so
+    # comparing to N∞² would score the initial condition itself as already mixed
+    # — the integral would read ∫exp(−z/L) dz = L = 10 δ_s at t = 0 and the
+    # threshold depth 0.69 L ≈ 6.9 δ_s. Referencing N²_bg makes both start at
+    # zero, so the curves show mixing the flow actually did.
+    function threshold_depth(g, z; frac = 0.5)
         k = 1
-        while k <= length(z) && g[k] < threshold
+        while k <= length(z) && g[k] < frac * N²_background(z[k])
             k += 1
         end
         return k == 1 ? 0.0 : z[k-1]
     end
 
     function mixing_thickness(g, z)
-        deficit = clamp.(1 .- g ./ N²_ref, 0, 1)
+        deficit = clamp.((N²_background.(z) .- g) ./ N²_ref, 0, 1)
         dz = diff(z)
         body = sum(0.5 .* (deficit[1:end-1] .+ deficit[2:end]) .* dz)
         wall = deficit[1] * z[1]
@@ -149,20 +157,24 @@ begin
     mld_int = [mixing_thickness(G[:, n], zg) for n in 1:Nt]
 
     plot(times ./ T_tide, mld_int;
-         lw = 2, label = "mixing thickness ∫(1−∂b/∂z/N²) dz",
+         lw = 2, label = "mixing thickness ∫(N²_bg−∂b/∂z)₊ dz / N∞²",
          xlabel = "t / tidal period", ylabel = "mixed-layer thickness (m)",
          title = "$case: mixed-layer growth")
     plot!(times ./ T_tide, mld_thr;
-          lw = 1, alpha = 0.5, label = "threshold depth (∂b/∂z < ½N²)")
+          lw = 1, alpha = 0.5, label = "threshold depth (∂b/∂z < ½N²_bg)")
     plot!(times ./ T_tide, sqrt.(2κ .* times);
           lw = 2, ls = :dash, label = "pure diffusion √(2κt)")
     hline!([δ]; ls = :dot, label = "Stokes layer δ")
     savefig(joinpath(outdir, "mixed_layer_depth_" * case * ".png"))
 
     # ---- 6. Stratification profiles at the end of each tidal period ----
-    plt6 = plot(xlabel = "∂b/∂z / N²", ylabel = "z (m)", ylims = (0, zmax),
+    plt6 = plot(xlabel = "∂b/∂z / N∞²", ylabel = "z (m)", ylims = (0, zmax),
                 xlims = (0, 1.5),
                 title = "$case: stratification profiles", legend = :bottomright)
+    # The exponential background, so mixing is read against where the profile
+    # started rather than against a vertical line at 1.
+    plot!(plt6, N²_background.(zg[ks]) ./ N²_ref, zg[ks];
+          lw = 1.5, ls = :dash, color = :black, label = "background N²_bg/N∞²")
     for p in 0:floor(Int, times[end] / T_tide)
         n = argmin(abs.(times .- p * T_tide))
         plot!(plt6, G[ks, n] ./ N²_ref, zg[ks]; lw = 2,

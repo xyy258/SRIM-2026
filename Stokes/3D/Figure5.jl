@@ -16,6 +16,15 @@ using Oceananigans, JLD2, Plots, Printf
 # Markers follow the paper: ∘ is the mixed-layer height h_m where the normalized
 # gradient first reaches 0.1; △ is where Ri_g = N²_local/S² first reaches 0.25.
 #
+# Background: this run replaces the paper's uniform stratification with
+# N²_bg(z) = N∞²[1 − exp(−z/L)], L = 10 δ_s (see case_params.jl), so the seabed
+# starts unstratified. Scaling is still by the far-field N∞², keeping the axes
+# comparable to the linear run in "Centered - Linear/"; the dashed black curve
+# in each panel is the initial background, which is what the profiles would look
+# like with no mixing at all. h_m keeps the paper's literal 0.1 threshold — at
+# t = 0 the background alone already sits below it for z < 0.105 L ≈ 1.05 δ_s,
+# an offset small against the h_m ≈ 10–15 δ_s these runs reach.
+#
 # Reads only the profile files already written by Tidal3D.jl. Run from this
 # directory:  julia --project=.. Figure5.jl
 
@@ -25,6 +34,10 @@ const U₀ = 0.015
 const δ  = sqrt(2ν / ω)        # Stokes thickness ≈ 0.119 m
 const a  = U₀ / ω              # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
+const L_strat = 10δ            # background scale height (case_params.jl)
+
+N²_bg_norm(z) = 1 - exp(-z / L_strat)                       # N²_bg(z) / N∞²
+b_bg_norm(z)  = (z + L_strat * (exp(-z / L_strat) - 1)) / a  # b_bg(z) / (a N∞²)
 
 const zmax_δ = 50.0            # the paper's z/δ_s axis range
 const z_sponge_δ = 70.0        # sponge floor (paper: 70 δ_s – 90 δ_s); the mask
@@ -99,6 +112,13 @@ for (case, N²) in cases
               title = "(b) buoyancy gradient", ylims = (0, zmax_δ),
               yticks = 0:5:zmax_δ, legend = :topleft,
               foreground_color_legend = nothing, background_color_legend = nothing)
+
+    # Initial background profile: the no-mixing reference the curves depart from.
+    # Drawn first so the time series sit on top of it.
+    plot!(pa, b_bg_norm.(zc[kc]), zc[kc] ./ δ; color = :black, linestyle = :dash,
+          linewidth = 1.5, label = "background (t = 0)")
+    plot!(pb, N²_bg_norm.(zg[kg]), zg[kg] ./ δ; color = :black, linestyle = :dash,
+          linewidth = 1.5, label = "background (t = 0)")
 
     # Symbol key, drawn in neutral ink so the marker shape carries the meaning
     # and the series colour keeps carrying the time.

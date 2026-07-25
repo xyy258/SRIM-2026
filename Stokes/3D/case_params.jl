@@ -47,8 +47,33 @@ const T_tide = 2π / ω
 # reference gradient and switching the buoyancy term off in Tidal3D.jl, so the
 # Ri = 0 thermal panels of figures 4 and 5 are meaningful rather than blank.
 const N²     = Ri * ω^2                    # buoyancy frequency² actually felt
-const N²_ref = Ri > 0 ? N² : ω^2           # background gradient carried by b
+const N²_ref = Ri > 0 ? N² : ω^2           # far-field gradient carried by b
 const passive_scalar = Ri == 0
+
+# ---------------- Shape of the background stratification ----------------
+# OLD: uniform background, N²_bg(z) = N²_ref everywhere, i.e. b_bg(z) = N²_ref z.
+# That is the paper's own set-up and is what the "Centered - Linear" run used.
+#
+# NEW: the stratification vanishes at the seabed and recovers exponentially to
+# the paper's far-field value over a scale L_strat:
+#
+#     N²_bg(z) = N²_ref [1 − exp(−z/L)]
+#     b_bg(z)  = N²_ref [z + L (exp(−z/L) − 1)]      (b_bg(0) = 0, b_bg′(0) = 0)
+#
+# The far field is untouched, so Ri = N∞²/ω² keeps the paper's meaning and every
+# quantity normalized by N∞² remains directly comparable to the linear run.
+# L = 10 δ_s is comparable to the mixed-layer height h_m ≈ 10–15 δ_s reached in
+# the linear runs, so the altered region is where the thermocline actually sits.
+#
+# Note for the diagnostics: at t = 0 the normalized gradient ∂b_bg/∂z / N∞² is
+# already below the paper's h_m threshold of 0.1 for z < 0.105 L ≈ 1.05 δ_s.
+# That offset is small against h_m, so h_m keeps the paper's literal definition;
+# the integral diagnostics in Tidal3Dprofiles.jl are instead measured against
+# N²_bg(z) so they still start from zero.
+const L_strat = 10δ
+
+@inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
+@inline b_background(z)  = N²_ref * (z + L_strat * (exp(-z / L_strat) - 1))
 
 # ---------------- Domain ----------------
 # Paper §2.4: lx = 50 δ_s, ly = 25 δ_s, test section lz = 70 δ_s with the
@@ -76,3 +101,5 @@ mkpath(outdir)
 @info @sprintf("Domain %.3f × %.3f × %.3f m = %.0f × %.0f × %.0f δ_s, %d periods%s",
                Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, n_periods,
                passive_scalar ? " (b is a passive scalar)" : "")
+@info @sprintf("Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = %.3f m = %.0f δ_s (N²_bg/N∞² = %.3f at z = δ_s, %.3f at z = 10 δ_s)",
+               L_strat, L_strat/δ, N²_background(δ)/N²_ref, N²_background(10δ)/N²_ref)

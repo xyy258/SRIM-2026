@@ -22,9 +22,13 @@ using CUDA
 #   - Ri = 0 carries the thermal field as a genuine passive scalar (buoyancy
 #     term off, background gradient retained), as the paper does — so its
 #     figure 4/5 panels contain real data
-#   - Paper protocol: stratified cases initialize u, v, w from the final
-#     Ri=0 turbulent snapshot with a fresh linear b = N²z, mimicking
-#     "turn on stratification after turbulent spin-up"
+#   - Paper protocol: cases initialize u, v, w from a turbulent Ri=0 snapshot
+#     with a fresh background b profile, mimicking "turn on stratification
+#     after turbulent spin-up"
+#   - Background stratification is exponential rather than uniform:
+#     N²_bg(z) = N∞²[1 − exp(−z/L)] with L = 10 δ_s, so the seabed starts
+#     unstratified and the far field is the paper's N∞² (see case_params.jl).
+#     The uniform-background version is preserved in "Centered - Linear/".
 #
 # Each case writes everything into output_<case>/ with labeled filenames.
 
@@ -124,7 +128,16 @@ v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 # Adiabatic bottom (paper); fixed gradient at top so the background
 # stratification is maintained there. N²_ref rather than N² so the Ri = 0
 # passive scalar keeps its background gradient too.
-b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_ref),
+#
+# OLD (uniform background): the top gradient was the far-field value itself.
+# b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_ref),
+#                                 bottom = FluxBoundaryCondition(0))
+#
+# NEW: with the exponential background the imposed gradient is N²_bg evaluated
+# at the lid. At z = Lz = 90 δ_s with L = 10 δ_s this is 0.9999 N²_ref, so the
+# change is numerically tiny — it is made so the BC follows the profile
+# definition rather than coincidentally agreeing with it.
+b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_background(Lz)),
                                 bottom = FluxBoundaryCondition(0))
 
 # ---------------- Forcing ----------------
@@ -148,8 +161,15 @@ u_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
                       target = (x, y, z, t) -> U₀ * sin(ω * t))
 v_sponge = Relaxation(rate = sponge_rate, mask = top_mask)          # target 0
 w_sponge = Relaxation(rate = sponge_rate, mask = top_mask)          # target 0
+# OLD (uniform background): b_sponge relaxed towards the linear ramp.
+# b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
+#                       target = (x, y, z, t) -> N²_ref * z)
+# NEW: relax towards the exponential background so the sponge does not fight the
+# profile the interior is initialized with. Deep in the sponge the two targets
+# differ by the constant N²_ref·L, which would otherwise be forced onto the
+# solution as a spurious offset at the lid.
 b_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
-                      target = (x, y, z, t) -> N²_ref * z)
+                      target = (x, y, z, t) -> b_background(z))
 
 # ---------------- Model ----------------
 # AMD provides the explicit SGS stresses/fluxes; the ScalarDiffusivity carries
@@ -182,15 +202,26 @@ model = NonhydrostaticModel(grid;
                            b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-bᵢ(x, y, z) = N²_ref * z
+# OLD (uniform background): bᵢ(x, y, z) = N²_ref * z
+bᵢ(x, y, z) = b_background(z)
 cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
-spinup_file = joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2")
+# The spin-up snapshot supplies velocities only. Ri = 0 carries b as a passive
+# scalar, so its velocity field is independent of the thermal profile: a
+# turbulent snapshot from a previous run is a valid restart state for every case
+# here, Ri = 0 included, which is what lets the exponential-background run skip
+# a fresh spin-up phase entirely.
+#
+# SPINUP_FILE pins the source (e.g. the archived linear run) so that a
+# concurrently running Ri0 job cannot overwrite the file the stratified cases
+# are reading from.
+spinup_file = get(ENV, "SPINUP_FILE",
+                  joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2"))
 
-if Ri > 0 && isfile(spinup_file)
+if isfile(spinup_file)
     # Paper protocol: turbulent unstratified spin-up, then stratification on.
-    # The Ri=0 run ends at t = 6 T_tide where U∞ = 0, the same phase this run
-    # starts from, so the restart is phase-consistent.
+    # Snapshots are written every half period, i.e. always at U∞ = 0 — the same
+    # phase this run starts from — so the restart is phase-consistent.
     @info "Initializing velocities from Ri=0 spin-up: $spinup_file"
     uts = FieldTimeSeries(spinup_file, "u"; backend = OnDisk())
     vts = FieldTimeSeries(spinup_file, "v"; backend = OnDisk())
@@ -203,7 +234,7 @@ if Ri > 0 && isfile(spinup_file)
                 w = Array(interior(wts[nlast])))
     set!(model, b = bᵢ, c = cᵢ)
 else
-    Ri > 0 && @warn "No Ri=0 spin-up snapshot found — starting $case from rest with noise."
+    @warn "No spin-up snapshot at $spinup_file — starting $case from rest with noise."
     # Near-wall random kick; perturbing v breaks spanwise symmetry so genuine
     # 3D turbulence develops.
     kick = 0.1 * U₀
