@@ -10,13 +10,13 @@ Pr  = 10                    # Prandtl number
 z₀  = 0.0016                # m (roughness length)
 
 # Dimensions
-Lx, Ly, Lz = 80,80,50
+Lx, Ly, Lz = 80,80,60
 # Grid size
-Nx, Ny, Nz = 128,128,256
+Nx, Ny, Nz = 128,128,512
 
 # Duration and timestep
-max_Δt = 5 # maximum allowable timestep
-duration = 25e4 # The non-dimensional duration of the simulation
+max_Δt = 4 # maximum allowable timestep
+duration = 20e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
 S = 10

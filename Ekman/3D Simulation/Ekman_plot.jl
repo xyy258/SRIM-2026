@@ -71,7 +71,7 @@ z_normalized = zb / δ
 if r < 30
     z_mask = findall(<(δ),zb)
 else
-    z_mask = findall(<(0.5*δ),zb)
+    z_mask = findall(<(0.6*δ),zb)
 end
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
@@ -120,7 +120,7 @@ z_normalized = zb / δ
 if r < 30
     z_mask = findall(<(δ),zb)
 else
-    z_mask = findall(<(0.5*δ),zb)
+    z_mask = findall(<(0.6*δ),zb)
 end
 # Otherwise, use the following for full domain plot
 # z_mask = 1:length(zb)
@@ -139,7 +139,7 @@ plot(db_dz_plot_initial/N², z_plot,
      label     = "Initial",
      linestyle = :dash,
      legend    = :bottomright,
-     size      = (800,400),
+     size      = (800,600),
      margin    = 25px)
 
 plot!(db_dz_plot_final/N², z_plot,

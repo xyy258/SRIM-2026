@@ -102,9 +102,6 @@ mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Plot r = %.1f.mp4", r),
 ## Average velocity animation ##
 #  ==========================  #
 
-# Import parameters
-include("Parameters.jl")
-
 # Set the filename path prefix
 filename = @sprintf("Ekman/Data/Ekman r=%.1f", r)
 
@@ -115,6 +112,12 @@ v_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "v_avg")
 # Extract simulation times and interior vertical nodes (strips halos, matching length 180)
 times = u_avg_series.times
 zu    = znodes(u_avg_series[1])
+
+if r < 30
+    ylimits = (0,1.05)
+else
+    ylimits = (0,0.45)
+end
 
 @info "Making animation of plane-averaged velocity profiles..."
 
@@ -139,7 +142,7 @@ anim = @animate for i in 1:length(times)
              xlabel    = "(<u>-U∞)/u*",
              ylabel    = "Height z / δ",
              xlims     = (-10, 7.5),
-             ylims     = (0, 0.45),
+             ylims     = ylimits,
              grid      = true,
              margin    = 25px,
              legend    = false)
@@ -151,7 +154,7 @@ anim = @animate for i in 1:length(times)
             xlabel    = "<v>/u*",
             ylabel    = "Height z / δ",
             xlims     = (-10, 7.5),
-            ylims     = (0, 0.45),
+            ylims     = ylimits,
             grid      = true,
             margin    = 25px,
             legend    = false)
@@ -191,6 +194,12 @@ zx = znodes(ωx_avg_series[1])
 zy = znodes(ωy_avg_series[1])
 zz = znodes(ωz_avg_series[1])
 
+if r < 30
+    ylimits = (0,1.05)
+else
+    ylimits = (0,0.45)
+end
+
 @info "Making animation of plane-averaged vorticity profiles..."
 
 # Progress meter
@@ -214,8 +223,8 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :crimson,
                xlabel    = "<ωx> / f₀",
                ylabel    = "Height z / δ",
-               xlims     = (-50, 50),
-               ylims     = (0, 0.45),
+               xlims     = (-75, 75),
+               ylims     = ylimits,
                grid      = true,
                legend    = false)
 
@@ -226,7 +235,7 @@ anim_vort = @animate for i in 1:length(vort_times)
                xlabel    = "<ωy> / f₀",
                ylabel    = "Height z / δ",
                xlims     = (0, 750),
-               ylims     = (0, 0.45),
+               ylims     = ylimits,
                grid      = true,
                legend    = false)
 
