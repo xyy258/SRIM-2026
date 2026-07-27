@@ -1,3 +1,4 @@
+# Using relevant packages from Project.toml, Manifest.toml
 using Pkg
 Pkg.activate(".")   # Change to current folder
 Pkg.instantiate()
@@ -14,9 +15,6 @@ arch = GPU()
 
 # Import parameters
 include("Parameters.jl")
-profile = "linear"  # type of initial buoyancy profile
-mask = "Gaussian"   # type of masking in sponge layer
-H = Lz + S # domain height, with sponge layer
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
@@ -65,7 +63,7 @@ wᵢ(x,y,z) = kick * randn()
 if profile == "linear"
     bᵢ(x,y,z) = N² * z
 elseif profile == "exponential"
-    bᵢ(x,y,z) = N² * z
+    bᵢ(x,y,z) = N²*efold*exp((z-Lz)/efold)
 end
 @info "Using a(n) $profile initial buoyancy profile..."
 
