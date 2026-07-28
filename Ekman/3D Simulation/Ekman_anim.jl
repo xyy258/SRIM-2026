@@ -10,9 +10,9 @@ include("Parameters.jl")
 if profile == 0
     save_folder = "Ekman/3D Simulation/Linear/Animations/"
 elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Animations/%.1f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Animations/%.2f/",efoldfactor)
 else
-    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.1f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",efoldfactor)
 end
 mkpath(save_folder)
 
@@ -236,7 +236,7 @@ anim_vort = @animate for i in 1:length(vort_times)
                color     = :teal,
                xlabel    = "<ωy> / f₀",
                ylabel    = "Height z",
-               xlims     = (0, 200),
+               xlims     = (-50, 200),
                ylims     = ylimits,
                grid      = true,
                legend    = false)

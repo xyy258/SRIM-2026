@@ -61,10 +61,10 @@ vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
 if profile == 0
-    @inline b_i(x,y,z) = N² * z
+    @inline bᵢ(x,y,z) = N² * z
     Profile = "linear"
 elseif profile == 1
-    @inline b_i(x,y,z) = N² * efold * exp((z - Lz) / efold)
+    @inline bᵢ(x,y,z) = N² * efold * exp((z - Lz) / efold)
     Profile = "exponential"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
@@ -93,14 +93,12 @@ w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 
 if profile == 0
     b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
-                      target = LinearTarget{:z}(intercept = 0, gradient = N²))
+                          target = LinearTarget{:z}(intercept = 0, gradient = N²))
 elseif profile == 1
-    @inline function b_target_profile(x, y, z, t)
-        return z >= Lz ? b_i(x, y, Lz) + N² * (z - Lz) : b_i(x, y, z)
-    end
+    b_target_intercept = N²*(efold-Lz)
     b_sponge = Relaxation(rate = sponge_rate,
                           mask = sponge_mask,
-                          target = b_target_profile)
+                          target = LinearTarget{:z}(intercept = b_target_intercept, gradient = N²))
 end
 
 # Define our model: specify grid, advection scheme, bcs, etc...
@@ -168,7 +166,7 @@ end
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.25 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #

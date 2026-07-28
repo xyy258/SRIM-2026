@@ -15,7 +15,7 @@ Lx, Ly, Lz = 80,80,60
 Nx, Ny, Nz = 100,100,300
 
 # Duration and timestep
-max_Δt = 5 # maximum allowable timestep
+max_Δt = 7.5 # maximum allowable timestep
 duration = 18e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
@@ -37,13 +37,13 @@ Ri_star = N²/f₀^2           # frictional Richardson
 # cᴰ = (κ/log(z₁/z₀))^2
 
 profile = 1                 # type of initial buoyancy profile (0=linear, 1=exponential)
-mask = 1                    # type of masking in sponge layer (0=piecewise, 1=Gaussian)
+mask = 0                    # type of masking in sponge layer (0=piecewise, 1=Gaussian)
 H = Lz + S                  # domain height, with sponge layer
 
 # If using profile == "Exponential"
 if profile == "Exponential"
     if !@isdefined(r) || isnothing(r)
-    efoldfactor = 1
+        efoldfactor = 1
     end
 end
 efold = efoldfactor*Lz      # e-folding length for buoyancy
