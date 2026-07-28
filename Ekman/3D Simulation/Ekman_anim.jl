@@ -1,3 +1,5 @@
+ENV["GKSwstype"] = "100"
+
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures # using units for borders
 using ProgressMeter
@@ -35,6 +37,7 @@ file_b   = jldopen(filename * "_b.jld2")
 
 ## Extract a vector of iterations
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
+t_save = zeros(length(iterations))
 
 @info "Making animation of buoyancy gradient heatmaps..."
 
@@ -52,7 +55,7 @@ b_initial = file_b["timeseries/b/$(iterations[1])"][:, 1, 1:NLzmask]
 
 # Fixing colour limits for buoyancy difference plot
 clim_abs = maximum(
-    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial)' / N²)
+    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial[:,1:Nzmask])' / N²)
     for iter in iterations
 )
 # Progress meter
@@ -70,7 +73,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     b_xz_plot = heatmap(xb, Lzmask, b_xz'/N²;
         color = :thermal,
-        clims = (0.95*minimum(b_xz'/N²), 1.05.*maximum(abs, b_xz'/N²)),
+        clims = (0.95*minimum(b_xz'/N²), 1.05.*maximum(b_xz'/N²)),
         xlabel = "x", ylabel = "z",
         xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
 
@@ -84,7 +87,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
         color = :coolwarm,
         clims = (-clim_abs,clim_abs).*1.05,
         xlabel = "x", ylabel = "z",
-        xlims = (0, Lx), ylims = (0,Lz));
+        xlims = (0, Lx), ylims = (0,zbmask[end]));
 
     b_title = @sprintf("b/N² at t = %s, N/f = %.1f", round(t), r);
     b_diff_title = @sprintf("(b-bᵢ)/N² at t = %s, N/f = %.1f", round(t), r);
