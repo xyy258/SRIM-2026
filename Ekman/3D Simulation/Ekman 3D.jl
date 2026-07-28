@@ -32,7 +32,7 @@ z_faces(k) = - H * (ζ(k) * Σ(k) - 1)
 
 grid = RectilinearGrid(arch;
     topology = (Periodic, Periodic, Bounded),
-    size = (Nx, Ny, Nz),
+    size     = (Nx, Ny, Nz),
     x = (0, Lx),
     y = (0, Ly),
     z = z_faces)
@@ -60,12 +60,14 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
-if profile == "linear"
+if profile == 0
     bᵢ(x,y,z) = N² * z
-elseif profile == "exponential"
+    Profile = "linear"
+elseif profile == 1
     bᵢ(x,y,z) = N²*efold*exp((z-Lz)/efold)
+    Profile = "exponential"
 end
-@info "Using a(n) $profile initial buoyancy profile..."
+@info "Using a(n) $Profile initial buoyancy profile..."
 
 ## Forcing
 v_forcing_fn(x, y, z, t, p) = p.f * p.s  # to balance for initial geostrophic balance
@@ -73,15 +75,16 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = r*f₀ # set to 10*(buoyancy frequency)
+sponge_rate = r*f₀ # set to (buoyancy frequency)
 
-if mask == "piecewise"
+if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
-# or alternatively, we can use a Gaussian mask for a smoother transition
-elseif mask == "Gaussian"
+    Mask = "piecewise linear"
+elseif mask == 1
     sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
+    Mask = "Gaussian"
 end
-@info "Using $mask mask for sponge layer..."
+@info "Using $Mask mask for sponge layer..."
 
 u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = U∞)
@@ -155,7 +158,7 @@ end
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.2 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.25 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #
@@ -220,22 +223,22 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = filename * " average buoyancy gradient.jld2",
-                schedule = IterationInterval(5),
+                schedule = IterationInterval(10),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
                 filename = filename * " average buoyancy.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = filename * " average velocity.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
                 filename = filename * " average vorticity.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
