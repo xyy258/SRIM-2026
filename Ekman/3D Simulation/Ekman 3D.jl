@@ -61,10 +61,10 @@ vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
 if profile == 0
-    bᵢ(x,y,z) = N² * z
+    @inline b_i(x,y,z) = N² * z
     Profile = "linear"
 elseif profile == 1
-    bᵢ(x,y,z) = N²*efold*exp((z-Lz)/efold)
+    @inline b_i(x,y,z) = N² * efold * exp((z - Lz) / efold)
     Profile = "exponential"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
@@ -90,8 +90,18 @@ u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = U∞)
 v_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
-b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
+
+if profile == 0
+    b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = LinearTarget{:z}(intercept = 0, gradient = N²))
+elseif profile == 1
+    @inline function b_target_profile(x, y, z, t)
+        return z >= Lz ? b_i(x, y, Lz) + N² * (z - Lz) : b_i(x, y, z)
+    end
+    b_sponge = Relaxation(rate = sponge_rate,
+                          mask = sponge_mask,
+                          target = b_target_profile)
+end
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
