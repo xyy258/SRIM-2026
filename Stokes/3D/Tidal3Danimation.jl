@@ -10,7 +10,6 @@ using Oceananigans, JLD2, Plots, Printf
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
-zoom_height = 40δ     # the analysed region; the sponge starts at 70 δ_s
 stride      = 1       # plot every `stride`-th saved frame
 
 # Load one snapshot just to get the grid/coordinates
@@ -26,7 +25,10 @@ iterations = iterations[1:stride:end]
 
 # Fixed color limits across frames so colors are comparable in time
 ulim  = 1.2 * U₀
-bplim = 2 * N²_ref * δ         # b' scale: a 2 δ_s displacement of the background
+bp_scale = N²_ref * δ           # normalize b' by this so the colorbar isn't a
+                                # physically tiny number (~1e-6) that rounds to
+                                # 0.00000 under Plots' default tick formatting
+bplim = 2                      # b' scale: a 2 δ_s displacement of the background
 
 t_save   = zeros(length(iterations))
 
@@ -44,20 +46,22 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t_save[i] = t
 
     u_plot = heatmap(xu, zu, u_xz'; color = :balance, clims = (-ulim, ulim),
-                     ylims = (0, zoom_height), xlims = (0, Lx),
+                     ylims = (0, Lz), xlims = (0, Lx),
                      ylabel = "z")
 
-    # Thermal perturbation: subtract the background profile.
+    # Thermal perturbation: subtract the background profile, then normalize by
+    # N²_ref δ so the colorbar shows an O(1) number instead of a value like
+    # ~1e-6 that displays as 0.00000 under Plots' default tick formatting.
     # OLD (uniform background): bp_xz = b_xz .- reshape(N²_ref .* zb, 1, :)
-    bp_xz = b_xz .- reshape(b_background.(zb), 1, :)
+    bp_xz = (b_xz .- reshape(b_background.(zb), 1, :)) ./ bp_scale
     mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
                        clims = (-bplim, bplim),
-                       ylims = (0, zoom_height), xlims = (0, Lx),
-                       ylabel = "z")
+                       ylims = (0, Lz), xlims = (0, Lx),
+                       ylabel = "z", colorbar_title = "  b' / (N²_ref δ)")
     mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
     c_plot = heatmap(xu, zb, c_xz'; color = :thermal, clims = (0, 1),
-                     ylims = (0, zoom_height), xlims = (0, Lx),
+                     ylims = (0, Lz), xlims = (0, Lx),
                      xlabel = "x", ylabel = "z")
 
     ttl = @sprintf("%s,  t = %.2f tidal periods", case, t / T_tide)
