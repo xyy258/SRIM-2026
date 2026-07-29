@@ -34,7 +34,7 @@ const Ri = Ri_targets[case]
 const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
 const U₀ = 0.015               # tidal velocity amplitude (m s⁻¹) = 1.5 cm s⁻¹
 const ν  = 1.0e-6              # molecular viscosity of water (m² s⁻¹)
-const Pr = 0.7                 # molecular Prandtl number (paper value)
+const Pr = 10                 # molecular Prandtl number (paper value)
 const κ  = ν / Pr              # molecular diffusivity
 
 const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 0.1192 m

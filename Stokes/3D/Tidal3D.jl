@@ -37,7 +37,7 @@ include(joinpath(@__DIR__, "case_params.jl"))
 # ---------------- Architecture ----------------
 arch = GPU()          # start Julia with `julia -t auto`
 
-Nx, Ny, Nz = 48, 48, 192
+Nx, Ny, Nz = 64, 64, 256
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
