@@ -249,7 +249,6 @@ anim_vort = @animate for i in 1:length(vort_times)
          layout     = (1, 2),
          size       = (1000, 600),
          margin     = 25px,
-         margin     = 25px,
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
 
     # Progress
