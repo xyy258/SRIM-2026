@@ -1,3 +1,4 @@
+# Using relevant packages from Project.toml, Manifest.toml
 using Pkg
 Pkg.activate(".")   # Change to current folder
 Pkg.instantiate()
@@ -14,7 +15,6 @@ arch = GPU()
 
 # Import parameters
 include("Parameters.jl")
-H = Lz + S # domain height, with sponge layer
 
 # Creates a grid with near-constant spacing `refinement * Lz / Nz`
 # near the bottom:
@@ -32,7 +32,7 @@ z_faces(k) = - H * (ζ(k) * Σ(k) - 1)
 
 grid = RectilinearGrid(arch;
     topology = (Periodic, Periodic, Bounded),
-    size = (Nx, Ny, Nz),
+    size     = (Nx, Ny, Nz),
     x = (0, Lx),
     y = (0, Ly),
     z = z_faces)
@@ -59,7 +59,15 @@ b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
 uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
-bᵢ(x,y,z) = N² * z
+
+if profile == 0
+    @inline bᵢ(x,y,z) = N² * z
+    Profile = "linear"
+elseif profile == 1
+    @inline bᵢ(x,y,z) = N² * efold * exp((z - Lz) / efold)
+    Profile = "exponential"
+end
+@info "Using a(n) $Profile initial buoyancy profile..."
 
 ## Forcing
 v_forcing_fn(x, y, z, t, p) = p.f * p.s  # to balance for initial geostrophic balance
@@ -67,43 +75,56 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = 20*r*f₀ # set to 10*(buoyancy frequency)
-# sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
-# or alternatively, we can use a Gaussian mask for a smoother transition
-sponge_mask = GaussianMask{:z}(center=H, width=0.6S)
+sponge_rate = 2r*f₀ # set to (buoyancy frequency)
+
+if mask == 0
+    sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
+    Mask = "piecewise linear"
+elseif mask == 1
+    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
+    Mask = "Gaussian"
+end
+@info "Using $Mask mask for sponge layer..."
 
 u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = U∞)
 v_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
-b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
-                      target = LinearTarget{:z}(intercept = 0, gradient = N²))
+
+if profile == 0
+    b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
+                          target = LinearTarget{:z}(intercept = 0, gradient = N²))
+elseif profile == 1
+    b_target_intercept = N²*(efold-Lz)
+    b_sponge = Relaxation(rate = sponge_rate,
+                          mask = sponge_mask,
+                          target = LinearTarget{:z}(intercept = b_target_intercept, gradient = N²))
+end
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
-    advection = Centered(order=2),
+    advection   = Centered(order=4),
     timestepper = :RungeKutta3, # Timestepping scheme
-    tracers = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
-    buoyancy = BuoyancyTracer(),
+    tracers     = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
+    buoyancy    = BuoyancyTracer(),
 
     # Closures for LES
     closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
-    # closure = DynamicSmagorinsky(Pr=Pr),
-    # closure = SmagorinskyLilly(Pr=Pr),
+    # closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),DynamicSmagorinsky(Pr=Pr)),
+    # closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),SmagorinskyLilly(Pr=Pr)),
 
     boundary_conditions = (u = u_bcs, v = v_bcs, b=b_bcs), # specify the boundary conditions that we defiend above
     coriolis = FPlane(f=f₀),
     forcing = (
     u = u_sponge,
     v = (v_forcing, v_sponge),
-    w = w_sponge,
-    b = b_sponge)
+    w = w_sponge) # can add back b_sponge if wanted
 )
 
 @info "3D simulation parameters"
-params_string =
 
-@printf("Dimensions                      %.1f m × %.1f m × %.1f m
+@printf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
 Far stream velocity             U∞ = %.4f
 Square buoyancy frequency:      N² = %.2e,
@@ -121,17 +142,18 @@ Frictional Richardson           Ri* = %.1f\n",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
 
 open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "w") do file
-    write(file, @sprintf("Dimensions                      %.1f m × %.1f m × %.1f m
+    write(file, @sprintf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
 Far stream velocity             U∞ = %.4f
 Square buoyancy frequency:      N² = %.2e,
 Coriolis parameter:             f = %.2e,
 Ratio:                          r = N/f = %.1f
-Molecular kinematic viscosity:  ν = %.2e,
+Molecular kinematic viscosity:  ν₀ = %.2e,
 Reynolds number:                Re∞ = %.2e,
 Prandtl number:                 Pr = %.1f,
-Molecular diffusivity:          κ = %.2e,
-Frictional velocity             u* = %.4f
+Molecular diffusivity:          κ₀ = %.2e,
+Frictional velocity             u* = %.2e
 Drag coefficient:               cᴰ = %.4f,
 Layer lengthscale:              δ = %.2f
 Frictional Reynolds             Re* = %.2e
@@ -143,14 +165,14 @@ end
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
-simulation = Simulation(model, Δt = 0.5 * max_Δt, stop_time = duration)
+simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 
 ## The `TimeStepWizard`
 #
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.25, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -208,22 +230,22 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = filename * " average buoyancy gradient.jld2",
-                schedule = IterationInterval(5),
+                schedule = IterationInterval(10),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
                 filename = filename * " average buoyancy.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = filename * " average velocity.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
                 filename = filename * " average vorticity.jld2",
-                schedule = IterationInterval(20),
+                schedule = IterationInterval(25),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =

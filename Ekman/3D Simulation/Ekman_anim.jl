@@ -1,11 +1,20 @@
+ENV["GKSwstype"] = "100"
+
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures # using units for borders
 using ProgressMeter
-# using CairoMakie
 # using NCDatasets
 
 # Import parameters
 include("Parameters.jl")
+if profile == 0
+    save_folder = "Ekman/3D Simulation/Linear/Animations/"
+elseif profile == 1
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Animations/%.2f/",efoldfactor)
+else
+    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",efoldfactor)
+end
+mkpath(save_folder)
 
 # ============================  #
 ## Buoyancy gradient animation ##
@@ -28,77 +37,74 @@ file_b   = jldopen(filename * "_b.jld2")
 
 ## Extract a vector of iterations
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
+t_save = zeros(length(iterations))
 
 @info "Making animation of buoyancy gradient heatmaps..."
-
-t_save = zeros(length(iterations))
 
 # Masking for (0,Lz)
 Lzmask  = zb[findall(x -> x < Lz, zb)]
 NLzmask = length(Lzmask)
 
 # Masking for certain height from bottom of domain
-zbmask = zb[findall(x -> x < 0.5*δ, zb)]
+z_mask = findall(x -> x < 30,zb)
+zbmask = zb[z_mask]
 Nzmask = length(zbmask)
 
-# Fixing colour limits for buoyancy change
+# Load initial buoyancy profile
+b_initial = file_b["timeseries/b/$(iterations[1])"][:, 1, 1:NLzmask]
+
+# Fixing colour limits for buoyancy difference plot
 clim_abs = maximum(
-    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask]' .- N² * zbmask) / N²)
+    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial[:,1:Nzmask])' / N²)
     for iter in iterations
 )
 # Progress meter
-p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for (i, iter) in enumerate(iterations)
-    # if i % 100 == 0
-    # @info "Drawing frame $i / $(length(iterations))..."
-    # end
+    if i % 200 == 0
+    @info "Drawing frame $i / $(length(iterations))..."
+    end
 
     b_xz = file_b["timeseries/b/$iter"][:, 1, 1:NLzmask];
 
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    b_xz_plot = heatmap(xb, Lzmask/δ, b_xz'/N²;
+    b_xz_plot = heatmap(xb, Lzmask, b_xz'/N²;
         color = :thermal,
-        clims=(0, 1.05).*maximum(abs, b_xz'/N²),
-        xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,Lz/δ)); # Shows entire height of domain
+        clims = (0.95*minimum(b_xz'/N²), 1.05.*maximum(b_xz'/N²)),
+        xlabel = "x", ylabel = "z",
+        xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
 
-    b_diff_xz_plot = heatmap(xb, zbmask/δ, (b_xz[:,1:Nzmask]' .- N²*zbmask)/N²;
+    b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask] .- b_initial[:,1:Nzmask])'/N²;
         color = :coolwarm,
         clims = (-clim_abs,clim_abs).*1.05,
-        xlabel = "x", ylabel = "z/δ",
-        xlims = (0, Lx), ylims = (0,zbmask[end]/δ)); # Shows lower part of domain near the rigid boundary
+        xlabel = "x", ylabel = "z",
+        xlims = (0, Lx), ylims = (0,zbmask[end]));
 
     b_title = @sprintf("b/N² at t = %s, N/f = %.1f", round(t), r);
-    b_diff_title = @sprintf("(b-N²z)/N² at t = %s, N/f = %.1f", round(t), r);
+    b_diff_title = @sprintf("(b-bᵢ)/N² at t = %s, N/f = %.1f", round(t), r);
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot,
         layout = (2, 1),
-        size = (1000, 500),
+        size = (1000, 550),
         title = [b_title b_diff_title],
         margin = 25px)
 
-    if iter == iterations[end]
-        close(file_vel)
-        close(file_b)
-    end
-
     # Advance progress meter
-    next!(p)
+    # next!(p)
 end
+close(file_vel)
+close(file_b)
 
 # Save the animation to a file
-mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Plot r = %.1f.mp4", r), fps = 20) # hide
+mp4(anim, save_folder*@sprintf("Ekman Plot r = %.1f.mp4", r), fps = 30) # hide
 
 #  ==========================  #
 ## Average velocity animation ##
 #  ==========================  #
-
-# Import parameters
-include("Parameters.jl")
 
 # Set the filename path prefix
 filename = @sprintf("Ekman/Data/Ekman r=%.1f", r)
@@ -111,40 +117,44 @@ v_avg_series = FieldTimeSeries(filename * " average velocity.jld2", "v_avg")
 times = u_avg_series.times
 zu    = znodes(u_avg_series[1])
 
+ylimits = (0,Lz)
+
 @info "Making animation of plane-averaged velocity profiles..."
 
 # Progress meter
-p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for i in 1:length(times)
 
     t = times[i]
-    # @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
+    if i % 100 == 0
+        @info "Drawing frame $i / $(length(times)) at sim time t = $(round(t, digits=1))..."
+    end
 
     # Extract 1D interior velocity vectors
     u_prof = vec(interior(u_avg_series[i], 1, 1, :))
     v_prof = vec(interior(v_avg_series[i], 1, 1, :))
 
     # Plot u_avg profile normalized by U*
-    p1 = plot( (u_prof.-U∞)/u_star, zu / δ,
+    p1 = plot( (u_prof.-U∞)/u_star, zu,
              linewidth = 3,
              color     = :navy,
              xlabel    = "(<u>-U∞)/u*",
-             ylabel    = "Height z / δ",
+             ylabel    = "Height z",
              xlims     = (-10, 7.5),
-             ylims     = (0, 0.45),
+             ylims     = ylimits,
              grid      = true,
              margin    = 25px,
              legend    = false)
 
     # Plot u_avg profile normalized by U*
-    p2 = plot( v_prof/u_star, zu / δ,
+    p2 = plot( v_prof/u_star, zu,
             linewidth = 3,
             color     = :crimson,
             xlabel    = "<v>/u*",
-            ylabel    = "Height z / δ",
+            ylabel    = "Height z",
             xlims     = (-10, 7.5),
-            ylims     = (0, 0.45),
+            ylims     = ylimits,
             grid      = true,
             margin    = 25px,
             legend    = false)
@@ -156,10 +166,10 @@ anim = @animate for i in 1:length(times)
         plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
 
     # Progress
-    next!(p)
+    # next!(p)
 end
 
-mp4(anim, @sprintf("Ekman/3D Simulation/Animations/Ekman Velocity Plot r = %.1f.mp4", r), fps = 30)
+mp4(anim, save_folder*@sprintf("Ekman Velocity Plot r = %.1f.mp4", r), fps = 60)
 
 
 # ============================= #
@@ -184,15 +194,19 @@ zx = znodes(ωx_avg_series[1])
 zy = znodes(ωy_avg_series[1])
 zz = znodes(ωz_avg_series[1])
 
+ylimits = (0,Lz)
+
 @info "Making animation of plane-averaged vorticity profiles..."
 
 # Progress meter
-p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
+# p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
 
 anim_vort = @animate for i in 1:length(vort_times)
 
     t = vort_times[i]
-    # @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
+    if i % 100 == 0
+        @info "Drawing vorticity frame $i / $(length(vort_times)) at sim time t = $(round(t, digits=1))..."
+    end
 
     # Extract 1D interior vorticity vectors (stripping halo cells)
     ωx_prof = vec(interior(ωx_avg_series[i], 1, 1, :))
@@ -200,22 +214,24 @@ anim_vort = @animate for i in 1:length(vort_times)
     ωz_prof = vec(interior(ωz_avg_series[i], 1, 1, :))
 
     # Panel 1: ωx profile
-    p_x = plot(ωx_prof / f₀, zx / δ,
+    p_x = plot(ωx_prof / f₀, zx,
                linewidth = 2,
                color     = :crimson,
                xlabel    = "<ωx> / f₀",
-               ylabel    = "Height z / δ",
-               ylims     = (0, 0.45),
+               ylabel    = "Height z",
+               xlims     = (-100, 100),
+               ylims     = ylimits,
                grid      = true,
                legend    = false)
 
     # Panel 2: ωy profile
-    p_y = plot(ωy_prof / f₀, zy / δ,
+    p_y = plot(ωy_prof / f₀, zy,
                linewidth = 2,
                color     = :teal,
                xlabel    = "<ωy> / f₀",
-               ylabel    = "Height z / δ",
-               ylims     = (0, 0.45),
+               ylabel    = "Height z",
+               xlims     = (-50, 200),
+               ylims     = ylimits,
                grid      = true,
                legend    = false)
 
@@ -233,10 +249,11 @@ anim_vort = @animate for i in 1:length(vort_times)
          layout     = (1, 2),
          size       = (1000, 600),
          margin     = 25px,
+         margin     = 25px,
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
 
     # Progress
-    next!(p)
+    # next!(p)
 end
 
-mp4(anim_vort, @sprintf("Ekman/3D Simulation/Animations/Ekman Vorticity Plot r = %.1f.mp4", r), fps = 30)
+mp4(anim_vort, save_folder*@sprintf("Ekman Vorticity Plot r = %.1f.mp4", r), fps = 60)
