@@ -77,12 +77,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
         xlabel = "x", ylabel = "z",
         xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
 
-    # b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask]' .- b_initial')/N²;
-    #     color = :coolwarm,
-    #     clims = (-clim_abs,clim_abs).*1.05,
-    #     xlabel = "x", ylabel = "z",
-    #     xlims = (0, Lx), ylims = (0,zbmask[end])); # Shows lower part of domain near the rigid boundary
-
     b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask] .- b_initial[:,1:Nzmask])'/N²;
         color = :coolwarm,
         clims = (-clim_abs,clim_abs).*1.05,
