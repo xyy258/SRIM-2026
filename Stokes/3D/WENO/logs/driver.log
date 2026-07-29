@@ -1,0 +1,21 @@
+[2026-07-21 00:46:38] Phase 1: waiting for Ri0 to reach 12 periods
+[2026-07-21 03:04:41] Ri0 reached 12.245 periods >= 12 -- stopping it (pid 877445)
+[2026-07-21 03:05:31] Ri0 stopped at 12.245 periods
+[2026-07-21 03:05:31] Phase 2: launching Ri500 and Ri2500 concurrently
+[2026-07-21 03:05:31]   launched Ri500 (pid 1007101)
+[2026-07-21 03:05:36]   launched Ri2500 (pid 1007241)
+[2026-07-21 07:01:43] Both stratified cases finished
+[2026-07-21 07:01:43] Phase 3: post-processing
+[2026-07-21 07:01:43]   Ri0: profiles
+[2026-07-21 07:02:13]   Ri0: animation
+[2026-07-21 07:05:01]   Ri500: profiles
+[2026-07-21 07:05:32]   Ri500: animation
+[2026-07-21 07:08:49]   Ri2500: profiles
+[2026-07-21 07:09:20]   Ri2500: animation
+[2026-07-21 07:12:36] ALL DONE
+[2026-07-21 07:12:36]   Ri0 reached 12.245 periods
+[2026-07-21 07:12:36]   Ri500 reached 14.935 periods
+[2026-07-21 07:12:36]   Ri2500 reached 15.000 periods
+780M	output_Ri0
+935M	output_Ri500
+934M	output_Ri2500
