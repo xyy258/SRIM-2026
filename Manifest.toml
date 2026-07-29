@@ -674,9 +674,9 @@ version = "4.1.0+0"
 
 [[deps.LLVM]]
 deps = ["CEnum", "LLVMExtra_jll", "Libdl", "PrecompileTools", "Preferences", "Printf", "Unicode"]
-git-tree-sha1 = "24af42ea221a14a04283e362d83d2cdcb115cd12"
+git-tree-sha1 = "39c054c8fd8cef1d405ba7e399d70710fdbae46c"
 uuid = "929cbde3-209d-540e-8aea-75f648917ca0"
-version = "9.10.1"
+version = "9.11.0"
 weakdeps = ["BFloat16s"]
 
     [deps.LLVM.extensions]
@@ -684,9 +684,9 @@ weakdeps = ["BFloat16s"]
 
 [[deps.LLVMExtra_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl", "TOML"]
-git-tree-sha1 = "70c96f133c78c3cdc06234157144fab3744c6b38"
+git-tree-sha1 = "8886105e8ed2aa53062ae99870840a1e3622aaac"
 uuid = "dad2f222-ce93-54a1-a47d-0025e8a3acab"
-version = "0.0.43+1"
+version = "0.0.44+0"
 
 [[deps.LLVMLoopInfo]]
 git-tree-sha1 = "2e5c102cfc41f48ae4740c7eca7743cc7e7b75ea"
@@ -987,9 +987,9 @@ version = "1.1.4"
 
 [[deps.NetCDF_jll]]
 deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPIABI_jll", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libaec_jll", "libzip_jll"]
-git-tree-sha1 = "8a36db9b934b0e72583e624abc8f3b3d60554f2c"
+git-tree-sha1 = "b9584045c11c1c89d24083bb654c37b73a447877"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "401.1000.0+0"
+version = "401.1000.100+0"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -1003,16 +1003,17 @@ version = "0.18.0"
 
 [[deps.Oceananigans]]
 deps = ["Adapt", "BFloat16s", "Crayons", "CubedSphere", "Dates", "Distances", "DocStringExtensions", "FFTW", "GPUArraysCore", "Glob", "InteractiveUtils", "JLD2", "KernelAbstractions", "Krylov", "LinearAlgebra", "Logging", "MPI", "MuladdMacro", "OffsetArrays", "OrderedCollections", "Pkg", "Printf", "ReactantCore", "Rotations", "SeawaterPolynomials", "SparseArrays", "StaticArrays", "Statistics", "StructArrays"]
-git-tree-sha1 = "72cef881b394fc1b75cbee0408ebf7a9926c73da"
+git-tree-sha1 = "58421957f168a31787c1a4bd23f54b35e6fe4b70"
 uuid = "9e8cae18-63c1-5223-a75c-80ca9d6e9a09"
-version = "0.110.11"
+version = "0.110.13"
 
     [deps.Oceananigans.extensions]
     OceananigansAMDGPUExt = ["AMDGPU", "AbstractFFTs"]
     OceananigansCUDAExt = ["CUDA", "GPUArrays", "GPUArraysCore"]
+    OceananigansConservativeRegriddingExt = "ConservativeRegridding"
     OceananigansEnzymeExt = "Enzyme"
     OceananigansMakieExt = "Makie"
-    OceananigansMetalExt = "Metal"
+    OceananigansMetalExt = ["Metal", "AbstractFFTs"]
     OceananigansNCCLExt = ["NCCL", "CUDA"]
     OceananigansNCDatasetsExt = "NCDatasets"
     OceananigansOneAPIExt = "oneAPI"
@@ -1023,6 +1024,7 @@ version = "0.110.11"
     AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
     AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
     CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    ConservativeRegridding = "8e50ac2c-eb48-49bc-a402-07c87b949343"
     ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
     GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
