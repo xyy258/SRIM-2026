@@ -10,9 +10,9 @@ include("Parameters.jl")
 if profile == 0
     save_folder = "Ekman/3D Simulation/Linear/Animations/"
 elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Animations/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Animations/%.2f/",efold)
 else
-    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",efold)
 end
 mkpath(save_folder)
 

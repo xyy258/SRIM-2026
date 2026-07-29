@@ -10,7 +10,7 @@ Pr  = 10                    # Prandtl number
 z₀  = 0.0016                # m (roughness length)
 
 # Dimensions
-Lx, Ly, Lz = 80,80,60
+Lx, Ly, Lz = 80,80,40
 # Grid size
 Nx, Ny, Nz = 100,100,400
 
@@ -37,7 +37,7 @@ Ri_star = N²/f₀^2           # frictional Richardson
 # cᴰ = (κ/log(z₁/z₀))^2
 
 profile = 1                 # type of initial buoyancy profile (0=linear, 1=exponential)
-mask = 0                    # type of masking in sponge layer (0=piecewise, 1=Gaussian)
+mask = 1                   # type of masking in sponge layer (0=piecewise, 1=Gaussian)
 H = Lz + S                  # domain height, with sponge layer
 
 # If using profile == "Exponential"

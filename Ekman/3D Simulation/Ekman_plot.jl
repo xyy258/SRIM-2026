@@ -9,9 +9,9 @@ if profile == 0
     save_folder = "Ekman/3D Simulation/Linear/Plots/"
 
 elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Plots/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Plots/%.2f/",efold)
 else
-    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",efold)
 end
 mkpath(save_folder)
 
