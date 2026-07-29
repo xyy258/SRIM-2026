@@ -75,7 +75,7 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = r*f₀ # set to (buoyancy frequency)
+sponge_rate = 2r*f₀ # set to (buoyancy frequency)
 
 if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
@@ -118,8 +118,7 @@ model = NonhydrostaticModel(grid;
     forcing = (
     u = u_sponge,
     v = (v_forcing, v_sponge),
-    w = w_sponge,
-    b = b_sponge)
+    w = w_sponge) # can add back b_sponge if wanted
 )
 
 @info "3D simulation parameters"
