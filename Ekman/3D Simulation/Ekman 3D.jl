@@ -52,7 +52,8 @@ drag_bc_v = BulkDrag(coefficient=cᴰ)
 
 u_bcs = FieldBoundaryConditions(bottom=drag_bc_u)
 v_bcs = FieldBoundaryConditions(bottom=drag_bc_v)
-b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
+b_bcs = FieldBoundaryConditions(
+                                # top = GradientBoundaryCondition(N²), (removing this due to sponge layer)
                                 bottom = GradientBoundaryCondition(0))
 
 ## Initial conditions
@@ -75,7 +76,7 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = 2r*f₀ # set to (buoyancy frequency)
+sponge_rate = 4*r*f₀ # set to (buoyancy frequency)
 
 if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
@@ -130,11 +131,11 @@ Far stream velocity             U∞ = %.4f
 Square buoyancy frequency:      N² = %.2e,
 Coriolis parameter:             f = %.2e,
 Ratio:                          r = N/f = %.1f
-Molecular kinematic viscosity:  ν = %.2e,
+Molecular kinematic viscosity:  ν₀ = %.2e,
 Reynolds number:                Re∞ = %.2e,
 Prandtl number:                 Pr = %.1f,
-Molecular diffusivity:          κ = %.2e,
-Frictional velocity             u* = %.4f
+Molecular diffusivity:          κ₀ = %.2e,
+Frictional velocity             u* = %.2e
 Drag coefficient:               cᴰ = %.4f,
 Layer lengthscale:              δ = %.2f
 Frictional Reynolds             Re* = %.2e
@@ -235,17 +236,17 @@ simulation.output_writers[:avg_db_dz] =
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
                 filename = filename * " average buoyancy.jld2",
-                schedule = IterationInterval(25),
+                schedule = IterationInterval(50),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = filename * " average velocity.jld2",
-                schedule = IterationInterval(25),
+                schedule = IterationInterval(50),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
                 filename = filename * " average vorticity.jld2",
-                schedule = IterationInterval(25),
+                schedule = IterationInterval(50),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =

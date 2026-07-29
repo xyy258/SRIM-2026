@@ -12,7 +12,7 @@ z₀  = 0.0016                # m (roughness length)
 # Dimensions
 Lx, Ly, Lz = 80,80,60
 # Grid size
-Nx, Ny, Nz = 100,100,300
+Nx, Ny, Nz = 100,100,400
 
 # Duration and timestep
 max_Δt = 7.5 # maximum allowable timestep
