@@ -4,12 +4,12 @@ using Oceananigans, JLD2, Plots, Printf
 #   julia --project=. Tidal3Danimation.jl Ri500
 # Outputs go to output_<case>/ with the case in every filename.
 #
-# Panels: u (oscillating shear + bursts), then buoyancy perturbation
-# b' = b − N²z for stratified cases or w for Ri0 (where b ≡ 0), then dye.
+# Panels: u (oscillating shear + bursts), then the thermal perturbation
+# b' = b − N²_ref z, then dye. Ri0 now carries b as a passive scalar with the
+# same background gradient, so all three cases show the same three panels.
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
-zoom_height = 30.0    # set lower to zoom on the bottom
 stride      = 1       # plot every `stride`-th saved frame
 
 # Load one snapshot just to get the grid/coordinates
@@ -20,13 +20,15 @@ xu, ~, zu = nodes(u_ic)
 xb, ~, zb = nodes(b_ic)
 
 file_xz = jldopen(filename * ".jld2")
-iterations = parse.(Int, keys(file_xz["timeseries/t"]))
+iterations = sort(parse.(Int, keys(file_xz["timeseries/t"])))
 iterations = iterations[1:stride:end]
 
 # Fixed color limits across frames so colors are comparable in time
 ulim  = 1.2 * U₀
-wlim  = 0.2 * U₀
-bplim = N² > 0 ? 2N² : 1.0     # b' scale (unused when N² = 0)
+bp_scale = N²_ref * δ           # normalize b' by this so the colorbar isn't a
+                                # physically tiny number (~1e-6) that rounds to
+                                # 0.00000 under Plots' default tick formatting
+bplim = 2                      # b' scale: a 2 δ_s displacement of the background
 
 t_save   = zeros(length(iterations))
 
@@ -37,7 +39,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
     i % 100 == 0 && @info "Frame $i / $(length(iterations))"
 
     u_xz = file_xz["timeseries/u/$iter"][:, 1, :]
-    w_xz = file_xz["timeseries/w/$iter"][:, 1, :]
     b_xz = file_xz["timeseries/b/$iter"][:, 1, :]
     c_xz = file_xz["timeseries/c/$iter"][:, 1, :]
     t    = file_xz["timeseries/t/$iter"]
@@ -45,27 +46,22 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t_save[i] = t
 
     u_plot = heatmap(xu, zu, u_xz'; color = :balance, clims = (-ulim, ulim),
-                     ylims = (0, zoom_height), xlims = (0, Lx),
+                     ylims = (0, Lz), xlims = (0, Lx),
                      ylabel = "z")
 
-    if N² > 0
-        # Buoyancy perturbation: subtract the background ramp N²z
-        bp_xz = b_xz .- reshape(N² .* zb, 1, :)
-        mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
-                           clims = (-bplim, bplim),
-                           ylims = (0, zoom_height), xlims = (0, Lx),
-                           ylabel = "z")
-        mid_title = "b' = b − N²z"
-    else
-        mid_plot = heatmap(xu, zb, w_xz[:, 1:length(zb)]'; color = :balance,
-                           clims = (-wlim, wlim),
-                           ylims = (0, zoom_height), xlims = (0, Lx),
-                           ylabel = "z")
-        mid_title = "w"
-    end
+    # Thermal perturbation: subtract the background profile, then normalize by
+    # N²_ref δ so the colorbar shows an O(1) number instead of a value like
+    # ~1e-6 that displays as 0.00000 under Plots' default tick formatting.
+    # OLD (uniform background): bp_xz = b_xz .- reshape(N²_ref .* zb, 1, :)
+    bp_xz = (b_xz .- reshape(b_background.(zb), 1, :)) ./ bp_scale
+    mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
+                       clims = (-bplim, bplim),
+                       ylims = (0, Lz), xlims = (0, Lx),
+                       ylabel = "z", colorbar_title = "  b' / (N²_ref δ)")
+    mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
     c_plot = heatmap(xu, zb, c_xz'; color = :thermal, clims = (0, 1),
-                     ylims = (0, zoom_height), xlims = (0, Lx),
+                     ylims = (0, Lz), xlims = (0, Lx),
                      xlabel = "x", ylabel = "z")
 
     ttl = @sprintf("%s,  t = %.2f tidal periods", case, t / T_tide)
