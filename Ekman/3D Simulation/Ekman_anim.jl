@@ -2,7 +2,7 @@ ENV["GKSwstype"] = "100"
 
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures # using units for borders
-using ProgressMeter
+# using ProgressMeter
 # using NCDatasets
 
 # Import parameters
