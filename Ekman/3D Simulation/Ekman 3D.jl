@@ -52,8 +52,7 @@ drag_bc_v = BulkDrag(coefficient=cᴰ)
 
 u_bcs = FieldBoundaryConditions(bottom=drag_bc_u)
 v_bcs = FieldBoundaryConditions(bottom=drag_bc_v)
-b_bcs = FieldBoundaryConditions(
-                                # top = GradientBoundaryCondition(N²), (removing this due to sponge layer)
+b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
                                 bottom = GradientBoundaryCondition(0))
 
 ## Initial conditions
@@ -65,7 +64,7 @@ if profile == 0
     @inline bᵢ(x,y,z) = N² * z
     Profile = "linear"
 elseif profile == 1
-    @inline bᵢ(x,y,z) = N² * efold * exp((z - Lz) / efold)
+    @inline bᵢ(x,y,z) = N²*(z + efold*(exp(-z / efold) - 1))
     Profile = "exponential"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
@@ -92,15 +91,8 @@ u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
 v_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 
-if profile == 0
-    b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
-                          target = LinearTarget{:z}(intercept = 0, gradient = N²))
-elseif profile == 1
-    b_target_intercept = N²*(efold-Lz)
-    b_sponge = Relaxation(rate = sponge_rate,
-                          mask = sponge_mask,
-                          target = LinearTarget{:z}(intercept = b_target_intercept, gradient = N²))
-end
+b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
+                      target = LinearTarget{:z}(intercept = 0, gradient = N²))
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;

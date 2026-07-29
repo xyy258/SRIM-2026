@@ -45,7 +45,10 @@ if profile == "Exponential"
     if !@isdefined(r) || isnothing(r)
         efoldfactor = 1
     end
+    if !@isdefined(efold) || isnothing(efold)
+        efold = efoldfactor*Lz
+    end
 end
-efold = efoldfactor*Lz      # e-folding length for buoyancy
+     # e-folding length for buoyancy
 
 kick = 0.01*U∞              # amplitude of random perturbation
