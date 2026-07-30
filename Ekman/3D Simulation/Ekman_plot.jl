@@ -7,11 +7,10 @@ using Plots.PlotMeasures
 include("Parameters.jl")
 if profile == 0
     save_folder = "Ekman/3D Simulation/Linear/Plots/"
-
 elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Plots/%.2f/",efold)
+    save_folder = @sprintf("Ekman/3D Simulation/Nonlinear/Plots/%.2f/",T)
 else
-    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",efold)
+    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",T)
 end
 mkpath(save_folder)
 

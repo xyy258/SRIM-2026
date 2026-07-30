@@ -64,8 +64,8 @@ if profile == 0
     @inline bᵢ(x,y,z) = N² * z
     Profile = "linear"
 elseif profile == 1
-    @inline bᵢ(x,y,z) = N²*(z + efold*(exp(-z / efold) - 1))
-    Profile = "exponential"
+    @inline bᵢ(x,y,z) = N²*z*(1-exp(-0.2*(z/T)^5))
+    Profile = "nonlinear"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -81,7 +81,7 @@ if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
     Mask = "piecewise linear"
 elseif mask == 1
-    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
+    sponge_mask = GaussianMask{:z}(center=H, width=S)
     Mask = "Gaussian"
 end
 @info "Using $Mask mask for sponge layer..."
@@ -93,6 +93,7 @@ w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 
 b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                       target = LinearTarget{:z}(intercept = 0, gradient = N²))
+                    #   target = (x, y, z, t) -> bᵢ(x,y,z))
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
