@@ -37,14 +37,7 @@ include(joinpath(@__DIR__, "case_params.jl"))
 # ---------------- Architecture ----------------
 arch = GPU()          # start Julia with `julia -t auto`
 
-# OLD (Gayen reproduction): 64, 64, 256. NEW: reduced by default for the
-# L_strat sweep — 8 runs at ~8 periods is only affordable at coarser resolution.
-# The new regime (U₀ = 4 cm/s, ω = 1e-4) has Re_s ≈ 5640 > the paper's 1788, so
-# this is a deliberate resolution compromise, not paper-fidelity. Override per
-# run with NX/NY/NZ env vars.
-Nx = parse(Int, get(ENV, "NX", "48"))
-Ny = parse(Int, get(ENV, "NY", "48"))
-Nz = parse(Int, get(ENV, "NZ", "192"))
+Nx, Ny, Nz = 64, 64, 256
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
@@ -272,10 +265,9 @@ start_time = time_ns()
 # flush: stdout is block-buffered when redirected to a file, so without this an
 # overnight run's log stays empty for tens of minutes and the driver cannot read
 # how far along the case is.
-progress(sim) = (@printf("i: %6d, t: %9.1f s, ωt: %6.2f (%.2f periods), wall: %10s, Δt: %6.2f, CFL: %.2e\n",
+progress(sim) = (@printf("i: %6d, t: %10.1f s (%.2f periods), wall: %10s, Δt: %6.2f, CFL: %.2e\n",
                          sim.model.clock.iteration,
                          sim.model.clock.time,
-                         ω * sim.model.clock.time,
                          sim.model.clock.time / T_tide,
                          prettytime(1e-9 * (time_ns() - start_time)),
                          sim.Δt,

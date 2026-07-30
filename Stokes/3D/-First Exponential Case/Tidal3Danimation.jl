@@ -71,6 +71,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
     iter == iterations[end] && close(file_xz)
 end
 
-mp4(anim, joinpath(outdir, "animation_" * casetag * ".mp4"), fps = 12)
+mp4(anim, joinpath(outdir, "animation_" * case * ".mp4"), fps = 12)
 
 @info "Saved animation for $case in $outdir/"
