@@ -16,15 +16,16 @@ const ω  = 1e-4
 const f  = ω
 const ν  = 1.0e-6
 const U₀ = 0.04
+const δs = sqrt(2ν / ω)            # Stokes thickness — near-wall cutoff for the Ri_g search
 const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
 
 const L_values  = [2, 4, 6, 8]
 const Ri_values = [(500, "Ri500"), (2500, "Ri2500")]
-# δ = u*/f ≈ 10 m ≈ domain height, so the tidal boundary layer sits in z/δ ≲ 0.5.
-# Zoom the axis to 0.8 so the mixed layer and pycnocline are visible rather than
-# crushed into a sliver at the bottom.
-const zmax_δ    = 0.8              # z/δ axis range (δ = u*/f)
+# Depth axis in PHYSICAL METRES. The tidal boundary layer / pycnocline live in
+# the bottom several metres; 8 m shows them with headroom and excludes the sponge
+# (which begins at 70 δ_s ≈ 9.9 m). δ = u*/f is still reported in each title.
+const zmax_m    = 8.0             # metres shown on the depth axis
 const n_periods_plot = [1, 2, 4, 6, 8]
 
 ramp = ["#A8CBEC", "#6BA3DE", "#3C7CC4", "#1F559B", "#0B3164"]
@@ -78,17 +79,27 @@ for L in L_values, (Ri, ricase) in Ri_values
     ustar = maximum(uτ[times .>= (times[end] - T_tide)])
     δ = ustar / f
 
-    kc = findall(z -> z / δ <= zmax_δ, zc)
-    kg = findall(z -> z / δ <= zmax_δ, zg)
+    kc = findall(z -> z <= zmax_m, zc)
+    kg = findall(z -> z <= zmax_m, zg)
 
-    pa = plot(; ylabel = "z / δ  (δ=u*/f)", xlabel = "⟨b⟩ₓᵧ / (a N²)",
-              title = "(a) buoyancy", ylims = (0, zmax_δ),
+    pa = plot(; ylabel = "z (m)", xlabel = "⟨b⟩ₓᵧ / (a N²)",
+              title = "(a) buoyancy", ylims = (0, zmax_m),
               legend = :bottomright,
               foreground_color_legend = nothing, background_color_legend = nothing)
-    pb = plot(; ylabel = "z / δ  (δ=u*/f)", xlabel = "∂⟨b⟩ₓᵧ/∂z / N²",
-              title = "(b) buoyancy gradient", ylims = (0, zmax_δ),
+    pb = plot(; ylabel = "z (m)", xlabel = "∂⟨b⟩ₓᵧ/∂z / N²",
+              title = "(b) buoyancy gradient", ylims = (0, zmax_m),
               legend = :topright,
               foreground_color_legend = nothing, background_color_legend = nothing)
+
+    # Initial background profile at t = 0 (analytic exponential, this case's L),
+    # the no-mixing reference the time series depart from. Normalized like the
+    # data: gradient by N∞², buoyancy by a·N∞². Drawn first so curves sit on top.
+    N²_bg_norm(z) = 1 - exp(-z / L)                          # N²_bg / N∞²
+    b_bg_norm(z)  = (z + L * (exp(-z / L) - 1)) / a          # b_bg / (a N∞²)
+    plot!(pa, b_bg_norm.(zc[kc]), zc[kc]; color = :black, linestyle = :dash,
+          linewidth = 1.5, label = "background (t = 0)")
+    plot!(pb, N²_bg_norm.(zg[kg]), zg[kg]; color = :black, linestyle = :dash,
+          linewidth = 1.5, label = "background (t = 0)")
 
     scatter!(pb, [NaN], [NaN]; markershape = :circle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
@@ -112,19 +123,19 @@ for L in L_values, (Ri, ricase) in Ri_values
         bn = Bp ./ bscale
 
         lbl = @sprintf("ωt = %.1f  (%d T)", ω * times[n], np)
-        plot!(pa, bn[kc], zc[kc] ./ δ; color = col, linewidth = 2, label = lbl)
-        plot!(pb, G[kg], zg[kg] ./ δ; color = col, linewidth = 2, label = "")
+        plot!(pa, bn[kc], zc[kc]; color = col, linewidth = 2, label = lbl)
+        plot!(pb, G[kg], zg[kg]; color = col, linewidth = 2, label = "")
 
         h_m = first_crossing(zg, G, 0.1)
         Rig = (G .* N²) ./ max.(S², eps())
-        z_Rig = first_crossing(zg, Rig, 0.25; zmin = δ)
+        z_Rig = first_crossing(zg, Rig, 0.25; zmin = δs)   # skip near-wall noise (below one Stokes thickness)
 
         for (z₀, mk) in ((h_m, :circle), (z_Rig, :utriangle))
             isnan(z₀) && continue
-            scatter!(pa, [interp_at(zc, bn, z₀)], [z₀ / δ]; color = col,
+            scatter!(pa, [interp_at(zc, bn, z₀)], [z₀]; color = col,
                      markershape = mk, markersize = 6, markerstrokecolor = :white,
                      markerstrokewidth = 1.5, label = "")
-            scatter!(pb, [interp_at(zg, G, z₀)], [z₀ / δ]; color = col,
+            scatter!(pb, [interp_at(zg, G, z₀)], [z₀]; color = col,
                      markershape = mk, markersize = 6, markerstrokecolor = :white,
                      markerstrokewidth = 1.5, label = "")
         end
