@@ -1,50 +1,63 @@
 # Input parameters
-U∞ = 0.04                   # far stream velocity
-f₀ = 1e-4                   # Coriolis parameter
+const U∞ = 0.04                 # far stream velocity
+const f₀ = 1e-4                 # Coriolis parameter
 
 if !@isdefined(r) || isnothing(r)
-r   = 75                    # ratio N/f
+const r   = 75                  # ratio N/f
 end
-Re∞ = 4.55e7                # Reynolds number
-Pr  = 10                    # Prandtl number
-z₀  = 0.0016                # m (roughness length)
+const Re∞ = 4.55e7              # Reynolds number
+const Pr  = 10                  # Prandtl number
+const z₀  = 0.0016              # m (roughness length)
 
 # Dimensions
-Lx, Ly, Lz = 80,80,30
+const Lx, Ly, Lz = 75,75,30
 # Grid size
-Nx, Ny, Nz = 100,100,300
+const Nx, Ny, Nz = 100,100,300
 
 # Duration and timestep
-max_Δt = 7.5 # maximum allowable timestep
-duration = 18e4 # The non-dimensional duration of the simulation
+const max_Δt = 7.5 # maximum allowable timestep
+const duration = 25e4 # The non-dimensional duration of the simulation
 
 # Sponge layer thickness
-S = 10
+const S = 10
 
 # Other parameters
-N²      = (r*f₀)^2          # buoyancy frequency
-κ       = 0.41              # von Karman constant
-ν₀      = 1e-6              # molecular kinematic viscosity
-D       = U∞/f₀             # Rossby lengthscale
-κ₀      = ν₀/Pr             # molecular diffusivity
-u_star  = 0.049*U∞          # friction velocity
-δ       = u_star/f₀         # boundary layer lengthscale
-Re_star = u_star*δ/ν₀       # frictional Reynolds
-Ri_star = N²/f₀^2           # frictional Richardson
+const N²      = (r*f₀)^2        # buoyancy frequency
+const κ       = 0.41            # von Karman constant
+const ν₀      = 1e-6            # molecular kinematic viscosity
+const D       = U∞/f₀           # Rossby lengthscale
+const κ₀      = ν₀/Pr           # molecular diffusivity
+const u_star  = 0.049*U∞        # friction velocity
+const δ       = u_star/f₀       # boundary layer lengthscale
+const Re_star = u_star*δ/ν₀     # frictional Reynolds
+const Ri_star = N²/f₀^2         # frictional Richardson
 
 # Coefficient of drag calculated later:
 # z₁ = abs(Array(znodes(grid, Center()))[1])
 # cᴰ = (κ/log(z₁/z₀))^2
 
-profile = 1                 # type of initial buoyancy profile (0=linear, 1=nonlinear)
-mask = 1                    # type of masking in sponge layer (0=piecewise, 1=Gaussian)
-H = Lz + S                  # domain height, with sponge layer
+if !@isdefined(profile) || isnothing(profile)
+    const profile = 2           # type of initial buoyancy profile
+                                # (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay)
+end
+const mask = 1                  # type of masking in sponge layer (0=piecewise, 1=Gaussian)
+const H = Lz + S                # domain height, with sponge layer
 
-# If using profile == "Exponential"
+# If using profile == "nonlinear"
 if profile == 1
-if !@isdefined(r) || isnothing(r)
-    T = 10
-end
+    if !@isdefined(T) || isnothing(T)
+        const T = 10            # adjusts when sharp change in buoyancy occurs
+    end
+elseif profile == 2
+    if !@isdefined(efactor) || isnothing(efactor)
+        const efactor = 1
+    end
+    const Lᴰ = efactor*Lz       # decay length of exponential profile with fixed buoyancy difference
+elseif profile == 3
+    if !@isdefined(efactor) || isnothing(efactor)
+        const efactor = 1
+    end
+    const Lᴰ = efactor*Lz       # decay length of exponential profile with fixed top gradient
 end
 
-kick = 0.01*U∞              # amplitude of random perturbation
+const kick = 0.01*U∞            # amplitude of random perturbation

@@ -52,7 +52,8 @@ drag_bc_v = BulkDrag(coefficient=cᴰ)
 
 u_bcs = FieldBoundaryConditions(bottom=drag_bc_u)
 v_bcs = FieldBoundaryConditions(bottom=drag_bc_v)
-b_bcs = FieldBoundaryConditions(top = GradientBoundaryCondition(N²),
+b_bcs = FieldBoundaryConditions(
+                                # top = GradientBoundaryCondition(N²),
                                 bottom = GradientBoundaryCondition(0))
 
 ## Initial conditions
@@ -60,12 +61,18 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
-if profile == 0
+if profile == 0         # linear
     @inline bᵢ(x,y,z) = N² * z
     Profile = "linear"
-elseif profile == 1
+elseif profile == 1     # nonlinear
     @inline bᵢ(x,y,z) = N²*z*(1-exp(-0.2*(z/T)^5))
     Profile = "nonlinear"
+elseif profile == 2     # exponential with fixed buoyancy difference
+    @inline bᵢ(x,y,z) = N²*Lz*(Lᴰ*(exp(z/Lᴰ)-1)-z)/(Lᴰ*(exp(Lz/Lᴰ)-1)-Lz)
+    Profile = "exponential"
+elseif profile == 3     # linear with exponential decay
+    @inline bᵢ(x,y,z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
+    Profile = "linear with exponential decay"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -75,13 +82,13 @@ forcing_params = (s=U∞, f=f₀)
 v_forcing = Forcing(v_forcing_fn, parameters=forcing_params)
 
 ## Sponge layers
-sponge_rate = 4*r*f₀ # set to (buoyancy frequency)
+sponge_rate = r*f₀ # set to (buoyancy frequency)
 
 if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
     Mask = "piecewise linear"
 elseif mask == 1
-    sponge_mask = GaussianMask{:z}(center=H, width=S)
+    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
     Mask = "Gaussian"
 end
 @info "Using $Mask mask for sponge layer..."
@@ -91,9 +98,13 @@ u_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
 v_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 w_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask)
 
+# Create a target field on the GPU grid
+b_target = Field{Center, Center, Center}(grid)
+# Set field values using bᵢ
+set!(b_target, bᵢ)
 b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
-                      target = LinearTarget{:z}(intercept = 0, gradient = N²))
-                    #   target = (x, y, z, t) -> bᵢ(x,y,z))
+                    #   target = LinearTarget{:z}(intercept = 0, gradient = N²))
+                      target = b_target)
 
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
@@ -112,7 +123,8 @@ model = NonhydrostaticModel(grid;
     forcing = (
     u = u_sponge,
     v = (v_forcing, v_sponge),
-    w = w_sponge) # can add back b_sponge if wanted
+    w = w_sponge,
+    b = b_sponge)
 )
 
 @info "3D simulation parameters"
@@ -120,17 +132,17 @@ model = NonhydrostaticModel(grid;
 @printf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
-Far stream velocity             U∞ = %.4f
-Square buoyancy frequency:      N² = %.2e,
-Coriolis parameter:             f = %.2e,
-Ratio:                          r = N/f = %.1f
-Molecular kinematic viscosity:  ν₀ = %.2e,
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f
+Molecular kinematic viscosity:  ν₀  = %.2e,
 Reynolds number:                Re∞ = %.2e,
-Prandtl number:                 Pr = %.1f,
-Molecular diffusivity:          κ₀ = %.2e,
-Frictional velocity             u* = %.2e
-Drag coefficient:               cᴰ = %.4f,
-Layer lengthscale:              δ = %.2f
+Prandtl number:                 Pr  = %.1f,
+Molecular diffusivity:          κ₀  = %.2e,
+Frictional velocity             u*  = %.2e
+Drag coefficient:               cᴰ  = %.4f,
+Layer lengthscale:              δ   = %.2f
 Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f\n",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
@@ -139,17 +151,17 @@ open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "w") do file
     write(file, @sprintf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
-Far stream velocity             U∞ = %.4f
-Square buoyancy frequency:      N² = %.2e,
-Coriolis parameter:             f = %.2e,
-Ratio:                          r = N/f = %.1f
-Molecular kinematic viscosity:  ν₀ = %.2e,
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f
+Molecular kinematic viscosity:  ν₀  = %.2e,
 Reynolds number:                Re∞ = %.2e,
-Prandtl number:                 Pr = %.1f,
-Molecular diffusivity:          κ₀ = %.2e,
-Frictional velocity             u* = %.2e
-Drag coefficient:               cᴰ = %.4f,
-Layer lengthscale:              δ = %.2f
+Prandtl number:                 Pr  = %.1f,
+Molecular diffusivity:          κ₀  = %.2e,
+Frictional velocity             u*  = %.2e
+Drag coefficient:               cᴰ  = %.4f,
+Layer lengthscale:              δ   = %.2f
 Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
@@ -191,7 +203,20 @@ u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
 
 # Set the name of the output file
-filename = @sprintf("Ekman/Data/Ekman r=%.1f",r)
+if profile == 0
+    data_folder = "Ekman/Data/0/"
+    filename = @sprintf("Ekman/Data/0/Ekman r=%.1f",r)
+elseif profile == 1
+    data_folder = "Ekman/Data/1/"
+    filename = @sprintf("Ekman/Data/1/Ekman r=%.1f, T=%.2f",r,T)
+elseif profile == 2
+    data_folder = "Ekman/Data/2/"
+    filename = @sprintf("Ekman/Data/2/Ekman r=%.1f, L=%.1fLz",r,efactor)
+elseif profile == 3
+    data_folder = "Ekman/Data/3/"
+    filename = @sprintf("Ekman/Data/3/Ekman r=%.1f, L=%.1fLz",r,efactor)
+end
+mkpath(data_folder)
 
 simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
@@ -214,7 +239,7 @@ v_avg = Field(Average(v, dims=(1, 2)))
 b_avg = Field(Average(b, dims=(1, 2)))
 
 # Horizontally-averaged buoyancy gradient ∂b/∂z
-db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
+db_dz_avg = Field(Average(∂z(b), dims=(1,2)))
 
 # Horizontally-averaged vorticity
 ωx_avg = Field(Average(∂y(w)-∂z(v), dims=(1, 2)))
@@ -224,7 +249,7 @@ db_dz_avg = Field(Average(∂z(b), dims=(1, 2)))
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = filename * " average buoyancy gradient.jld2",
-                schedule = IterationInterval(10),
+                schedule = TimeInterval(100),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
