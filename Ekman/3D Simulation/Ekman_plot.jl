@@ -7,20 +7,35 @@ using Plots.PlotMeasures
 include("Parameters.jl")
 if profile == 0
     save_folder = "Ekman/3D Simulation/Linear/Plots/"
-
 elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential/Plots/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Nonlinear/Plots/T=%.2f/",T)
+elseif profile == 2
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Plots/L=%.2fLz/",efactor)
+elseif profile == 3
+    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed top gradient/Plots/L=%.2fLz/",efactor)
 else
-    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",efoldfactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",T)
 end
 mkpath(save_folder)
+
+if profile == 0
+    root = @sprintf("Ekman/Data/0/Ekman r=%.1f",r)
+elseif profile == 1
+    root = @sprintf("Ekman/Data/1/Ekman r=%.1f, T=%.2f",r,T)
+elseif profile == 2
+    root = @sprintf("Ekman/Data/2/Ekman r=%.1f, L=%.1fLz",r,efactor)
+elseif profile == 3
+    root = @sprintf("Ekman/Data/3/Ekman r=%.1f, L=%.1fLz",r,efactor)
+else
+    root = @sprintf("Ekman/Data/Ekman r=%.1f",r)
+end
 
 #  ======================================================  #
 ## Plot of average buoyancy gradient with depth over time ##
 #  ======================================================  #
 
 # Set the filename
-filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
+filename = root * " average buoyancy gradient"
 
 db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
@@ -35,19 +50,20 @@ iterations = parse.(Int, keys(file_xz["timeseries/t"]))
 t_save = [file_xz["timeseries/t/$i"] for i in iterations]
 close(file_xz)
 
-# Extract the data slice into a 2D matrix [Nz, Nt]
-Nz = length(zb)
-Nt = length(iterations)
-gradient_data = zeros(Nz, Nt)
+# Extract the data slice into a 2D matrix [nz, nt]
+const nz = length(zb)
+const nt = length(iterations)
+gradient_data = zeros(nz,nt)
 
 for (t_idx, iter) in enumerate(iterations)
-    gradient_data[:, t_idx] = db_dz_timeseries[t_idx].data[1, 1, 1:Nz]
+    gradient_data[:, t_idx] = db_dz_timeseries[t_idx].data[1, 1, 1:nz]
 end
 
 # Reduce range of z
 zbconcat = zb[findall(<(Lz),zb)]
 Nzconcat = length(zbconcat)
 
+@info "Plot of average buoyancy gradient heatmap with depth over time..."
 heatmap(t_save*f₀, zbconcat, gradient_data[1:Nzconcat, :]/N²,
         xlabel = "tf",
         ylabel = "Height z",
@@ -61,7 +77,7 @@ savefig(save_folder*@sprintf("Buoyancy gradient plot r = %.1f.png",r))
 ##  Horizontally averaged buoyancy profile ##
 #  =======================================  #
 
-filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy",r)
+filename = root * " average buoyancy"
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
 
 # Extract grid coordinates using znodes
@@ -79,6 +95,8 @@ z_mask = findall(<(Lz),zb)
 b_plot_final   = b_final[z_mask]
 b_plot_initial = b_initial[z_mask]
 z_plot = zb[z_mask]
+
+@info "Plot of average buoyancy profile..."
 
 # Plot
 plot(b_plot_initial/N², z_plot,
@@ -102,7 +120,7 @@ savefig(save_folder*@sprintf("Averaged buoyancy profile r = %.1f.png",r))
 ## Horizontally averaged buoyancy gradient profile ##
 #  ===============================================  #
 
-filename = @sprintf("Ekman/Data/Ekman r=%.1f average buoyancy gradient",r)
+filename = root * " average buoyancy gradient"
 db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
 # Extract grid coordinates using znodes
@@ -121,6 +139,7 @@ db_dz_plot_initial = db_dz_initial[z_mask]
 db_dz_plot_final   = db_dz_final[z_mask]
 z_plot = zb[z_mask]
 
+@info "Plot of average buoyancy gradient profile..."
 
 # Plot
 plot(db_dz_plot_initial/N², z_plot,
@@ -144,19 +163,30 @@ savefig(save_folder*@sprintf("Averaged buoyancy gradient profile r = %.1f.png",r
 ##   Hodograph plot   ##
 #  ==================  #
 
-u_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity.jld2",r), "u_avg")
-v_series = FieldTimeSeries(@sprintf("Ekman/Data/Ekman r=%.1f average velocity.jld2",r), "v_avg")
+u_series = FieldTimeSeries(root * " average velocity.jld2", "u_avg")
+v_series = FieldTimeSeries(root * " average velocity.jld2", "v_avg")
 
 xu, yu, zu = nodes(u_series)
 zC = znodes(u_series.grid, Center())
 
-u_profile = vec(interior(u_series[end], 1, 1, :))
-v_profile = vec(interior(v_series[end], 1, 1, :))
+# Time averaged average velocity profiles over two inertial periods
+T_f = 2π / f₀  # Inertial period
+n_periods = 2
+t_end = u_series.times[end]
+t_indices = findall(t -> t >= t_end - n_periods*T_f, u_series.times)
+
+u_profile = vec(sum([interior(u_series[n], 1, 1, :) for n in t_indices])./length(t_indices))
+v_profile = vec(sum([interior(v_series[n], 1, 1, :) for n in t_indices])./length(t_indices))
+
+# u_profile = vec(interior(u_series[end], 1, 1, :))
+# v_profile = vec(interior(v_series[end], 1, 1, :))
 
 slice = 1:length(zC)
 u_slice = u_profile[slice]
 v_slice = v_profile[slice]
 z_slice = zC[slice]
+
+@info "Plot of hodograph..."
 
 plot(u_slice/U∞, v_slice/U∞,
     linewidth      = 2,
