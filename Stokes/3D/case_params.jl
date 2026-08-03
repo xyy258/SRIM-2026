@@ -31,13 +31,13 @@ const Ri = Ri_targets[case]
 # checked directly against the paper. NOTE: U₀ = 0.15 (which is what "1.5 cm/s"
 # looks like if read as 15 cm/s) would give Re_s = 5370 — a different regime,
 # not the one figures 4 and 5 are drawn from.
-const ω  = 1.4075235e-4        # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
-const U₀ = 0.015               # tidal velocity amplitude (m s⁻¹) = 1.5 cm s⁻¹
+const ω  = 1e-4        # M2 tidal frequency (s⁻¹) to match coriolis parameter in colleague's case
+const U₀ = 0.04               # tidal velocity amplitude (m s⁻¹) = 4 cm s⁻¹
 const ν  = 1.0e-6              # molecular viscosity of water (m² s⁻¹)
-const Pr = 0.7                 # molecular Prandtl number (paper value)
+const Pr = 10                 # molecular Prandtl number 
 const κ  = ν / Pr              # molecular diffusivity
 
-const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 0.1192 m
+const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 
 const Re_s   = U₀ * δ / ν      # ≈ 1788
 const T_tide = 2π / ω
 
@@ -70,7 +70,13 @@ const passive_scalar = Ri == 0
 # That offset is small against h_m, so h_m keeps the paper's literal definition;
 # the integral diagnostics in Tidal3Dprofiles.jl are instead measured against
 # N²_bg(z) so they still start from zero.
-const L_strat = 10δ
+# OLD: const L_strat = 10δ  (≈ 1.4 m, tied to the Stokes thickness).
+# NEW: L_strat is set in METRES from the environment so the sweep {2,4,6,8} m can
+# be driven externally (L_STRAT_M). The Stokes thickness δ_s ≈ 0.14 m is deemed
+# too small a length scale for this study (matching a colleague's Ekman set-up
+# where δ = u*/f ≈ several m); L is therefore given directly in metres.
+const L_m     = parse(Float64, get(ENV, "L_STRAT_M", "4.0"))
+const L_strat = L_m
 
 @inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
 @inline b_background(z)  = N²_ref * (z + L_strat * (exp(-z / L_strat) - 1))
@@ -92,12 +98,16 @@ const Lz      = 90δ            # full domain ≈ 10.728 m (sponge above Lz_test
 const n_periods = parse(Int, get(ENV, "N_PERIODS", "12"))
 
 # ---------------- Output naming ----------------
-const outdir   = "output_" * case
-const filename = joinpath(outdir, "TidalBL3D_" * case)
+# Each run is tagged by both its stratification scale L (metres) and its Ri case,
+# e.g. L4_Ri500, so the four-value L_strat sweep does not collide on disk.
+const Lint     = isinteger(L_m) ? string(Int(L_m)) : replace(string(L_m), "." => "p")
+const casetag  = "L" * Lint * "_" * case
+const outdir   = "output_" * casetag
+const filename = joinpath(outdir, "TidalBL3D_" * casetag)
 mkpath(outdir)
 
-@info @sprintf("Case %s: Ri = %g, N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
-               case, Ri, N², δ, Re_s)
+@info @sprintf("Case %s (L = %g m): Ri = %g, N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
+               casetag, L_m, Ri, N², δ, Re_s)
 @info @sprintf("Domain %.3f × %.3f × %.3f m = %.0f × %.0f × %.0f δ_s, %d periods%s",
                Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, n_periods,
                passive_scalar ? " (b is a passive scalar)" : "")
