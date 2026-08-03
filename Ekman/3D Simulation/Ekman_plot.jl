@@ -197,7 +197,7 @@ plot(u_slice/U∞, v_slice/U∞,
     marker_z       = z_slice,       # Colours markers based on z
     xlabel         = "<u>/U∞",
     ylabel         = "<v>/U∞",
-    colorbar_title = "Height z",  # Adds a label to colour bar
+    colorbar_title = "Height z",    # Adds a label to colour bar
     colorbar       = true,
     size           = (1000,500),
     margin         = 25px,
