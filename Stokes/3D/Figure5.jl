@@ -21,10 +21,17 @@ const δs = sqrt(2ν / ω)            # Stokes thickness — near-wall cutoff fo
 const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
 
-const Lz        = 90 * δs              # domain height ≈ 12.73 m
+const Lz        = 90 * δs              # OLD domain height ≈ 12.73 m
+const Lz_new    = 150 * δs             # NEW taller domain ≈ 21.21 m
 const L_fracs   = [0.2, 0.5, 1.0, 1.5]   # L_strat as a fraction of Lz
 const Ri_values = [(500, "Ri500"), (2500, "Ri2500")]
 flbl(fr) = isinteger(fr) ? string(Int(fr)) : replace(string(fr), "." => "p")  # 0.5 → "0p5"
+
+# MIXED SWEEP: only L = 1·Lz was rerun on the new taller domain (150δ); the other
+# three L values are retained from the earlier 90δ run, so each case's t = 0
+# background overlay and label must use its own Lz.
+const new_domain_fracs = [1.0]
+Lz_of(fr) = fr in new_domain_fracs ? Lz_new : Lz
 # Depth axis in PHYSICAL METRES. The tidal boundary layer / pycnocline live in
 # the bottom several metres; 8 m shows them with headroom and excludes the sponge
 # (which begins at 70 δ_s ≈ 9.9 m). δ = u*/f is still reported in each title.
@@ -60,7 +67,7 @@ mkpath(outdir)
 
 for fr in L_fracs, (Ri, ricase) in Ri_values
     tag   = "L$(flbl(fr))Lz_$(ricase)"
-    L     = fr * Lz                    # this case's stratification scale (metres)
+    L     = fr * Lz_of(fr)             # this case's stratification scale (metres)
     fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
     isfile(fname) || (@warn "Missing $fname — skipping $tag"; continue)
 
@@ -150,7 +157,8 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
 
     fig = plot(pa, pb; layout = (1, 2), size = (950, 620), leftmargin = 5Plots.mm,
                bottommargin = 5Plots.mm,
-               plot_title = @sprintf("L = %.1fLz = %.1f m, Ri = %d — thermal field (δ = u*/f = %.2f m)", fr, L, Ri, δ),
+               plot_title = @sprintf("L = %.1fLz = %.1f m%s, Ri = %d — thermal field (δ = u*/f = %.2f m)",
+                                     fr, L, (fr in new_domain_fracs ? " [150δ domain]" : ""), Ri, δ),
                plot_titlefontsize = 12)
     savefig(fig, joinpath(outdir, "Figure5_$tag.png"))
     @info "Saved figures/Figure5_$tag.png"

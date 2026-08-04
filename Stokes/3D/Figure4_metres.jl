@@ -14,10 +14,17 @@ const f  = ω
 const ν  = 1.0e-6
 const T_tide = 2π / ω
 
-const Lz        = 90 * sqrt(2ν / ω)   # domain height ≈ 12.73 m
+const Lz        = 90 * sqrt(2ν / ω)   # OLD domain height ≈ 12.73 m
+const Lz_new    = 150 * sqrt(2ν / ω)  # NEW taller domain ≈ 21.21 m
 const L_fracs   = [0.2, 0.5, 1.0, 1.5]   # L_strat as a fraction of Lz
 const Ri_values = [(500, "Ri500"), (2500, "Ri2500")]
 const zmax_m    = 10.0            # metres shown (≈ test section, sponge excluded)
+
+# MIXED SWEEP: only L = 1·Lz was rerun on the new taller domain (150δ + top
+# sponge); the other three L values are retained from the earlier 90δ run. So the
+# right Lz for L = 1·Lz's label is Lz_new, and the old Lz for the rest.
+const new_domain_fracs = [1.0]
+Lz_of(fr) = fr in new_domain_fracs ? Lz_new : Lz
 
 # Tag builder matching case_params.jl: L_frac 0.5 → "L0p5Lz", 1.0 → "L1Lz".
 flbl(f) = isinteger(f) ? string(Int(f)) : replace(string(f), "." => "p")
@@ -71,13 +78,13 @@ for f in L_fracs, (Ri, ricase) in Ri_values
     zm = zg[ks]
     ωt = times .* ω
 
-    ttl = @sprintf("L=%.1fLz=%.1f m, Ri=%d   (δ=u*/f=%.2f m)", f, f*Lz, Ri, δ)
+    dom = f in new_domain_fracs ? " [150δ dom]" : ""
+    ttl = @sprintf("L=%.1fLz=%.1f m%s, Ri=%d   (δ=u*/f=%.2f m)", f, f*Lz_of(f), dom, Ri, δ)
+    cmin, cmax = extrema(Gn)          # per-panel colorbar: this case's own gradient range
     plt = heatmap(ωt, zm, Gn;
-                  clims = (0, 2), color = gradient_map,
+                  clims = (cmin, cmax), color = gradient_map,
                   xlabel = "ωt", ylabel = "z (m)", title = ttl,
                   colorbar_title = "  ∂⟨b⟩/∂z / N²")
-    contour!(plt, ωt, zm, Gn; levels = [0.3, 0.5],
-             color = RGB(0.15, 0.15, 0.15), linewidth = 1.0)
     push!(panels, plt)
 end
 isempty(panels) && error("No profile files found — run the simulations first")
@@ -86,7 +93,7 @@ fig = plot(panels...; layout = (length(L_fracs), length(Ri_values)),
            size = (1150, 320 * length(L_fracs)),
            leftmargin = 6Plots.mm, rightmargin = 10Plots.mm,
            bottommargin = 4Plots.mm, topmargin = 3Plots.mm,
-           plot_title = "Buoyancy gradient — L sweep (exponential background, L in fractions of Lz, z in metres)",
+           plot_title = "Buoyancy gradient — L sweep (exp. background; L=1·Lz on new 150δ domain, others on old 90δ; z in metres)",
            plot_titlefontsize = 12)
 savefig(fig, joinpath(outdir, "Figure4_sweep_metres.png"))
 @info "Saved figures/Figure4_sweep_metres.png"
