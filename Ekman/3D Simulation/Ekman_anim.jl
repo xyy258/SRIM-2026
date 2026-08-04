@@ -14,7 +14,7 @@ elseif profile == 1
 elseif profile == 2
     save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Animations/L=%.2fLz/",efactor)
 elseif profile == 3
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed top gradient/Animations/L=%.2fLz/",efactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Linear + exponential decay/Animations/L=%.2fLz/",efactor)
 else
     save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",T)
 end
