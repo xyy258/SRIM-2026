@@ -1,5 +1,5 @@
 using Oceananigans, JLD2, Plots, Printf
-
+#reduce timesteps for animation
 # Animation of x-z slices saved by Tidal3D.jl for one case:
 #   julia --project=. Tidal3Danimation.jl Ri500
 # Outputs go to output_<case>/ with the case in every filename.
@@ -40,7 +40,6 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     u_xz = file_xz["timeseries/u/$iter"][:, 1, :]
     b_xz = file_xz["timeseries/b/$iter"][:, 1, :]
-    c_xz = file_xz["timeseries/c/$iter"][:, 1, :]
     t    = file_xz["timeseries/t/$iter"]
 
     t_save[i] = t
@@ -60,12 +59,9 @@ anim = @animate for (i, iter) in enumerate(iterations)
                        ylabel = "z", colorbar_title = "  b' / (N²_ref δ)")
     mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
-    c_plot = heatmap(xu, zb, c_xz'; color = :thermal, clims = (0, 1),
-                     ylims = (0, Lz), xlims = (0, Lx),
-                     xlabel = "x", ylabel = "z")
 
     ttl = @sprintf("%s,  t = %.2f tidal periods", case, t / T_tide)
-    plot(u_plot, mid_plot, c_plot, layout = (3, 1), size = (1000, 900),
+    plot(u_plot, mid_plot, layout = (3, 1), size = (1000, 900),
          title = [string("u,  ", ttl) mid_title "dye c"])
 
     iter == iterations[end] && close(file_xz)

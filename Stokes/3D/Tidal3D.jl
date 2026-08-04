@@ -1,5 +1,10 @@
+using Pkg
+Pkg.activate(".")
+Pkg.instantiate()
+
 using Printf
 using Oceananigans
+using Oceananigans.AbstractOperations: ∂x, ∂z   # for spanwise-averaged vorticity
 using CUDA
 
 # 3D Tidal (Stokes) boundary layer following Gayen, Sarkar & Taylor (2010).
@@ -17,6 +22,9 @@ using CUDA
 #   - Paper's own dimensional parameters and domain (see case_params.jl):
 #     U₀ = 1.5 cm/s, ν = 10⁻⁶, δ_s = 0.119 m, 50 δ_s × 25 δ_s × 90 δ_s with
 #     the sponge occupying 70 δ_s – 90 δ_s
+#   - Sponge sits ON TOP of the physical domain rather than occupying its upper
+#     part: the grid runs to Lz_total = Lz + L_sponge and the mask is exactly
+#     zero for z ≤ Lz, so the whole physical domain is undamped
 #   - Sponge rate = 20ω (paper's peak damping), previously 6× weaker
 #   - CFL = 0.72 (paper value)
 #   - Ri = 0 carries the thermal field as a genuine passive scalar (buoyancy
@@ -40,12 +48,11 @@ arch = GPU()          # start Julia with `julia -t auto`
 # OLD (Gayen reproduction): 64, 64, 256. NEW: reduced by default for the
 # L_strat sweep — 8 runs at ~8 periods is only affordable at coarser resolution.
 # The new regime (U₀ = 4 cm/s, ω = 1e-4) has Re_s ≈ 5640 > the paper's 1788, so
-# this is a deliberate resolution compromise, not paper-fidelity. Override per
-# run with NX/NY/NZ env vars.
-Nx = parse(Int, get(ENV, "NX", "48"))
-Ny = parse(Int, get(ENV, "NY", "48"))
-Nz = parse(Int, get(ENV, "NZ", "192"))
-
+# this is a deliberate resolution compromise, not paper-fidelity. 
+Nx = 48
+Ny = 48
+Nz_phys = 192       # cells spanning the PHYSICAL domain 0 – Lz; the sponge
+                    # layer above adds its own cells (Nz is computed below)
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide
 max_Δt   = 100.0
@@ -74,8 +81,10 @@ max_Δt   = 100.0
 #   wall layer      Δz = 0.050 δ_s  (Δz⁺ ≈ 5, first centre z⁺ ≈ 2.5; paper: 2)
 #   mixed layer     Δz = 0.24  δ_s at z/δ = 15  (Δz⁺ ≈ 24, paper's max: 20)
 #   wave region     Δz = 0.70  δ_s at z/δ = 40
-#   sponge          Δz = 2.0   δ_s above z/δ = 70 (damped, not analysed)
-# With Nz = 192 the uniform rescale factor comes out ≈ 1.02, i.e. essentially
+#   far field       Δz = 2.0   δ_s above z/δ = 70 (wave field, coarse)
+# The sponge is no longer one of these regions: it lives above z = Lz and its
+# cells are appended after this profile has been marched out (see below).
+# With Nz_phys = 192 the uniform rescale factor comes out ≈ 1.02, i.e. essentially
 # the profile above: ~103 cells sit below z/δ = 15 and ~19 below z/δ = 1.
 # Neighbouring cells differ by ≤ 4 %, keeping the second-order vertical
 # truncation error small.
@@ -107,7 +116,23 @@ function build_z_faces(Nz, Lz)
     return g .* (Lz / g[end])
 end
 
-zf = build_z_faces(Nz, Lz)
+# The sponge layer is stacked on top of the physical grid instead of being
+# carved out of it, so the physical faces are exactly what they were before this
+# change: build_z_faces still marches Nz_phys cells onto 0 – Lz. Sponge cells
+# have constant Δz, inheriting the last physical Δz, so there is no resolution
+# jump at z = Lz — a jump there would reflect the very waves the sponge exists
+# to absorb.
+function append_sponge_faces(zf, L_sponge)
+    Δz_top = zf[end] - zf[end-1]
+    n = max(1, round(Int, L_sponge / Δz_top))
+    Δz = L_sponge / n
+    return vcat(zf, zf[end] .+ Δz .* (1:n))
+end
+
+zf_phys  = build_z_faces(Nz_phys, Lz)
+zf       = append_sponge_faces(zf_phys, L_sponge)
+Nz       = length(zf) - 1
+Nz_spnge = Nz - Nz_phys
 
 grid = RectilinearGrid(arch;
                        topology = (Periodic, Periodic, Bounded),
@@ -118,8 +143,9 @@ grid = RectilinearGrid(arch;
 
 Δz_bottom = minimum(abs.(diff(zf)))
 n_test = count(z -> z <= Lz_test, zf) - 1
-@info @sprintf("Bottom Δz = %.4f m = %.3f δ_s (%.1f points across δ_s); %d of %d cells below the sponge",
-               Δz_bottom, Δz_bottom / δ, δ / Δz_bottom, n_test, Nz)
+@info @sprintf("Bottom Δz = %.4f m = %.3f δ_s (%.1f points across δ_s); %d cells below z = %.0f δ_s; %d physical + %d sponge cells (sponge Δz = %.3f δ_s)",
+               Δz_bottom, Δz_bottom / δ, δ / Δz_bottom, n_test, Lz_test / δ,
+               Nz_phys, Nz_spnge, (zf[end] - zf[end-1]) / δ)
 # Horizontal resolution, for the record: at u_τ/U₀ ≈ 0.056 the Stokes layer is
 # δ_s⁺ ≈ 100, so Δx⁺ ≈ 104 and Δy⁺ ≈ 52 here against the paper's 60 and 30
 # (they afford 64×64 with spectral horizontal accuracy). This is the main
@@ -141,10 +167,8 @@ v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 #                                 bottom = FluxBoundaryCondition(0))
 #
 # NEW: with the exponential background the imposed gradient is N²_bg evaluated
-# at the lid. At z = Lz = 90 δ_s with L = 10 δ_s this is 0.9999 N²_ref, so the
-# change is numerically tiny — it is made so the BC follows the profile
-# definition rather than coincidentally agreeing with it.
-b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_background(Lz)),
+# at the lid — now Lz_total, the top of the added sponge layer, not Lz.
+b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_background(Lz_total)),
                                 bottom = FluxBoundaryCondition(0))
 
 # ---------------- Forcing ----------------
@@ -152,17 +176,23 @@ b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²_backgroun
 @inline tidal_forcing(x, y, z, t, p) = p.U₀ * p.ω * cos(p.ω * t)
 u_tide = Forcing(tidal_forcing, parameters = (; U₀, ω))
 
-# Sponge layer at the top of the domain: damps internal waves radiated by the
-# boundary layer so they don't reflect off the rigid lid. Rate = 20ω is the
-# paper's peak damping coefficient.
+# Sponge layer sitting ON TOP of the physical domain, spanning z = Lz – Lz_total:
+# damps internal waves radiated by the boundary layer so they don't reflect off
+# the rigid lid. Rate = 20ω is the paper's peak damping coefficient.
 #
-# The Gaussian shape is unchanged; only its width is rescaled to the paper's
-# domain, where the sponge occupies 70 δ_s – 90 δ_s. σ = 8 δ_s puts the mask at
-# 4.4 % on the sponge floor (z = Lz_test) and below 10⁻⁸ anywhere in the
-# analysed region z < 40 δ_s, so the test section evolves freely.
-const sponge_width = 8δ
+# OLD: a Gaussian centred on the lid and evaluated over the whole domain. It
+# never reached zero, so the upper physical domain was always being relaxed a
+# little — 4.4 % of full rate at z = Lz_test, and O(1) through the top ~20 δ_s,
+# which is domain the run was paying for but could not use.
+# const sponge_width = 8δ
+# @inline top_mask(x, y, z) = exp(-(z - Lz)^2 / (2 * sponge_width^2))
+#
+# NEW: a raised cosine confined to the added layer. The clamp makes it exactly
+# zero for z ≤ Lz, so the physical domain is genuinely undamped; it reaches 1 at
+# the lid and has zero slope at both ends, so waves entering the sponge meet no
+# abrupt change in damping (which would itself reflect).
 sponge_rate = 20ω
-@inline top_mask(x, y, z) = exp(-(z - Lz)^2 / (2 * sponge_width^2))
+@inline top_mask(x, y, z) = sinpi(clamp((z - Lz) / L_sponge, 0, 1) / 2)^2
 
 u_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
                       target = (x, y, z, t) -> U₀ * sin(ω * t))
@@ -191,7 +221,7 @@ model = NonhydrostaticModel(grid;
             # advection   = WENO(order = 5),
             advection   = Centered(order = 2),
             timestepper = :RungeKutta3,
-            tracers     = (:b, :c),
+            tracers     = (:b),
             # Ri = 0 is the paper's "passive scalar case": the thermal field is
             # advected and diffused with the same background gradient but exerts
             # no buoyancy force. Dropping the buoyancy term (rather than setting
@@ -199,8 +229,7 @@ model = NonhydrostaticModel(grid;
             # figures 4 and 5 show an actual scalar field.
             buoyancy    = passive_scalar ? nothing : BuoyancyTracer(),
             closure     = (AnisotropicMinimumDissipation(),
-                           ScalarDiffusivity(VerticallyImplicitTimeDiscretization(),
-                                             ν = ν, κ = κ)),
+                           ScalarDiffusivity(ν = ν, κ = κ)),
             boundary_conditions = (u = u_bcs, v = v_bcs, b = b_bcs),
             coriolis    = nothing,
             forcing     = (u = (u_tide, u_sponge),
@@ -210,8 +239,12 @@ model = NonhydrostaticModel(grid;
 
 # ---------------- Initial conditions ----------------
 # OLD (uniform background): bᵢ(x, y, z) = N²_ref * z
+# OLD (mixed-layer IC, linear background): bᵢ = N∞² z [1 − exp(−0.2 (z/T)^5)]
+# NOW (back to the -Varying L_strat set-up): the initial buoyancy IS the
+# exponential background, bᵢ = b_background(z) = N∞²[z + L(exp(−z/L)−1)], and the
+# sponge/top-BC relax toward the same profile (case_params.jl).
 bᵢ(x, y, z) = b_background(z)
-cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
+#cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 
 # The spin-up snapshot supplies velocities only. Ri = 0 carries b as a passive
 # scalar, so its velocity field is independent of the thermal profile: a
@@ -225,6 +258,25 @@ cᵢ(x, y, z) = exp(-((x - Lx/2) / (Lx/50))^2)   # thin dye sheet at mid-domain
 spinup_file = get(ENV, "SPINUP_FILE",
                   joinpath("output_Ri0", "TidalBL3D_Ri0_fields.jld2"))
 
+# Snapshots written before the sponge became an added layer stop at the old lid
+# (Nz_phys levels for u/v, Nz_phys+1 for w) and so are shorter than this grid.
+# Their physical cells are identical, so copy them in and repeat the topmost
+# plane through the sponge cells; the relaxation flattens that onto its target
+# in 1/(20ω) ≈ 500 s ≪ T_tide. Any other z-extent means a genuinely different
+# physical grid, which is an error rather than something to pad.
+function pad_into_sponge(a, nz_target, nz_old)
+    n = size(a, 3)
+    n == nz_target && return a
+    n == nz_old || error("Spin-up snapshot has $n z-levels; expected $nz_target " *
+                         "(this grid) or $nz_old (a pre-sponge-layer grid)")
+    padded = similar(a, size(a, 1), size(a, 2), nz_target)
+    padded[:, :, 1:n] .= a
+    for k in n+1:nz_target
+        padded[:, :, k] .= @view a[:, :, n]
+    end
+    return padded
+end
+
 if isfile(spinup_file)
     # Paper protocol: turbulent unstratified spin-up, then stratification on.
     # Snapshots are written every half period, i.e. always at U∞ = 0 — the same
@@ -236,10 +288,10 @@ if isfile(spinup_file)
     nlast = length(uts.times)
     @info @sprintf("Using snapshot %d/%d (t = %.2f periods of the spin-up)",
                    nlast, nlast, uts.times[nlast] / T_tide)
-    set!(model, u = Array(interior(uts[nlast])),
-                v = Array(interior(vts[nlast])),
-                w = Array(interior(wts[nlast])))
-    set!(model, b = bᵢ, c = cᵢ)
+    set!(model, u = pad_into_sponge(Array(interior(uts[nlast])), Nz, Nz_phys),
+                v = pad_into_sponge(Array(interior(vts[nlast])), Nz, Nz_phys),
+                w = pad_into_sponge(Array(interior(wts[nlast])), Nz + 1, Nz_phys + 1))
+    set!(model, b = bᵢ)
 else
     @warn "No spin-up snapshot at $spinup_file — starting $case from rest with noise."
     # Near-wall random kick; perturbing v breaks spanwise symmetry so genuine
@@ -249,7 +301,7 @@ else
     uᵢ(x, y, z) = damped_noise(z)
     vᵢ(x, y, z) = damped_noise(z)
     wᵢ(x, y, z) = damped_noise(z)
-    set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ, c = cᵢ)
+    set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 end
 
 # ---------------- Simulation ----------------
@@ -286,15 +338,28 @@ simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 # ---------------- Output ----------------
 u, v, w = model.velocities
 b = model.tracers.b
-c = model.tracers.c
 
 slice_schedule = TimeInterval(duration / n_frames)
 
 # (1) x-z slices at y = 0 for animation.
 simulation.output_writers[:xz_slices] =
-    JLD2Writer(model, (; u, w, b, c),
+    JLD2Writer(model, (; u, w, b),
                filename = filename * ".jld2",
                indices = (:, 1, :),
+               schedule = slice_schedule,
+               overwrite_existing = true,
+               with_halos = false)
+
+# (1b) Spanwise-averaged spanwise vorticity ⟨ω_y⟩_y(x,z), ω_y = ∂u/∂z − ∂w/∂x.
+# Both ∂z(u) and ∂x(w) live at (Face, Center, Face), so their difference needs no
+# interpolation; averaging over y (dims = 2) gives the x–z cross-section field.
+# Saved at the animation cadence so every phase is captured (the 3D-field writer
+# only lands at slack water), yet it is a cheap 2D field.
+ω_y = ∂z(u) - ∂x(w)
+Ω_y = Field(Average(ω_y, dims = 2))
+simulation.output_writers[:vort_xz] =
+    JLD2Writer(model, (; omega_y = Ω_y),
+               filename = filename * "_vortxz.jld2",
                schedule = slice_schedule,
                overwrite_existing = true,
                with_halos = false)
@@ -305,7 +370,7 @@ k_δ = searchsortedfirst(zc_nodes, δ)
 @info @sprintf("x-y slice at k = %d (z = %.3f m ≈ δ)", k_δ, zc_nodes[k_δ])
 
 simulation.output_writers[:xy_slices] =
-    JLD2Writer(model, (; u, v, w, b, c),
+    JLD2Writer(model, (; u, v, w, b),
                filename = filename * "_xy.jld2",
                indices = (:, :, k_δ),
                schedule = slice_schedule,
@@ -335,7 +400,7 @@ simulation.output_writers[:profiles] =
 # (4) Full 3D snapshots twice per tidal period — used both for re-analysis
 # and as the turbulent initial condition for the stratified cases.
 simulation.output_writers[:fields3d] =
-    JLD2Writer(model, (; u, v, w, b, c),
+    JLD2Writer(model, (; u, v, w, b),
                filename = filename * "_fields.jld2",
                schedule = TimeInterval(T_tide / 2),
                overwrite_existing = true,

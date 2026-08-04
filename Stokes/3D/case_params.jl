@@ -37,7 +37,7 @@ const ν  = 1.0e-6              # molecular viscosity of water (m² s⁻¹)
 const Pr = 10                 # molecular Prandtl number 
 const κ  = ν / Pr              # molecular diffusivity
 
-const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 
+const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 0.14142
 const Re_s   = U₀ * δ / ν      # ≈ 1788
 const T_tide = 2π / ω
 
@@ -50,36 +50,23 @@ const N²     = Ri * ω^2                    # buoyancy frequency² actually fel
 const N²_ref = Ri > 0 ? N² : ω^2           # far-field gradient carried by b
 const passive_scalar = Ri == 0
 
-# ---------------- Shape of the background stratification ----------------
-# OLD: uniform background, N²_bg(z) = N²_ref everywhere, i.e. b_bg(z) = N²_ref z.
-# That is the paper's own set-up and is what the "Centered - Linear" run used.
+# ---------------- Background stratification: EXPONENTIAL ----------------
+# Reverting to the -Varying L_strat configuration. The stratification vanishes at
+# the seabed and recovers exponentially to the far-field N∞² over a scale L:
 #
-# NEW: the stratification vanishes at the seabed and recovers exponentially to
-# the paper's far-field value over a scale L_strat:
+#     N²_bg(z) = N∞² [1 − exp(−z/L)]
+#     b_bg(z)  = N∞² [z + L (exp(−z/L) − 1)]      (b_bg(0) = 0, b_bg′(0) = 0)
 #
-#     N²_bg(z) = N²_ref [1 − exp(−z/L)]
-#     b_bg(z)  = N²_ref [z + L (exp(−z/L) − 1)]      (b_bg(0) = 0, b_bg′(0) = 0)
+# The initial buoyancy IS this profile (Tidal3D.jl: bᵢ = b_background), and the
+# sponge target and top-gradient BC relax toward it — the full L_strat set-up,
+# not just an initial condition.
 #
-# The far field is untouched, so Ri = N∞²/ω² keeps the paper's meaning and every
-# quantity normalized by N∞² remains directly comparable to the linear run.
-# L = 10 δ_s is comparable to the mixed-layer height h_m ≈ 10–15 δ_s reached in
-# the linear runs, so the altered region is where the thermocline actually sits.
-#
-# Note for the diagnostics: at t = 0 the normalized gradient ∂b_bg/∂z / N∞² is
-# already below the paper's h_m threshold of 0.1 for z < 0.105 L ≈ 1.05 δ_s.
-# That offset is small against h_m, so h_m keeps the paper's literal definition;
-# the integral diagnostics in Tidal3Dprofiles.jl are instead measured against
-# N²_bg(z) so they still start from zero.
-# OLD: const L_strat = 10δ  (≈ 1.4 m, tied to the Stokes thickness).
-# NEW: L_strat is set in METRES from the environment so the sweep {2,4,6,8} m can
-# be driven externally (L_STRAT_M). The Stokes thickness δ_s ≈ 0.14 m is deemed
-# too small a length scale for this study (matching a colleague's Ekman set-up
-# where δ = u*/f ≈ several m); L is therefore given directly in metres.
-const L_m     = parse(Float64, get(ENV, "L_STRAT_M", "4.0"))
-const L_strat = L_m
-
-@inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
-@inline b_background(z)  = N²_ref * (z + L_strat * (exp(-z / L_strat) - 1))
+# L is now set as a FRACTION of the domain height Lz = 90 δ_s ≈ 12.73 m, via
+# L_STRAT_LZ, sweeping {0.2, 0.5, 1.0, 1.5} Lz. For L ≳ Lz the far field is only
+# partly established inside the domain — at the lid N²_bg/N∞² = 1 − e^{−Lz/L}
+# (0.993, 0.865, 0.632, 0.487 for the four fractions) — which is the regime under
+# study here. The definitions follow the Domain block below since they need Lz.
+const L_frac = parse(Float64, get(ENV, "L_STRAT_LZ", "0.5"))
 
 # ---------------- Domain ----------------
 # Paper §2.4: lx = 50 δ_s, ly = 25 δ_s, test section lz = 70 δ_s with the
@@ -87,7 +74,27 @@ const L_strat = L_m
 const Lx      = 50δ            # streamwise  ≈ 5.960 m
 const Ly      = 25δ            # spanwise    ≈ 2.980 m
 const Lz_test = 70δ            # top of the analysed test section ≈ 8.344 m
-const Lz      = 90δ            # full domain ≈ 10.728 m (sponge above Lz_test)
+const Lz      = 150δ           # PHYSICAL domain ≈ 21.213 m
+
+# OLD: the sponge was a slice taken out of the top of the Lz-tall grid — a
+# Gaussian centred on the lid, so the uppermost ~20 δ_s of the physical domain
+# was permanently relaxed and the free interior was really only 0 – ~126 δ_s.
+#
+# NEW: the sponge SITS ON TOP of the physical domain. The grid is built to
+# Lz_total = Lz + L_sponge and the damping mask is identically zero at and below
+# z = Lz, so all 150 δ_s of physical domain evolve freely. Lz remains the
+# physical domain everywhere else in the code: L_strat = L_frac·Lz, the
+# background buoyancy profile, and plot limits are all unchanged by this.
+const L_sponge = 20δ           # thickness of the added damping layer ≈ 2.828 m
+const Lz_total = Lz + L_sponge # full grid height ≈ 24.042 m
+
+# ---------------- Exponential background (needs Lz) ----------------
+# L set as a fraction of the domain height (L_frac read above), then the
+# exponential background and its buoyancy integral.
+const L_strat = L_frac * Lz
+
+@inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
+@inline b_background(z)  = N²_ref * (z + L_strat * (exp(-z / L_strat) - 1))
 
 # ---------------- Run length ----------------
 # Target; the overnight driver (run_night.sh) may stop a case earlier at a
@@ -98,18 +105,19 @@ const Lz      = 90δ            # full domain ≈ 10.728 m (sponge above Lz_test
 const n_periods = parse(Int, get(ENV, "N_PERIODS", "12"))
 
 # ---------------- Output naming ----------------
-# Each run is tagged by both its stratification scale L (metres) and its Ri case,
-# e.g. L4_Ri500, so the four-value L_strat sweep does not collide on disk.
-const Lint     = isinteger(L_m) ? string(Int(L_m)) : replace(string(L_m), "." => "p")
-const casetag  = "L" * Lint * "_" * case
+# Each run is tagged by its stratification scale L as a fraction of Lz and its Ri
+# case, e.g. L0p5Lz_Ri500, so the four-value sweep does not collide on disk
+# (a fractional fraction like 0.5 becomes "0p5", 1.0 becomes "1").
+const Lfrac_lbl = isinteger(L_frac) ? string(Int(L_frac)) : replace(string(L_frac), "." => "p")
+const casetag  = "L" * Lfrac_lbl * "Lz_" * case
 const outdir   = "output_" * casetag
 const filename = joinpath(outdir, "TidalBL3D_" * casetag)
 mkpath(outdir)
 
-@info @sprintf("Case %s (L = %g m): Ri = %g, N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
-               casetag, L_m, Ri, N², δ, Re_s)
-@info @sprintf("Domain %.3f × %.3f × %.3f m = %.0f × %.0f × %.0f δ_s, %d periods%s",
-               Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, n_periods,
+@info @sprintf("Case %s (L = %.3f Lz = %.2f m): Ri = %g, N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
+               casetag, L_frac, L_strat, Ri, N², δ, Re_s)
+@info @sprintf("Domain %.3f × %.3f × %.3f m = %.0f × %.0f × %.0f δ_s (physical), + %.1f δ_s sponge on top → grid top %.0f δ_s, %d periods%s",
+               Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, L_sponge/δ, Lz_total/δ, n_periods,
                passive_scalar ? " (b is a passive scalar)" : "")
-@info @sprintf("Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = %.3f m = %.0f δ_s (N²_bg/N∞² = %.3f at z = δ_s, %.3f at z = 10 δ_s)",
-               L_strat, L_strat/δ, N²_background(δ)/N²_ref, N²_background(10δ)/N²_ref)
+@info @sprintf("Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = %.2f m = %.1f δ_s (N²_bg/N∞² = %.3f at z = δ_s, %.3f at lid z = Lz)",
+               L_strat, L_strat/δ, N²_background(δ)/N²_ref, N²_background(Lz)/N²_ref)

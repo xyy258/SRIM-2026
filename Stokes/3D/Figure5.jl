@@ -1,9 +1,10 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Figure 5 for the L_strat sweep (deviates from Gayen et al.; see case_params.jl).
+# Figure 5 for the L sweep (deviates from Gayen et al.; see case_params.jl).
+# Exponential background N²_bg = N∞²[1−exp(−z/L)], L a fraction of Lz.
 # Per case (L, Ri): vertical profiles of the plane-averaged (a) buoyancy and
 # (b) buoyancy gradient at several whole tidal periods, so the mixed-layer growth
-# shows as a family of curves. One PNG per case: figures/Figure5_L<L>_<Ri>.png.
+# shows as a family of curves. One PNG per case: figures/Figure5_L<f>Lz_<Ri>.png.
 #
 # Depth axis is z/δ with δ = u*/f (f = ω = 1e-4), u* = peak wall-friction velocity
 # over the final period. Markers follow the paper: ∘ = mixed-layer height h_m
@@ -20,8 +21,10 @@ const δs = sqrt(2ν / ω)            # Stokes thickness — near-wall cutoff fo
 const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
 
-const L_values  = [2, 4, 6, 8]
+const Lz        = 90 * δs              # domain height ≈ 12.73 m
+const L_fracs   = [0.2, 0.5, 1.0, 1.5]   # L_strat as a fraction of Lz
 const Ri_values = [(500, "Ri500"), (2500, "Ri2500")]
+flbl(fr) = isinteger(fr) ? string(Int(fr)) : replace(string(fr), "." => "p")  # 0.5 → "0p5"
 # Depth axis in PHYSICAL METRES. The tidal boundary layer / pycnocline live in
 # the bottom several metres; 8 m shows them with headroom and excludes the sponge
 # (which begins at 70 δ_s ≈ 9.9 m). δ = u*/f is still reported in each title.
@@ -55,8 +58,9 @@ default(fontfamily = "sans-serif", grid = true, gridalpha = 0.15,
 outdir = joinpath(@__DIR__, "figures")
 mkpath(outdir)
 
-for L in L_values, (Ri, ricase) in Ri_values
-    tag   = "L$(L)_$(ricase)"
+for fr in L_fracs, (Ri, ricase) in Ri_values
+    tag   = "L$(flbl(fr))Lz_$(ricase)"
+    L     = fr * Lz                    # this case's stratification scale (metres)
     fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
     isfile(fname) || (@warn "Missing $fname — skipping $tag"; continue)
 
@@ -91,11 +95,12 @@ for L in L_values, (Ri, ricase) in Ri_values
               legend = :topright,
               foreground_color_legend = nothing, background_color_legend = nothing)
 
-    # Initial background profile at t = 0 (analytic exponential, this case's L),
-    # the no-mixing reference the time series depart from. Normalized like the
-    # data: gradient by N∞², buoyancy by a·N∞². Drawn first so curves sit on top.
-    N²_bg_norm(z) = 1 - exp(-z / L)                          # N²_bg / N∞²
-    b_bg_norm(z)  = (z + L * (exp(-z / L) - 1)) / a          # b_bg / (a N∞²)
+    # Initial/background profile at t = 0 (this case's L): the exponential
+    # background bᵢ = b_bg = N∞²[z + L(exp(−z/L)−1)] the time series evolve away
+    # from. Normalized like the data: buoyancy by a·N∞², gradient by N∞².
+    # Drawn first so the curves sit on top.
+    b_bg_norm(z) = (z + L * (exp(-z / L) - 1)) / a                    # b_bg / (a N∞²)
+    N²_bg_norm(z) = 1 - exp(-z / L)                                   # N²_bg / N∞²
     plot!(pa, b_bg_norm.(zc[kc]), zc[kc]; color = :black, linestyle = :dash,
           linewidth = 1.5, label = "background (t = 0)")
     plot!(pb, N²_bg_norm.(zg[kg]), zg[kg]; color = :black, linestyle = :dash,
@@ -145,7 +150,7 @@ for L in L_values, (Ri, ricase) in Ri_values
 
     fig = plot(pa, pb; layout = (1, 2), size = (950, 620), leftmargin = 5Plots.mm,
                bottommargin = 5Plots.mm,
-               plot_title = @sprintf("L = %d m, Ri = %d — thermal field (δ = u*/f = %.2f m)", L, Ri, δ),
+               plot_title = @sprintf("L = %.1fLz = %.1f m, Ri = %d — thermal field (δ = u*/f = %.2f m)", fr, L, Ri, δ),
                plot_titlefontsize = 12)
     savefig(fig, joinpath(outdir, "Figure5_$tag.png"))
     @info "Saved figures/Figure5_$tag.png"
