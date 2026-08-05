@@ -67,7 +67,6 @@ mkpath(outdir)
 
 for fr in L_fracs, (Ri, ricase) in Ri_values
     tag   = "L$(flbl(fr))Lz_$(ricase)"
-    L     = fr * Lz_of(fr)             # this case's stratification scale (metres)
     fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
     isfile(fname) || (@warn "Missing $fname — skipping $tag"; continue)
 
@@ -76,6 +75,14 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
     V_ts = FieldTimeSeries(fname, "V")
     times = B_ts.times
     zc = znodes(B_ts)
+
+    # Domain (hence stratification scale L) per CASE, read from the data: the new
+    # 150δ grid tops out at zc[end] ≈ 23.9 m, the old 90δ grid at ≈ 12.6 m. This is
+    # mixed within an L value — e.g. L=0.5 Ri500 was reran on 150δ (L=10.6 m) while
+    # its Ri2500 sibling is still 90δ (L=6.4 m) — so the t=0 background overlay and
+    # title must use each file's own domain, not a per-L lookup.
+    is_new = zc[end] > 15.0
+    L      = fr * (is_new ? Lz_new : Lz)   # this case's stratification scale (metres)
 
     zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])
     dz = diff(zc)
@@ -158,7 +165,7 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
     fig = plot(pa, pb; layout = (1, 2), size = (950, 620), leftmargin = 5Plots.mm,
                bottommargin = 5Plots.mm,
                plot_title = @sprintf("L = %.1fLz = %.1f m%s, Ri = %d — thermal field (δ = u*/f = %.2f m)",
-                                     fr, L, (fr in new_domain_fracs ? " [150δ domain]" : ""), Ri, δ),
+                                     fr, L, (is_new ? " [150δ domain]" : " [90δ domain]"), Ri, δ),
                plot_titlefontsize = 12)
     savefig(fig, joinpath(outdir, "Figure5_$tag.png"))
     @info "Saved figures/Figure5_$tag.png"
