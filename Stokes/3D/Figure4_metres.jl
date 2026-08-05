@@ -78,8 +78,14 @@ for f in L_fracs, (Ri, ricase) in Ri_values
     zm = zg[ks]
     ωt = times .* ω
 
-    dom = f in new_domain_fracs ? " [150δ dom]" : ""
-    ttl = @sprintf("L=%.1fLz=%.1f m%s, Ri=%d   (δ=u*/f=%.2f m)", f, f*Lz_of(f), dom, Ri, δ)
+    # Derive the domain from the data itself (per PANEL, not per L): the new 150δ
+    # grid tops out at zc[end] ≈ 23.9 m, the old 90δ grid at ≈ 12.6 m. This is now
+    # mixed WITHIN a row — e.g. L=0.5 Ri500 was reran on 150δ while its Ri2500
+    # sibling is still the old 90δ run — so a per-panel test is the only honest one.
+    is_new = zc[end] > 15.0
+    Lz_dom = is_new ? Lz_new : Lz
+    dom    = is_new ? " [150δ dom]" : " [90δ dom]"
+    ttl = @sprintf("L=%.1fLz=%.1f m%s, Ri=%d   (δ=u*/f=%.2f m)", f, f*Lz_dom, dom, Ri, δ)
     cmin, cmax = extrema(Gn)          # per-panel colorbar: this case's own gradient range
     plt = heatmap(ωt, zm, Gn;
                   clims = (cmin, cmax), color = gradient_map,
@@ -93,7 +99,7 @@ fig = plot(panels...; layout = (length(L_fracs), length(Ri_values)),
            size = (1150, 320 * length(L_fracs)),
            leftmargin = 6Plots.mm, rightmargin = 10Plots.mm,
            bottommargin = 4Plots.mm, topmargin = 3Plots.mm,
-           plot_title = "Buoyancy gradient — L sweep (exp. background; L=1·Lz on new 150δ domain, others on old 90δ; z in metres)",
+           plot_title = "Buoyancy gradient — L sweep (exp. background; per-panel domain tagged [150δ]/[90δ]; z in metres)",
            plot_titlefontsize = 12)
 savefig(fig, joinpath(outdir, "Figure4_sweep_metres.png"))
 @info "Saved figures/Figure4_sweep_metres.png"
