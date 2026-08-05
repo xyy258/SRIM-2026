@@ -69,13 +69,31 @@ for L in L_values, (Ri, ricase) in Ri_values
     zm = zg[ks]
     ωt = times .* ω
 
-    ttl = @sprintf("L=%d m, Ri=%d   (δ=u*/f=%.2f m)", L, Ri, δ)
+    # OLD: clims = (0, 2) shared by every panel. Comparable across cases, but the
+    # weakly stratified panels (large L, where N²_bg near the bed is a small
+    # fraction of N∞²) sat in the bottom sliver of the range and read as flat.
+    # NEW: each panel is scaled to its own [min, max], so structure is visible in
+    # every case — at the cost of cross-panel comparability, hence the range is
+    # printed in the panel title. Degenerate (constant) fields get a padded range
+    # so the colorbar is still well defined.
+    gmin, gmax = extrema(filter(isfinite, Gn))
+    if gmax - gmin < 1e-12
+        pad  = max(abs(gmax), 1.0) * 1e-3
+        gmin, gmax = gmin - pad, gmax + pad
+    end
+
+    ttl = @sprintf("L=%d m, Ri=%d   (δ=u*/f=%.2f m)  [%.2f, %.2f]",
+                   L, Ri, δ, gmin, gmax)
     plt = heatmap(ωt, zm, Gn;
-                  clims = (0, 2), color = gradient_map,
+                  clims = (gmin, gmax), color = gradient_map,
                   xlabel = "ωt", ylabel = "z (m)", title = ttl,
                   colorbar_title = "  ∂⟨b⟩/∂z / N²")
-    contour!(plt, ωt, zm, Gn; levels = [0.3, 0.5],
-             color = RGB(0.15, 0.15, 0.15), linewidth = 1.0)
+    # OLD: mixed-layer contours at 0.3 and 0.5 overlaid on the heatmap. Dropped —
+    # with per-panel colour limits they were the only absolute reference left, and
+    # they clutter the weakly stratified panels where the field wanders across
+    # both levels.
+    # contour!(plt, ωt, zm, Gn; levels = [0.3, 0.5],
+    #          color = RGB(0.15, 0.15, 0.15), linewidth = 1.0)
     push!(panels, plt)
 end
 
