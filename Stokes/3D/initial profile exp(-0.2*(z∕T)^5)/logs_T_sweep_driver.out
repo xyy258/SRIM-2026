@@ -1,0 +1,35 @@
+[2026-07-31 02:05:32] === T sweep start: T ∈ {3 4.5 6} m, Ri ∈ {Ri500 Ri2500}, 8 periods, grid 32×32×128 ===
+[2026-07-31 02:05:32] reusing archived spin-up: -Varying L_strat/output_L4_Ri0/TidalBL3D_L4_Ri0_fields.jld2
+[2026-07-31 02:05:32] run T3_Ri500: 8 periods
+[2026-07-31 06:13:07]   T3_Ri500 reached 8.00 periods
+[2026-07-31 06:13:07] run T3_Ri2500: 8 periods
+[2026-07-31 10:21:17]   T3_Ri2500 reached 8.00 periods
+[2026-07-31 10:21:17] run T4p5_Ri500: 8 periods
+[2026-07-31 14:27:52]   T4p5_Ri500 reached 8.00 periods
+[2026-07-31 14:27:52] run T4p5_Ri2500: 8 periods
+[2026-07-31 18:35:40]   T4p5_Ri2500 reached 8.00 periods
+[2026-07-31 18:35:40] run T6_Ri500: 8 periods
+[2026-07-31 22:41:32]   T6_Ri500 reached 8.00 periods
+[2026-07-31 22:41:32] run T6_Ri2500: 8 periods
+[2026-08-01 02:48:45]   T6_Ri2500 reached 8.00 periods
+[2026-08-01 02:48:45] all simulations done
+[2026-08-01 02:48:45]   animation T3_Ri500
+[2026-08-01 02:50:45]   animation T3_Ri2500
+[2026-08-01 02:52:44]   animation T4p5_Ri500
+[2026-08-01 02:54:43]   animation T4p5_Ri2500
+[2026-08-01 02:56:42]   animation T6_Ri500
+[2026-08-01 02:58:41]   animation T6_Ri2500
+[2026-08-01 03:00:40] figures 4 & 5 (all cases, dimensional units)
+[2026-08-01 03:01:38] === DONE ===
+[2026-08-01 03:01:38]   T3_Ri500: 8.00 periods
+[2026-08-01 03:01:38]   T3_Ri2500: 8.00 periods
+[2026-08-01 03:01:38]   T4p5_Ri500: 8.00 periods
+[2026-08-01 03:01:38]   T4p5_Ri2500: 8.00 periods
+[2026-08-01 03:01:38]   T6_Ri500: 8.00 periods
+[2026-08-01 03:01:38]   T6_Ri2500: 8.00 periods
+542M	output_T3_Ri2500
+544M	output_T3_Ri500
+541M	output_T4p5_Ri2500
+542M	output_T4p5_Ri500
+541M	output_T6_Ri2500
+542M	output_T6_Ri500

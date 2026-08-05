@@ -1,12 +1,13 @@
 using Oceananigans, JLD2, Plots, Printf
-
+#reduce timesteps for animation
 # Animation of x-z slices saved by Tidal3D.jl for one case:
 #   julia --project=. Tidal3Danimation.jl Ri500
 # Outputs go to output_<case>/ with the case in every filename.
 #
 # Panels: u (oscillating shear + bursts), then the thermal perturbation
-# b' = b − N²_ref z, then dye. Ri0 now carries b as a passive scalar with the
-# same background gradient, so all three cases show the same three panels.
+# b' = b − b_bg(z). Ri0 now carries b as a passive scalar with the same
+# background gradient, so all cases show the same two panels. (The dye tracer
+# was removed, so there is no longer a third panel.)
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
@@ -40,13 +41,12 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     u_xz = file_xz["timeseries/u/$iter"][:, 1, :]
     b_xz = file_xz["timeseries/b/$iter"][:, 1, :]
-    c_xz = file_xz["timeseries/c/$iter"][:, 1, :]
     t    = file_xz["timeseries/t/$iter"]
 
     t_save[i] = t
 
     u_plot = heatmap(xu, zu, u_xz'; color = :balance, clims = (-ulim, ulim),
-                     ylims = (0, Lz), xlims = (0, Lx),
+                     ylims = (0, Lz_test), xlims = (0, Lx),
                      ylabel = "z")
 
     # Thermal perturbation: subtract the background profile, then normalize by
@@ -56,21 +56,18 @@ anim = @animate for (i, iter) in enumerate(iterations)
     bp_xz = (b_xz .- reshape(b_background.(zb), 1, :)) ./ bp_scale
     mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
                        clims = (-bplim, bplim),
-                       ylims = (0, Lz), xlims = (0, Lx),
+                       ylims = (0, Lz_test), xlims = (0, Lx),
                        ylabel = "z", colorbar_title = "  b' / (N²_ref δ)")
     mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
-    c_plot = heatmap(xu, zb, c_xz'; color = :thermal, clims = (0, 1),
-                     ylims = (0, Lz), xlims = (0, Lx),
-                     xlabel = "x", ylabel = "z")
 
     ttl = @sprintf("%s,  t = %.2f tidal periods", case, t / T_tide)
-    plot(u_plot, mid_plot, c_plot, layout = (3, 1), size = (1000, 900),
-         title = [string("u,  ", ttl) mid_title "dye c"])
+    plot(u_plot, mid_plot, layout = (2, 1), size = (1000, 700),
+         title = [string("u,  ", ttl) mid_title])
 
     iter == iterations[end] && close(file_xz)
 end
 
-mp4(anim, joinpath(outdir, "animation_" * case * ".mp4"), fps = 12)
+mp4(anim, joinpath(outdir, "animation_" * casetag * ".mp4"), fps = 12)
 
 @info "Saved animation for $case in $outdir/"

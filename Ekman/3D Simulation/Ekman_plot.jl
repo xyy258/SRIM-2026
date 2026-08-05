@@ -12,7 +12,7 @@ elseif profile == 1
 elseif profile == 2
     save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Plots/L=%.2fLz/",efactor)
 elseif profile == 3
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed top gradient/Plots/L=%.2fLz/",efactor)
+    save_folder = @sprintf("Ekman/3D Simulation/Linear + exponential decay/Plots/L=%.2fLz/",efactor)
 else
     save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",T)
 end
@@ -197,7 +197,7 @@ plot(u_slice/U∞, v_slice/U∞,
     marker_z       = z_slice,       # Colours markers based on z
     xlabel         = "<u>/U∞",
     ylabel         = "<v>/U∞",
-    colorbar_title = "Height z",  # Adds a label to colour bar
+    colorbar_title = "Height z",    # Adds a label to colour bar
     colorbar       = true,
     size           = (1000,500),
     margin         = 25px,

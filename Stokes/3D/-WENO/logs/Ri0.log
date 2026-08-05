@@ -1,0 +1,1213 @@
+i:      0, t:        0.0 s (0.00 periods), wall: 26.320 seconds, Δt:   1.20, CFL: 1.78e-01
+i:    100, t:      310.9 s (0.01 periods), wall: 57.320 seconds, Δt:   7.43, CFL: 1.80e-01
+i:    200, t:     2008.8 s (0.04 periods), wall: 1.135 minutes, Δt:  23.45, CFL: 9.50e-01
+i:    300, t:     3768.7 s (0.08 periods), wall: 1.316 minutes, Δt:  14.61, CFL: 9.50e-01
+i:    400, t:     5041.3 s (0.11 periods), wall: 1.495 minutes, Δt:  11.67, CFL: 9.50e-01
+i:    500, t:     6108.6 s (0.14 periods), wall: 1.673 minutes, Δt:  10.16, CFL: 9.50e-01
+i:    600, t:     7068.8 s (0.16 periods), wall: 1.851 minutes, Δt:   9.24, CFL: 9.50e-01
+i:    700, t:     7951.4 s (0.18 periods), wall: 2.024 minutes, Δt:   8.66, CFL: 9.50e-01
+i:    800, t:     8779.3 s (0.20 periods), wall: 2.202 minutes, Δt:   8.25, CFL: 9.50e-01
+i:    900, t:     9575.6 s (0.21 periods), wall: 2.380 minutes, Δt:   8.01, CFL: 9.50e-01
+i:   1000, t:    10353.5 s (0.23 periods), wall: 2.557 minutes, Δt:   7.85, CFL: 9.50e-01
+i:   1100, t:    11124.6 s (0.25 periods), wall: 2.734 minutes, Δt:   7.80, CFL: 9.50e-01
+i:   1200, t:    11892.5 s (0.27 periods), wall: 2.912 minutes, Δt:   7.84, CFL: 9.50e-01
+i:   1300, t:    12666.7 s (0.28 periods), wall: 3.089 minutes, Δt:   8.02, CFL: 9.50e-01
+i:   1400, t:    13465.7 s (0.30 periods), wall: 3.267 minutes, Δt:   8.23, CFL: 9.50e-01
+i:   1500, t:    14284.8 s (0.32 periods), wall: 3.444 minutes, Δt:   8.62, CFL: 9.50e-01
+i:   1600, t:    15152.5 s (0.34 periods), wall: 3.622 minutes, Δt:   9.16, CFL: 9.50e-01
+i:   1700, t:    16080.3 s (0.36 periods), wall: 3.800 minutes, Δt:   9.93, CFL: 9.50e-01
+i:   1800, t:    17081.5 s (0.38 periods), wall: 3.978 minutes, Δt:  10.81, CFL: 9.50e-01
+i:   1900, t:    18079.2 s (0.40 periods), wall: 4.151 minutes, Δt:   8.97, CFL: 9.50e-01
+i:   2000, t:    18972.0 s (0.42 periods), wall: 4.329 minutes, Δt:   8.78, CFL: 9.50e-01
+i:   2100, t:    19759.0 s (0.44 periods), wall: 4.507 minutes, Δt:   7.65, CFL: 9.50e-01
+i:   2200, t:    20624.6 s (0.46 periods), wall: 4.685 minutes, Δt:   9.78, CFL: 9.50e-01
+i:   2300, t:    21571.3 s (0.48 periods), wall: 4.862 minutes, Δt:   8.65, CFL: 9.50e-01
+i:   2400, t:    22510.0 s (0.50 periods), wall: 5.052 minutes, Δt:   8.72, CFL: 9.50e-01
+i:   2500, t:    23445.9 s (0.53 periods), wall: 5.282 minutes, Δt:  10.20, CFL: 9.50e-01
+i:   2600, t:    24463.3 s (0.55 periods), wall: 5.546 minutes, Δt:  10.10, CFL: 9.50e-01
+i:   2700, t:    25398.8 s (0.57 periods), wall: 5.810 minutes, Δt:   9.47, CFL: 9.50e-01
+i:   2800, t:    26324.4 s (0.59 periods), wall: 6.075 minutes, Δt:   8.92, CFL: 9.50e-01
+i:   2900, t:    27166.5 s (0.61 periods), wall: 6.339 minutes, Δt:   8.30, CFL: 9.50e-01
+i:   3000, t:    27964.3 s (0.63 periods), wall: 6.603 minutes, Δt:   7.97, CFL: 9.50e-01
+i:   3100, t:    28719.2 s (0.64 periods), wall: 6.865 minutes, Δt:   7.37, CFL: 9.50e-01
+i:   3200, t:    29427.4 s (0.66 periods), wall: 7.125 minutes, Δt:   6.92, CFL: 9.50e-01
+i:   3300, t:    30079.2 s (0.67 periods), wall: 7.386 minutes, Δt:   6.12, CFL: 9.50e-01
+i:   3400, t:    30661.2 s (0.69 periods), wall: 7.648 minutes, Δt:   5.89, CFL: 9.50e-01
+i:   3500, t:    31224.7 s (0.70 periods), wall: 7.910 minutes, Δt:   5.44, CFL: 9.50e-01
+i:   3600, t:    31754.6 s (0.71 periods), wall: 8.173 minutes, Δt:   5.50, CFL: 9.50e-01
+i:   3700, t:    32291.5 s (0.72 periods), wall: 8.434 minutes, Δt:   5.41, CFL: 9.50e-01
+i:   3800, t:    32810.4 s (0.73 periods), wall: 8.696 minutes, Δt:   5.18, CFL: 9.50e-01
+i:   3900, t:    33330.6 s (0.75 periods), wall: 8.958 minutes, Δt:   5.26, CFL: 9.50e-01
+i:   4000, t:    33825.3 s (0.76 periods), wall: 9.219 minutes, Δt:   4.93, CFL: 9.50e-01
+i:   4100, t:    34331.1 s (0.77 periods), wall: 9.481 minutes, Δt:   5.10, CFL: 9.50e-01
+i:   4200, t:    34810.2 s (0.78 periods), wall: 9.742 minutes, Δt:   4.88, CFL: 9.50e-01
+i:   4300, t:    35295.0 s (0.79 periods), wall: 10.005 minutes, Δt:   4.96, CFL: 9.50e-01
+i:   4400, t:    35789.4 s (0.80 periods), wall: 10.267 minutes, Δt:   5.01, CFL: 9.50e-01
+i:   4500, t:    36293.7 s (0.81 periods), wall: 10.454 minutes, Δt:   5.03, CFL: 9.50e-01
+i:   4600, t:    36806.7 s (0.82 periods), wall: 10.626 minutes, Δt:   5.12, CFL: 9.50e-01
+i:   4700, t:    37322.2 s (0.84 periods), wall: 10.805 minutes, Δt:   5.28, CFL: 9.50e-01
+i:   4800, t:    37856.3 s (0.85 periods), wall: 11.026 minutes, Δt:   5.38, CFL: 9.50e-01
+i:   4900, t:    38389.9 s (0.86 periods), wall: 11.287 minutes, Δt:   5.32, CFL: 9.50e-01
+i:   5000, t:    38919.5 s (0.87 periods), wall: 11.546 minutes, Δt:   5.36, CFL: 9.50e-01
+i:   5100, t:    39512.5 s (0.89 periods), wall: 11.809 minutes, Δt:   6.11, CFL: 9.50e-01
+i:   5200, t:    40113.7 s (0.90 periods), wall: 12.070 minutes, Δt:   5.99, CFL: 9.50e-01
+i:   5300, t:    40766.4 s (0.91 periods), wall: 12.332 minutes, Δt:   6.95, CFL: 9.50e-01
+i:   5400, t:    41476.4 s (0.93 periods), wall: 12.574 minutes, Δt:   7.66, CFL: 9.50e-01
+i:   5500, t:    42290.8 s (0.95 periods), wall: 12.752 minutes, Δt:   8.73, CFL: 9.50e-01
+i:   5600, t:    43214.0 s (0.97 periods), wall: 12.930 minutes, Δt:  11.19, CFL: 9.50e-01
+i:   5700, t:    44326.5 s (0.99 periods), wall: 13.108 minutes, Δt:  11.24, CFL: 9.50e-01
+i:   5800, t:    45373.5 s (1.02 periods), wall: 13.296 minutes, Δt:  10.38, CFL: 9.50e-01
+i:   5900, t:    46343.8 s (1.04 periods), wall: 13.469 minutes, Δt:   9.44, CFL: 9.50e-01
+i:   6000, t:    47254.6 s (1.06 periods), wall: 13.647 minutes, Δt:   8.68, CFL: 9.50e-01
+i:   6100, t:    48050.8 s (1.08 periods), wall: 13.825 minutes, Δt:   7.82, CFL: 9.50e-01
+i:   6200, t:    48814.2 s (1.09 periods), wall: 14.002 minutes, Δt:   7.35, CFL: 9.50e-01
+i:   6300, t:    49530.4 s (1.11 periods), wall: 14.179 minutes, Δt:   7.21, CFL: 9.50e-01
+i:   6400, t:    50220.0 s (1.12 periods), wall: 14.356 minutes, Δt:   6.78, CFL: 9.50e-01
+i:   6500, t:    50876.1 s (1.14 periods), wall: 14.533 minutes, Δt:   6.49, CFL: 9.50e-01
+i:   6600, t:    51499.4 s (1.15 periods), wall: 14.711 minutes, Δt:   6.30, CFL: 9.50e-01
+i:   6700, t:    52128.3 s (1.17 periods), wall: 14.888 minutes, Δt:   6.42, CFL: 9.50e-01
+i:   6800, t:    52750.5 s (1.18 periods), wall: 15.065 minutes, Δt:   6.27, CFL: 9.50e-01
+i:   6900, t:    53369.8 s (1.20 periods), wall: 15.242 minutes, Δt:   6.25, CFL: 9.50e-01
+i:   7000, t:    53990.2 s (1.21 periods), wall: 15.419 minutes, Δt:   6.17, CFL: 9.50e-01
+i:   7100, t:    54570.9 s (1.22 periods), wall: 15.596 minutes, Δt:   5.51, CFL: 9.50e-01
+i:   7200, t:    55118.8 s (1.23 periods), wall: 15.768 minutes, Δt:   5.16, CFL: 9.50e-01
+i:   7300, t:    55611.8 s (1.25 periods), wall: 15.951 minutes, Δt:   4.99, CFL: 9.50e-01
+i:   7400, t:    56120.0 s (1.26 periods), wall: 16.212 minutes, Δt:   5.00, CFL: 9.50e-01
+i:   7500, t:    56611.7 s (1.27 periods), wall: 16.474 minutes, Δt:   4.75, CFL: 9.50e-01
+i:   7600, t:    57083.7 s (1.28 periods), wall: 16.735 minutes, Δt:   4.78, CFL: 9.50e-01
+i:   7700, t:    57538.7 s (1.29 periods), wall: 16.996 minutes, Δt:   4.53, CFL: 9.50e-01
+i:   7800, t:    57990.7 s (1.30 periods), wall: 17.257 minutes, Δt:   5.07, CFL: 9.50e-01
+i:   7900, t:    58499.2 s (1.31 periods), wall: 17.519 minutes, Δt:   5.33, CFL: 9.50e-01
+i:   8000, t:    59013.0 s (1.32 periods), wall: 17.780 minutes, Δt:   5.38, CFL: 9.50e-01
+i:   8100, t:    59554.3 s (1.33 periods), wall: 18.041 minutes, Δt:   5.25, CFL: 9.50e-01
+i:   8200, t:    60085.8 s (1.35 periods), wall: 18.304 minutes, Δt:   5.70, CFL: 9.50e-01
+i:   8300, t:    60649.7 s (1.36 periods), wall: 18.565 minutes, Δt:   5.53, CFL: 9.50e-01
+i:   8400, t:    61202.1 s (1.37 periods), wall: 18.827 minutes, Δt:   5.63, CFL: 9.50e-01
+i:   8500, t:    61783.0 s (1.38 periods), wall: 19.086 minutes, Δt:   6.50, CFL: 9.50e-01
+i:   8600, t:    62421.9 s (1.40 periods), wall: 19.349 minutes, Δt:   6.30, CFL: 9.50e-01
+i:   8700, t:    63021.8 s (1.41 periods), wall: 19.611 minutes, Δt:   5.87, CFL: 9.50e-01
+i:   8800, t:    63667.8 s (1.43 periods), wall: 19.874 minutes, Δt:   7.49, CFL: 9.50e-01
+i:   8900, t:    64391.3 s (1.44 periods), wall: 20.136 minutes, Δt:   8.01, CFL: 9.50e-01
+i:   9000, t:    65254.1 s (1.46 periods), wall: 20.400 minutes, Δt:   9.92, CFL: 9.50e-01
+i:   9100, t:    66327.3 s (1.49 periods), wall: 20.666 minutes, Δt:  12.25, CFL: 9.50e-01
+i:   9200, t:    67496.5 s (1.51 periods), wall: 20.939 minutes, Δt:  11.73, CFL: 9.50e-01
+i:   9300, t:    68595.8 s (1.54 periods), wall: 21.204 minutes, Δt:  10.37, CFL: 9.50e-01
+i:   9400, t:    69579.4 s (1.56 periods), wall: 21.464 minutes, Δt:   9.45, CFL: 9.50e-01
+i:   9500, t:    70496.9 s (1.58 periods), wall: 21.728 minutes, Δt:   8.81, CFL: 9.50e-01
+i:   9600, t:    71340.6 s (1.60 periods), wall: 21.991 minutes, Δt:   8.07, CFL: 9.50e-01
+i:   9700, t:    72101.1 s (1.62 periods), wall: 22.212 minutes, Δt:   7.48, CFL: 9.50e-01
+i:   9800, t:    72829.2 s (1.63 periods), wall: 22.385 minutes, Δt:   7.32, CFL: 9.50e-01
+i:   9900, t:    73537.9 s (1.65 periods), wall: 22.563 minutes, Δt:   6.94, CFL: 9.50e-01
+i:  10000, t:    74200.2 s (1.66 periods), wall: 22.780 minutes, Δt:   6.47, CFL: 9.50e-01
+i:  10100, t:    74829.1 s (1.68 periods), wall: 23.039 minutes, Δt:   6.35, CFL: 9.50e-01
+i:  10200, t:    75440.8 s (1.69 periods), wall: 23.297 minutes, Δt:   5.95, CFL: 9.50e-01
+i:  10300, t:    75998.7 s (1.70 periods), wall: 23.556 minutes, Δt:   5.41, CFL: 9.50e-01
+i:  10400, t:    76536.0 s (1.71 periods), wall: 23.814 minutes, Δt:   5.43, CFL: 9.50e-01
+i:  10500, t:    77056.0 s (1.73 periods), wall: 24.073 minutes, Δt:   4.59, CFL: 9.50e-01
+i:  10600, t:    77520.6 s (1.74 periods), wall: 24.331 minutes, Δt:   4.66, CFL: 9.50e-01
+i:  10700, t:    78005.2 s (1.75 periods), wall: 24.588 minutes, Δt:   5.25, CFL: 9.50e-01
+i:  10800, t:    78526.6 s (1.76 periods), wall: 24.846 minutes, Δt:   5.17, CFL: 9.50e-01
+i:  10900, t:    79028.2 s (1.77 periods), wall: 25.105 minutes, Δt:   5.09, CFL: 9.50e-01
+i:  11000, t:    79531.0 s (1.78 periods), wall: 25.363 minutes, Δt:   5.04, CFL: 9.50e-01
+i:  11100, t:    80036.9 s (1.79 periods), wall: 25.617 minutes, Δt:   4.99, CFL: 9.50e-01
+i:  11200, t:    80519.7 s (1.80 periods), wall: 25.874 minutes, Δt:   4.87, CFL: 9.50e-01
+i:  11300, t:    81012.4 s (1.81 periods), wall: 26.132 minutes, Δt:   5.30, CFL: 9.50e-01
+i:  11400, t:    81502.4 s (1.83 periods), wall: 26.386 minutes, Δt:   4.99, CFL: 9.50e-01
+i:  11500, t:    82003.3 s (1.84 periods), wall: 26.644 minutes, Δt:   5.23, CFL: 9.50e-01
+i:  11600, t:    82500.7 s (1.85 periods), wall: 26.901 minutes, Δt:   4.58, CFL: 9.50e-01
+i:  11700, t:    82965.9 s (1.86 periods), wall: 27.159 minutes, Δt:   5.03, CFL: 9.50e-01
+i:  11800, t:    83498.8 s (1.87 periods), wall: 27.418 minutes, Δt:   5.51, CFL: 9.50e-01
+i:  11900, t:    84072.2 s (1.88 periods), wall: 27.676 minutes, Δt:   5.62, CFL: 9.50e-01
+i:  12000, t:    84659.1 s (1.90 periods), wall: 27.935 minutes, Δt:   6.07, CFL: 9.50e-01
+i:  12100, t:    85288.1 s (1.91 periods), wall: 28.194 minutes, Δt:   6.33, CFL: 9.50e-01
+i:  12200, t:    85945.8 s (1.93 periods), wall: 28.453 minutes, Δt:   7.11, CFL: 9.50e-01
+i:  12300, t:    86693.0 s (1.94 periods), wall: 28.713 minutes, Δt:   8.32, CFL: 9.50e-01
+i:  12400, t:    87592.5 s (1.96 periods), wall: 28.970 minutes, Δt:  10.27, CFL: 9.50e-01
+i:  12500, t:    88780.8 s (1.99 periods), wall: 29.232 minutes, Δt:  12.82, CFL: 9.50e-01
+i:  12600, t:    89943.8 s (2.01 periods), wall: 29.502 minutes, Δt:  10.99, CFL: 9.50e-01
+i:  12700, t:    90966.8 s (2.04 periods), wall: 29.764 minutes, Δt:  10.14, CFL: 9.50e-01
+i:  12800, t:    91889.2 s (2.06 periods), wall: 30.024 minutes, Δt:   8.84, CFL: 9.50e-01
+i:  12900, t:    92737.9 s (2.08 periods), wall: 30.284 minutes, Δt:   8.37, CFL: 9.50e-01
+i:  13000, t:    93536.1 s (2.10 periods), wall: 30.545 minutes, Δt:   7.58, CFL: 9.50e-01
+i:  13100, t:    94253.2 s (2.11 periods), wall: 30.804 minutes, Δt:   6.88, CFL: 9.50e-01
+i:  13200, t:    94904.8 s (2.13 periods), wall: 31.063 minutes, Δt:   6.45, CFL: 9.50e-01
+i:  13300, t:    95542.6 s (2.14 periods), wall: 31.322 minutes, Δt:   6.50, CFL: 9.50e-01
+i:  13400, t:    96180.0 s (2.15 periods), wall: 31.580 minutes, Δt:   6.30, CFL: 9.50e-01
+i:  13500, t:    96784.7 s (2.17 periods), wall: 31.839 minutes, Δt:   6.00, CFL: 9.50e-01
+i:  13600, t:    97367.4 s (2.18 periods), wall: 32.098 minutes, Δt:   5.75, CFL: 9.50e-01
+i:  13700, t:    97930.3 s (2.19 periods), wall: 32.354 minutes, Δt:   5.63, CFL: 9.50e-01
+i:  13800, t:    98488.7 s (2.21 periods), wall: 32.613 minutes, Δt:   5.76, CFL: 9.50e-01
+i:  13900, t:    99064.5 s (2.22 periods), wall: 32.870 minutes, Δt:   5.84, CFL: 9.50e-01
+i:  14000, t:    99633.8 s (2.23 periods), wall: 33.129 minutes, Δt:   5.78, CFL: 9.50e-01
+i:  14100, t:   100206.1 s (2.24 periods), wall: 33.387 minutes, Δt:   5.65, CFL: 9.50e-01
+i:  14200, t:   100764.6 s (2.26 periods), wall: 33.643 minutes, Δt:   5.61, CFL: 9.50e-01
+i:  14300, t:   101321.3 s (2.27 periods), wall: 33.900 minutes, Δt:   5.61, CFL: 9.50e-01
+i:  14400, t:   101872.1 s (2.28 periods), wall: 34.159 minutes, Δt:   5.25, CFL: 9.50e-01
+i:  14500, t:   102377.9 s (2.29 periods), wall: 34.417 minutes, Δt:   5.05, CFL: 9.50e-01
+i:  14600, t:   102850.3 s (2.30 periods), wall: 34.674 minutes, Δt:   4.35, CFL: 9.50e-01
+i:  14700, t:   103306.5 s (2.31 periods), wall: 34.932 minutes, Δt:   4.78, CFL: 9.50e-01
+i:  14800, t:   103782.3 s (2.32 periods), wall: 35.190 minutes, Δt:   4.63, CFL: 9.50e-01
+i:  14900, t:   104253.5 s (2.34 periods), wall: 35.450 minutes, Δt:   4.75, CFL: 9.50e-01
+i:  15000, t:   104733.2 s (2.35 periods), wall: 35.707 minutes, Δt:   4.81, CFL: 9.50e-01
+i:  15100, t:   105247.0 s (2.36 periods), wall: 35.962 minutes, Δt:   5.33, CFL: 9.50e-01
+i:  15200, t:   105758.1 s (2.37 periods), wall: 36.220 minutes, Δt:   5.48, CFL: 9.50e-01
+i:  15300, t:   106306.5 s (2.38 periods), wall: 36.479 minutes, Δt:   5.62, CFL: 9.50e-01
+i:  15400, t:   106874.1 s (2.39 periods), wall: 36.737 minutes, Δt:   5.88, CFL: 9.50e-01
+i:  15500, t:   107500.7 s (2.41 periods), wall: 36.995 minutes, Δt:   7.04, CFL: 9.50e-01
+i:  15600, t:   108238.1 s (2.42 periods), wall: 37.254 minutes, Δt:   7.55, CFL: 9.50e-01
+i:  15700, t:   109020.8 s (2.44 periods), wall: 37.515 minutes, Δt:   8.34, CFL: 9.50e-01
+i:  15800, t:   109967.5 s (2.46 periods), wall: 37.772 minutes, Δt:  10.67, CFL: 9.50e-01
+i:  15900, t:   111150.0 s (2.49 periods), wall: 38.033 minutes, Δt:  11.17, CFL: 9.50e-01
+i:  16000, t:   112141.8 s (2.51 periods), wall: 38.306 minutes, Δt:  10.90, CFL: 9.50e-01
+i:  16100, t:   113182.1 s (2.54 periods), wall: 38.568 minutes, Δt:   9.77, CFL: 9.50e-01
+i:  16200, t:   114123.0 s (2.56 periods), wall: 38.829 minutes, Δt:   9.73, CFL: 9.50e-01
+i:  16300, t:   115022.1 s (2.58 periods), wall: 39.089 minutes, Δt:   8.00, CFL: 9.50e-01
+i:  16400, t:   115775.4 s (2.59 periods), wall: 39.346 minutes, Δt:   7.50, CFL: 9.50e-01
+i:  16500, t:   116504.5 s (2.61 periods), wall: 39.605 minutes, Δt:   7.20, CFL: 9.50e-01
+i:  16600, t:   117201.4 s (2.63 periods), wall: 39.865 minutes, Δt:   7.12, CFL: 9.50e-01
+i:  16700, t:   117898.1 s (2.64 periods), wall: 40.124 minutes, Δt:   6.87, CFL: 9.50e-01
+i:  16800, t:   118559.2 s (2.66 periods), wall: 40.384 minutes, Δt:   6.63, CFL: 9.50e-01
+i:  16900, t:   119201.8 s (2.67 periods), wall: 40.643 minutes, Δt:   6.45, CFL: 9.50e-01
+i:  17000, t:   119829.9 s (2.68 periods), wall: 40.901 minutes, Δt:   6.24, CFL: 9.50e-01
+i:  17100, t:   120436.0 s (2.70 periods), wall: 41.160 minutes, Δt:   5.93, CFL: 9.50e-01
+i:  17200, t:   121022.8 s (2.71 periods), wall: 41.418 minutes, Δt:   6.04, CFL: 9.50e-01
+i:  17300, t:   121593.3 s (2.72 periods), wall: 41.672 minutes, Δt:   5.44, CFL: 9.50e-01
+i:  17400, t:   122122.8 s (2.74 periods), wall: 41.931 minutes, Δt:   5.43, CFL: 9.50e-01
+i:  17500, t:   122668.5 s (2.75 periods), wall: 42.188 minutes, Δt:   5.50, CFL: 9.50e-01
+i:  17600, t:   123217.3 s (2.76 periods), wall: 42.447 minutes, Δt:   5.48, CFL: 9.50e-01
+i:  17700, t:   123743.3 s (2.77 periods), wall: 42.705 minutes, Δt:   5.39, CFL: 9.50e-01
+i:  17800, t:   124284.6 s (2.78 periods), wall: 42.960 minutes, Δt:   5.25, CFL: 9.50e-01
+i:  17900, t:   124794.8 s (2.80 periods), wall: 43.220 minutes, Δt:   5.28, CFL: 9.50e-01
+i:  18000, t:   125337.3 s (2.81 periods), wall: 43.477 minutes, Δt:   5.69, CFL: 9.50e-01
+i:  18100, t:   125866.4 s (2.82 periods), wall: 43.735 minutes, Δt:   5.27, CFL: 9.50e-01
+i:  18200, t:   126415.7 s (2.83 periods), wall: 43.994 minutes, Δt:   5.66, CFL: 9.50e-01
+i:  18300, t:   126974.0 s (2.84 periods), wall: 44.252 minutes, Δt:   5.30, CFL: 9.50e-01
+i:  18400, t:   127522.5 s (2.86 periods), wall: 44.511 minutes, Δt:   6.03, CFL: 9.50e-01
+i:  18500, t:   128116.8 s (2.87 periods), wall: 44.769 minutes, Δt:   6.42, CFL: 9.50e-01
+i:  18600, t:   128756.0 s (2.88 periods), wall: 45.027 minutes, Δt:   6.46, CFL: 9.50e-01
+i:  18700, t:   129441.6 s (2.90 periods), wall: 45.283 minutes, Δt:   7.21, CFL: 9.50e-01
+i:  18800, t:   130132.8 s (2.92 periods), wall: 45.543 minutes, Δt:   7.42, CFL: 9.50e-01
+i:  18900, t:   130903.8 s (2.93 periods), wall: 45.802 minutes, Δt:   8.09, CFL: 9.50e-01
+i:  19000, t:   131783.7 s (2.95 periods), wall: 46.062 minutes, Δt:   9.84, CFL: 9.50e-01
+i:  19100, t:   132799.6 s (2.97 periods), wall: 46.322 minutes, Δt:  10.76, CFL: 9.50e-01
+i:  19200, t:   134009.3 s (3.00 periods), wall: 46.601 minutes, Δt:  13.08, CFL: 9.50e-01
+i:  19300, t:   135088.4 s (3.03 periods), wall: 46.863 minutes, Δt:  10.39, CFL: 9.50e-01
+i:  19400, t:   136082.9 s (3.05 periods), wall: 47.123 minutes, Δt:  10.12, CFL: 9.50e-01
+i:  19500, t:   137022.5 s (3.07 periods), wall: 47.384 minutes, Δt:   8.91, CFL: 9.50e-01
+i:  19600, t:   137868.2 s (3.09 periods), wall: 47.644 minutes, Δt:   8.48, CFL: 9.50e-01
+i:  19700, t:   138670.3 s (3.11 periods), wall: 47.905 minutes, Δt:   7.85, CFL: 9.50e-01
+i:  19800, t:   139417.1 s (3.12 periods), wall: 48.163 minutes, Δt:   7.35, CFL: 9.50e-01
+i:  19900, t:   140122.4 s (3.14 periods), wall: 48.419 minutes, Δt:   6.98, CFL: 9.50e-01
+i:  20000, t:   140796.7 s (3.15 periods), wall: 48.678 minutes, Δt:   6.63, CFL: 9.50e-01
+i:  20100, t:   141443.0 s (3.17 periods), wall: 48.938 minutes, Δt:   6.58, CFL: 9.50e-01
+i:  20200, t:   142083.9 s (3.18 periods), wall: 49.197 minutes, Δt:   6.38, CFL: 9.50e-01
+i:  20300, t:   142698.6 s (3.20 periods), wall: 49.455 minutes, Δt:   6.13, CFL: 9.50e-01
+i:  20400, t:   143300.5 s (3.21 periods), wall: 49.715 minutes, Δt:   6.10, CFL: 9.50e-01
+i:  20500, t:   143904.5 s (3.22 periods), wall: 49.973 minutes, Δt:   6.04, CFL: 9.50e-01
+i:  20600, t:   144493.4 s (3.24 periods), wall: 50.227 minutes, Δt:   5.93, CFL: 9.50e-01
+i:  20700, t:   145080.0 s (3.25 periods), wall: 50.485 minutes, Δt:   5.95, CFL: 9.50e-01
+i:  20800, t:   145671.0 s (3.26 periods), wall: 50.742 minutes, Δt:   6.06, CFL: 9.50e-01
+i:  20900, t:   146268.1 s (3.28 periods), wall: 50.999 minutes, Δt:   5.95, CFL: 9.50e-01
+i:  21000, t:   146825.0 s (3.29 periods), wall: 51.257 minutes, Δt:   5.03, CFL: 9.50e-01
+i:  21100, t:   147299.4 s (3.30 periods), wall: 51.515 minutes, Δt:   4.58, CFL: 9.50e-01
+i:  21200, t:   147763.1 s (3.31 periods), wall: 51.774 minutes, Δt:   4.90, CFL: 9.50e-01
+i:  21300, t:   148262.0 s (3.32 periods), wall: 52.032 minutes, Δt:   5.16, CFL: 9.50e-01
+i:  21400, t:   148788.2 s (3.33 periods), wall: 52.289 minutes, Δt:   5.64, CFL: 9.50e-01
+i:  21500, t:   149361.0 s (3.35 periods), wall: 52.549 minutes, Δt:   5.72, CFL: 9.50e-01
+i:  21600, t:   149937.0 s (3.36 periods), wall: 52.806 minutes, Δt:   6.03, CFL: 9.50e-01
+i:  21700, t:   150525.2 s (3.37 periods), wall: 53.066 minutes, Δt:   5.80, CFL: 9.50e-01
+i:  21800, t:   151112.4 s (3.39 periods), wall: 53.321 minutes, Δt:   6.00, CFL: 9.50e-01
+i:  21900, t:   151712.2 s (3.40 periods), wall: 53.579 minutes, Δt:   5.61, CFL: 9.50e-01
+i:  22000, t:   152299.0 s (3.41 periods), wall: 53.836 minutes, Δt:   6.45, CFL: 9.50e-01
+i:  22100, t:   152976.0 s (3.43 periods), wall: 54.095 minutes, Δt:   7.98, CFL: 9.50e-01
+i:  22200, t:   153793.8 s (3.45 periods), wall: 54.355 minutes, Δt:   8.98, CFL: 9.50e-01
+i:  22300, t:   154686.5 s (3.47 periods), wall: 54.616 minutes, Δt:   9.38, CFL: 9.50e-01
+i:  22400, t:   155793.6 s (3.49 periods), wall: 54.877 minutes, Δt:  11.03, CFL: 9.50e-01
+i:  22500, t:   156859.8 s (3.51 periods), wall: 55.148 minutes, Δt:   9.46, CFL: 9.50e-01
+i:  22600, t:   157763.1 s (3.53 periods), wall: 55.409 minutes, Δt:   8.79, CFL: 9.50e-01
+i:  22700, t:   158649.6 s (3.55 periods), wall: 55.665 minutes, Δt:   8.80, CFL: 9.50e-01
+i:  22800, t:   159504.2 s (3.57 periods), wall: 55.926 minutes, Δt:   8.63, CFL: 9.50e-01
+i:  22900, t:   160331.2 s (3.59 periods), wall: 56.186 minutes, Δt:   8.12, CFL: 9.50e-01
+i:  23000, t:   161124.5 s (3.61 periods), wall: 56.446 minutes, Δt:   7.81, CFL: 9.50e-01
+i:  23100, t:   161871.9 s (3.63 periods), wall: 56.706 minutes, Δt:   7.38, CFL: 9.50e-01
+i:  23200, t:   162589.4 s (3.64 periods), wall: 56.966 minutes, Δt:   7.01, CFL: 9.50e-01
+i:  23300, t:   163241.7 s (3.66 periods), wall: 57.225 minutes, Δt:   6.23, CFL: 9.50e-01
+i:  23400, t:   163841.2 s (3.67 periods), wall: 57.481 minutes, Δt:   6.38, CFL: 9.50e-01
+i:  23500, t:   164423.3 s (3.68 periods), wall: 57.739 minutes, Δt:   5.34, CFL: 9.50e-01
+i:  23600, t:   164936.4 s (3.69 periods), wall: 57.997 minutes, Δt:   5.21, CFL: 9.50e-01
+i:  23700, t:   165461.3 s (3.71 periods), wall: 58.252 minutes, Δt:   5.28, CFL: 9.50e-01
+i:  23800, t:   165972.0 s (3.72 periods), wall: 58.510 minutes, Δt:   4.87, CFL: 9.50e-01
+i:  23900, t:   166460.2 s (3.73 periods), wall: 58.768 minutes, Δt:   5.01, CFL: 9.50e-01
+i:  24000, t:   166948.4 s (3.74 periods), wall: 59.025 minutes, Δt:   5.26, CFL: 9.50e-01
+i:  24100, t:   167462.0 s (3.75 periods), wall: 59.285 minutes, Δt:   5.26, CFL: 9.50e-01
+i:  24200, t:   167966.4 s (3.76 periods), wall: 59.543 minutes, Δt:   5.30, CFL: 9.50e-01
+i:  24300, t:   168495.8 s (3.77 periods), wall: 59.801 minutes, Δt:   5.44, CFL: 9.50e-01
+i:  24400, t:   169012.4 s (3.79 periods), wall: 1.001 hours, Δt:   4.93, CFL: 9.50e-01
+i:  24500, t:   169500.8 s (3.80 periods), wall: 1.005 hours, Δt:   4.93, CFL: 9.50e-01
+i:  24600, t:   170017.4 s (3.81 periods), wall: 1.010 hours, Δt:   5.44, CFL: 9.50e-01
+i:  24700, t:   170535.4 s (3.82 periods), wall: 1.014 hours, Δt:   5.43, CFL: 9.50e-01
+i:  24800, t:   171060.2 s (3.83 periods), wall: 1.018 hours, Δt:   5.60, CFL: 9.50e-01
+i:  24900, t:   171611.6 s (3.84 periods), wall: 1.022 hours, Δt:   5.97, CFL: 9.50e-01
+i:  25000, t:   172201.9 s (3.86 periods), wall: 1.027 hours, Δt:   6.06, CFL: 9.50e-01
+i:  25100, t:   172781.8 s (3.87 periods), wall: 1.031 hours, Δt:   6.24, CFL: 9.50e-01
+i:  25200, t:   173422.2 s (3.88 periods), wall: 1.035 hours, Δt:   6.49, CFL: 9.50e-01
+i:  25300, t:   174086.1 s (3.90 periods), wall: 1.040 hours, Δt:   7.07, CFL: 9.50e-01
+i:  25400, t:   174772.3 s (3.92 periods), wall: 1.044 hours, Δt:   6.60, CFL: 9.50e-01
+i:  25500, t:   175442.4 s (3.93 periods), wall: 1.048 hours, Δt:   7.39, CFL: 9.50e-01
+i:  25600, t:   176213.5 s (3.95 periods), wall: 1.053 hours, Δt:   8.75, CFL: 9.50e-01
+i:  25700, t:   177233.3 s (3.97 periods), wall: 1.057 hours, Δt:  12.74, CFL: 9.50e-01
+i:  25800, t:   178395.6 s (4.00 periods), wall: 1.061 hours, Δt:  11.62, CFL: 9.50e-01
+i:  25900, t:   179494.7 s (4.02 periods), wall: 1.066 hours, Δt:   9.79, CFL: 9.50e-01
+i:  26000, t:   180410.8 s (4.04 periods), wall: 1.070 hours, Δt:   9.45, CFL: 9.50e-01
+i:  26100, t:   181280.0 s (4.06 periods), wall: 1.074 hours, Δt:   8.28, CFL: 9.50e-01
+i:  26200, t:   182116.0 s (4.08 periods), wall: 1.079 hours, Δt:   8.62, CFL: 9.50e-01
+i:  26300, t:   182928.1 s (4.10 periods), wall: 1.083 hours, Δt:   7.80, CFL: 9.50e-01
+i:  26400, t:   183658.4 s (4.11 periods), wall: 1.087 hours, Δt:   7.16, CFL: 9.50e-01
+i:  26500, t:   184339.7 s (4.13 periods), wall: 1.092 hours, Δt:   6.56, CFL: 9.50e-01
+i:  26600, t:   184978.0 s (4.14 periods), wall: 1.096 hours, Δt:   6.44, CFL: 9.50e-01
+i:  26700, t:   185615.2 s (4.16 periods), wall: 1.100 hours, Δt:   6.45, CFL: 9.50e-01
+i:  26800, t:   186243.8 s (4.17 periods), wall: 1.105 hours, Δt:   6.31, CFL: 9.50e-01
+i:  26900, t:   186848.5 s (4.19 periods), wall: 1.109 hours, Δt:   5.98, CFL: 9.50e-01
+i:  27000, t:   187427.5 s (4.20 periods), wall: 1.113 hours, Δt:   5.79, CFL: 9.50e-01
+i:  27100, t:   187989.1 s (4.21 periods), wall: 1.118 hours, Δt:   5.45, CFL: 9.50e-01
+i:  27200, t:   188518.3 s (4.22 periods), wall: 1.122 hours, Δt:   5.22, CFL: 9.50e-01
+i:  27300, t:   189015.3 s (4.23 periods), wall: 1.126 hours, Δt:   4.95, CFL: 9.50e-01
+i:  27400, t:   189512.4 s (4.25 periods), wall: 1.130 hours, Δt:   5.28, CFL: 9.50e-01
+i:  27500, t:   190044.0 s (4.26 periods), wall: 1.135 hours, Δt:   5.22, CFL: 9.50e-01
+i:  27600, t:   190565.6 s (4.27 periods), wall: 1.139 hours, Δt:   5.31, CFL: 9.50e-01
+i:  27700, t:   191103.2 s (4.28 periods), wall: 1.143 hours, Δt:   5.53, CFL: 9.50e-01
+i:  27800, t:   191641.9 s (4.29 periods), wall: 1.148 hours, Δt:   5.48, CFL: 9.50e-01
+i:  27900, t:   192168.1 s (4.30 periods), wall: 1.152 hours, Δt:   5.40, CFL: 9.50e-01
+i:  28000, t:   192686.2 s (4.32 periods), wall: 1.156 hours, Δt:   5.38, CFL: 9.50e-01
+i:  28100, t:   193196.9 s (4.33 periods), wall: 1.160 hours, Δt:   4.76, CFL: 9.50e-01
+i:  28200, t:   193664.7 s (4.34 periods), wall: 1.165 hours, Δt:   4.74, CFL: 9.50e-01
+i:  28300, t:   194119.6 s (4.35 periods), wall: 1.169 hours, Δt:   5.09, CFL: 9.50e-01
+i:  28400, t:   194646.8 s (4.36 periods), wall: 1.173 hours, Δt:   5.42, CFL: 9.50e-01
+i:  28500, t:   195191.2 s (4.37 periods), wall: 1.178 hours, Δt:   5.95, CFL: 9.50e-01
+i:  28600, t:   195787.3 s (4.39 periods), wall: 1.182 hours, Δt:   5.81, CFL: 9.50e-01
+i:  28700, t:   196379.2 s (4.40 periods), wall: 1.186 hours, Δt:   6.07, CFL: 9.50e-01
+i:  28800, t:   196998.7 s (4.41 periods), wall: 1.191 hours, Δt:   5.75, CFL: 9.50e-01
+i:  28900, t:   197615.7 s (4.43 periods), wall: 1.195 hours, Δt:   6.53, CFL: 9.50e-01
+i:  29000, t:   198342.7 s (4.44 periods), wall: 1.199 hours, Δt:   8.02, CFL: 9.50e-01
+i:  29100, t:   199178.6 s (4.46 periods), wall: 1.204 hours, Δt:   9.45, CFL: 9.50e-01
+i:  29200, t:   200221.7 s (4.49 periods), wall: 1.208 hours, Δt:  11.54, CFL: 9.50e-01
+i:  29300, t:   201393.7 s (4.51 periods), wall: 1.212 hours, Δt:  10.43, CFL: 9.50e-01
+i:  29400, t:   202380.9 s (4.53 periods), wall: 1.217 hours, Δt:   9.64, CFL: 9.50e-01
+i:  29500, t:   203282.6 s (4.55 periods), wall: 1.221 hours, Δt:   9.08, CFL: 9.50e-01
+i:  29600, t:   204176.0 s (4.57 periods), wall: 1.225 hours, Δt:   8.85, CFL: 9.50e-01
+i:  29700, t:   205021.0 s (4.59 periods), wall: 1.230 hours, Δt:   8.12, CFL: 9.50e-01
+i:  29800, t:   205786.9 s (4.61 periods), wall: 1.234 hours, Δt:   7.56, CFL: 9.50e-01
+i:  29900, t:   206518.3 s (4.63 periods), wall: 1.238 hours, Δt:   7.22, CFL: 9.50e-01
+i:  30000, t:   207211.2 s (4.64 periods), wall: 1.243 hours, Δt:   6.77, CFL: 9.50e-01
+i:  30100, t:   207871.8 s (4.66 periods), wall: 1.247 hours, Δt:   6.59, CFL: 9.50e-01
+i:  30200, t:   208528.1 s (4.67 periods), wall: 1.251 hours, Δt:   6.57, CFL: 9.50e-01
+i:  30300, t:   209157.4 s (4.69 periods), wall: 1.256 hours, Δt:   6.31, CFL: 9.50e-01
+i:  30400, t:   209781.0 s (4.70 periods), wall: 1.260 hours, Δt:   6.33, CFL: 9.50e-01
+i:  30500, t:   210397.5 s (4.71 periods), wall: 1.264 hours, Δt:   6.18, CFL: 9.50e-01
+i:  30600, t:   211002.3 s (4.73 periods), wall: 1.268 hours, Δt:   6.01, CFL: 9.50e-01
+i:  30700, t:   211591.0 s (4.74 periods), wall: 1.273 hours, Δt:   5.95, CFL: 9.50e-01
+i:  30800, t:   212178.7 s (4.75 periods), wall: 1.277 hours, Δt:   5.89, CFL: 9.50e-01
+i:  30900, t:   212755.9 s (4.77 periods), wall: 1.281 hours, Δt:   5.78, CFL: 9.50e-01
+i:  31000, t:   213294.3 s (4.78 periods), wall: 1.286 hours, Δt:   4.98, CFL: 9.50e-01
+i:  31100, t:   213803.0 s (4.79 periods), wall: 1.290 hours, Δt:   4.94, CFL: 9.50e-01
+i:  31200, t:   214304.1 s (4.80 periods), wall: 1.294 hours, Δt:   5.29, CFL: 9.50e-01
+i:  31300, t:   214830.4 s (4.81 periods), wall: 1.298 hours, Δt:   5.46, CFL: 9.50e-01
+i:  31400, t:   215370.7 s (4.82 periods), wall: 1.303 hours, Δt:   5.50, CFL: 9.50e-01
+i:  31500, t:   215902.2 s (4.84 periods), wall: 1.307 hours, Δt:   5.15, CFL: 9.50e-01
+i:  31600, t:   216422.5 s (4.85 periods), wall: 1.311 hours, Δt:   5.11, CFL: 9.50e-01
+i:  31700, t:   216950.4 s (4.86 periods), wall: 1.316 hours, Δt:   6.06, CFL: 9.50e-01
+i:  31800, t:   217566.6 s (4.87 periods), wall: 1.320 hours, Δt:   6.45, CFL: 9.50e-01
+i:  31900, t:   218187.8 s (4.89 periods), wall: 1.324 hours, Δt:   6.21, CFL: 9.50e-01
+i:  32000, t:   218855.8 s (4.90 periods), wall: 1.329 hours, Δt:   7.56, CFL: 9.50e-01
+i:  32100, t:   219628.8 s (4.92 periods), wall: 1.333 hours, Δt:   8.18, CFL: 9.50e-01
+i:  32200, t:   220399.7 s (4.94 periods), wall: 1.337 hours, Δt:   7.97, CFL: 9.50e-01
+i:  32300, t:   221268.6 s (4.96 periods), wall: 1.341 hours, Δt:  10.01, CFL: 9.50e-01
+i:  32400, t:   222354.3 s (4.98 periods), wall: 1.346 hours, Δt:  11.92, CFL: 9.50e-01
+i:  32500, t:   223534.8 s (5.01 periods), wall: 1.350 hours, Δt:  11.50, CFL: 9.50e-01
+i:  32600, t:   224667.1 s (5.03 periods), wall: 1.355 hours, Δt:  10.33, CFL: 9.50e-01
+i:  32700, t:   225612.4 s (5.05 periods), wall: 1.359 hours, Δt:   9.42, CFL: 9.50e-01
+i:  32800, t:   226519.6 s (5.07 periods), wall: 1.363 hours, Δt:   8.65, CFL: 9.50e-01
+i:  32900, t:   227343.5 s (5.09 periods), wall: 1.368 hours, Δt:   8.30, CFL: 9.50e-01
+i:  33000, t:   228133.8 s (5.11 periods), wall: 1.372 hours, Δt:   7.74, CFL: 9.50e-01
+i:  33100, t:   228851.6 s (5.13 periods), wall: 1.376 hours, Δt:   7.22, CFL: 9.50e-01
+i:  33200, t:   229537.0 s (5.14 periods), wall: 1.380 hours, Δt:   6.67, CFL: 9.50e-01
+i:  33300, t:   230177.8 s (5.16 periods), wall: 1.385 hours, Δt:   6.45, CFL: 9.50e-01
+i:  33400, t:   230801.3 s (5.17 periods), wall: 1.389 hours, Δt:   6.27, CFL: 9.50e-01
+i:  33500, t:   231416.3 s (5.18 periods), wall: 1.393 hours, Δt:   6.03, CFL: 9.50e-01
+i:  33600, t:   232013.0 s (5.20 periods), wall: 1.398 hours, Δt:   5.40, CFL: 9.50e-01
+i:  33700, t:   232557.0 s (5.21 periods), wall: 1.402 hours, Δt:   5.66, CFL: 9.50e-01
+i:  33800, t:   233108.2 s (5.22 periods), wall: 1.406 hours, Δt:   5.43, CFL: 9.50e-01
+i:  33900, t:   233642.3 s (5.23 periods), wall: 1.411 hours, Δt:   5.55, CFL: 9.50e-01
+i:  34000, t:   234186.0 s (5.25 periods), wall: 1.415 hours, Δt:   5.46, CFL: 9.50e-01
+i:  34100, t:   234703.9 s (5.26 periods), wall: 1.419 hours, Δt:   5.03, CFL: 9.50e-01
+i:  34200, t:   235204.6 s (5.27 periods), wall: 1.423 hours, Δt:   4.98, CFL: 9.50e-01
+i:  34300, t:   235676.6 s (5.28 periods), wall: 1.428 hours, Δt:   4.96, CFL: 9.50e-01
+i:  34400, t:   236145.6 s (5.29 periods), wall: 1.432 hours, Δt:   4.83, CFL: 9.50e-01
+i:  34500, t:   236615.7 s (5.30 periods), wall: 1.436 hours, Δt:   4.81, CFL: 9.50e-01
+i:  34600, t:   237087.4 s (5.31 periods), wall: 1.441 hours, Δt:   4.96, CFL: 9.50e-01
+i:  34700, t:   237583.6 s (5.32 periods), wall: 1.445 hours, Δt:   4.76, CFL: 9.50e-01
+i:  34800, t:   238056.4 s (5.33 periods), wall: 1.449 hours, Δt:   5.22, CFL: 9.50e-01
+i:  34900, t:   238600.2 s (5.34 periods), wall: 1.453 hours, Δt:   5.73, CFL: 9.50e-01
+i:  35000, t:   239155.7 s (5.36 periods), wall: 1.458 hours, Δt:   5.80, CFL: 9.50e-01
+i:  35100, t:   239747.0 s (5.37 periods), wall: 1.462 hours, Δt:   5.93, CFL: 9.50e-01
+i:  35200, t:   240362.8 s (5.38 periods), wall: 1.466 hours, Δt:   6.06, CFL: 9.50e-01
+i:  35300, t:   240984.7 s (5.40 periods), wall: 1.471 hours, Δt:   6.16, CFL: 9.50e-01
+i:  35400, t:   241607.4 s (5.41 periods), wall: 1.475 hours, Δt:   6.16, CFL: 9.50e-01
+i:  35500, t:   242218.9 s (5.43 periods), wall: 1.479 hours, Δt:   6.62, CFL: 9.50e-01
+i:  35600, t:   242888.8 s (5.44 periods), wall: 1.484 hours, Δt:   6.78, CFL: 9.50e-01
+i:  35700, t:   243588.9 s (5.46 periods), wall: 1.488 hours, Δt:   7.79, CFL: 9.50e-01
+i:  35800, t:   244429.9 s (5.48 periods), wall: 1.492 hours, Δt:   8.40, CFL: 9.50e-01
+i:  35900, t:   245380.6 s (5.50 periods), wall: 1.497 hours, Δt:  10.39, CFL: 9.50e-01
+i:  36000, t:   246331.2 s (5.52 periods), wall: 1.501 hours, Δt:   9.72, CFL: 9.50e-01
+i:  36100, t:   247287.8 s (5.54 periods), wall: 1.505 hours, Δt:   8.96, CFL: 9.50e-01
+i:  36200, t:   248148.7 s (5.56 periods), wall: 1.510 hours, Δt:   8.61, CFL: 9.50e-01
+i:  36300, t:   248963.9 s (5.58 periods), wall: 1.514 hours, Δt:   7.91, CFL: 9.50e-01
+i:  36400, t:   249733.9 s (5.59 periods), wall: 1.518 hours, Δt:   7.86, CFL: 9.50e-01
+i:  36500, t:   250474.0 s (5.61 periods), wall: 1.523 hours, Δt:   7.22, CFL: 9.50e-01
+i:  36600, t:   251162.6 s (5.63 periods), wall: 1.527 hours, Δt:   6.95, CFL: 9.50e-01
+i:  36700, t:   251843.5 s (5.64 periods), wall: 1.531 hours, Δt:   6.59, CFL: 9.50e-01
+i:  36800, t:   252484.7 s (5.66 periods), wall: 1.535 hours, Δt:   6.48, CFL: 9.50e-01
+i:  36900, t:   253100.4 s (5.67 periods), wall: 1.540 hours, Δt:   5.74, CFL: 9.50e-01
+i:  37000, t:   253652.1 s (5.68 periods), wall: 1.544 hours, Δt:   5.83, CFL: 9.50e-01
+i:  37100, t:   254220.5 s (5.69 periods), wall: 1.548 hours, Δt:   5.66, CFL: 9.50e-01
+i:  37200, t:   254775.8 s (5.71 periods), wall: 1.553 hours, Δt:   5.37, CFL: 9.50e-01
+i:  37300, t:   255292.6 s (5.72 periods), wall: 1.557 hours, Δt:   4.95, CFL: 9.50e-01
+i:  37400, t:   255784.4 s (5.73 periods), wall: 1.561 hours, Δt:   4.86, CFL: 9.50e-01
+i:  37500, t:   256269.0 s (5.74 periods), wall: 1.566 hours, Δt:   5.16, CFL: 9.50e-01
+i:  37600, t:   256777.4 s (5.75 periods), wall: 1.570 hours, Δt:   5.20, CFL: 9.50e-01
+i:  37700, t:   257270.3 s (5.76 periods), wall: 1.574 hours, Δt:   4.84, CFL: 9.50e-01
+i:  37800, t:   257729.1 s (5.77 periods), wall: 1.578 hours, Δt:   4.68, CFL: 9.50e-01
+i:  37900, t:   258210.5 s (5.78 periods), wall: 1.583 hours, Δt:   5.03, CFL: 9.50e-01
+i:  38000, t:   258708.8 s (5.80 periods), wall: 1.587 hours, Δt:   4.93, CFL: 9.50e-01
+i:  38100, t:   259196.3 s (5.81 periods), wall: 1.591 hours, Δt:   4.90, CFL: 9.50e-01
+i:  38200, t:   259678.1 s (5.82 periods), wall: 1.596 hours, Δt:   4.85, CFL: 9.50e-01
+i:  38300, t:   260184.9 s (5.83 periods), wall: 1.600 hours, Δt:   5.27, CFL: 9.50e-01
+i:  38400, t:   260714.1 s (5.84 periods), wall: 1.604 hours, Δt:   5.50, CFL: 9.50e-01
+i:  38500, t:   261265.8 s (5.85 periods), wall: 1.608 hours, Δt:   5.81, CFL: 9.50e-01
+i:  38600, t:   261842.8 s (5.87 periods), wall: 1.613 hours, Δt:   5.78, CFL: 9.50e-01
+i:  38700, t:   262423.2 s (5.88 periods), wall: 1.617 hours, Δt:   5.74, CFL: 9.50e-01
+i:  38800, t:   263028.0 s (5.89 periods), wall: 1.621 hours, Δt:   6.68, CFL: 9.50e-01
+i:  38900, t:   263696.8 s (5.91 periods), wall: 1.626 hours, Δt:   6.28, CFL: 9.50e-01
+i:  39000, t:   264345.2 s (5.92 periods), wall: 1.630 hours, Δt:   7.50, CFL: 9.50e-01
+i:  39100, t:   265080.6 s (5.94 periods), wall: 1.634 hours, Δt:   7.96, CFL: 9.50e-01
+i:  39200, t:   265856.0 s (5.96 periods), wall: 1.639 hours, Δt:   8.39, CFL: 9.50e-01
+i:  39300, t:   266734.7 s (5.98 periods), wall: 1.643 hours, Δt:  11.18, CFL: 9.50e-01
+i:  39400, t:   267861.5 s (6.00 periods), wall: 1.647 hours, Δt:  10.65, CFL: 9.50e-01
+i:  39500, t:   268870.0 s (6.02 periods), wall: 1.652 hours, Δt:  10.32, CFL: 9.50e-01
+i:  39600, t:   269819.7 s (6.04 periods), wall: 1.656 hours, Δt:   9.08, CFL: 9.50e-01
+i:  39700, t:   270684.0 s (6.06 periods), wall: 1.660 hours, Δt:   8.55, CFL: 9.50e-01
+i:  39800, t:   271498.6 s (6.08 periods), wall: 1.665 hours, Δt:   7.84, CFL: 9.50e-01
+i:  39900, t:   272258.5 s (6.10 periods), wall: 1.669 hours, Δt:   7.74, CFL: 9.50e-01
+i:  40000, t:   272995.6 s (6.12 periods), wall: 1.673 hours, Δt:   7.28, CFL: 9.50e-01
+i:  40100, t:   273690.6 s (6.13 periods), wall: 1.677 hours, Δt:   6.73, CFL: 9.50e-01
+i:  40200, t:   274345.4 s (6.15 periods), wall: 1.682 hours, Δt:   6.52, CFL: 9.50e-01
+i:  40300, t:   274982.4 s (6.16 periods), wall: 1.686 hours, Δt:   6.45, CFL: 9.50e-01
+i:  40400, t:   275610.6 s (6.17 periods), wall: 1.690 hours, Δt:   6.25, CFL: 9.50e-01
+i:  40500, t:   276221.4 s (6.19 periods), wall: 1.695 hours, Δt:   6.16, CFL: 9.50e-01
+i:  40600, t:   276822.4 s (6.20 periods), wall: 1.699 hours, Δt:   6.02, CFL: 9.50e-01
+i:  40700, t:   277414.4 s (6.21 periods), wall: 1.703 hours, Δt:   5.86, CFL: 9.50e-01
+i:  40800, t:   277971.8 s (6.23 periods), wall: 1.708 hours, Δt:   5.44, CFL: 9.50e-01
+i:  40900, t:   278514.1 s (6.24 periods), wall: 1.712 hours, Δt:   5.32, CFL: 9.50e-01
+i:  41000, t:   279037.7 s (6.25 periods), wall: 1.716 hours, Δt:   5.40, CFL: 9.50e-01
+i:  41100, t:   279578.7 s (6.26 periods), wall: 1.720 hours, Δt:   5.49, CFL: 9.50e-01
+i:  41200, t:   280127.4 s (6.28 periods), wall: 1.725 hours, Δt:   5.72, CFL: 9.50e-01
+i:  41300, t:   280702.5 s (6.29 periods), wall: 1.729 hours, Δt:   5.82, CFL: 9.50e-01
+i:  41400, t:   281260.4 s (6.30 periods), wall: 1.733 hours, Δt:   5.58, CFL: 9.50e-01
+i:  41500, t:   281833.2 s (6.31 periods), wall: 1.738 hours, Δt:   5.77, CFL: 9.50e-01
+i:  41600, t:   282391.7 s (6.33 periods), wall: 1.742 hours, Δt:   5.49, CFL: 9.50e-01
+i:  41700, t:   282934.0 s (6.34 periods), wall: 1.746 hours, Δt:   5.55, CFL: 9.50e-01
+i:  41800, t:   283503.8 s (6.35 periods), wall: 1.750 hours, Δt:   5.62, CFL: 9.50e-01
+i:  41900, t:   284045.9 s (6.36 periods), wall: 1.755 hours, Δt:   4.74, CFL: 9.50e-01
+i:  42000, t:   284550.3 s (6.37 periods), wall: 1.759 hours, Δt:   5.62, CFL: 9.50e-01
+i:  42100, t:   285125.3 s (6.39 periods), wall: 1.763 hours, Δt:   6.00, CFL: 9.50e-01
+i:  42200, t:   285732.8 s (6.40 periods), wall: 1.768 hours, Δt:   6.15, CFL: 9.50e-01
+i:  42300, t:   286393.9 s (6.42 periods), wall: 1.772 hours, Δt:   7.09, CFL: 9.50e-01
+i:  42400, t:   287136.3 s (6.43 periods), wall: 1.776 hours, Δt:   8.17, CFL: 9.50e-01
+i:  42500, t:   288009.1 s (6.45 periods), wall: 1.780 hours, Δt:  10.30, CFL: 9.50e-01
+i:  42600, t:   288961.2 s (6.47 periods), wall: 1.785 hours, Δt:   9.37, CFL: 9.50e-01
+i:  42700, t:   289873.9 s (6.49 periods), wall: 1.789 hours, Δt:  10.63, CFL: 9.50e-01
+i:  42800, t:   291000.8 s (6.52 periods), wall: 1.794 hours, Δt:  11.03, CFL: 9.50e-01
+i:  42900, t:   292006.2 s (6.54 periods), wall: 1.798 hours, Δt:   9.75, CFL: 9.50e-01
+i:  43000, t:   292929.3 s (6.56 periods), wall: 1.802 hours, Δt:   9.05, CFL: 9.50e-01
+i:  43100, t:   293819.3 s (6.58 periods), wall: 1.807 hours, Δt:   8.80, CFL: 9.50e-01
+i:  43200, t:   294657.8 s (6.60 periods), wall: 1.811 hours, Δt:   8.40, CFL: 9.50e-01
+i:  43300, t:   295447.5 s (6.62 periods), wall: 1.815 hours, Δt:   7.60, CFL: 9.50e-01
+i:  43400, t:   296183.0 s (6.63 periods), wall: 1.819 hours, Δt:   7.22, CFL: 9.50e-01
+i:  43500, t:   296869.8 s (6.65 periods), wall: 1.824 hours, Δt:   6.86, CFL: 9.50e-01
+i:  43600, t:   297532.3 s (6.67 periods), wall: 1.828 hours, Δt:   6.63, CFL: 9.50e-01
+i:  43700, t:   298190.5 s (6.68 periods), wall: 1.832 hours, Δt:   6.58, CFL: 9.50e-01
+i:  43800, t:   298824.4 s (6.69 periods), wall: 1.837 hours, Δt:   6.25, CFL: 9.50e-01
+i:  43900, t:   299436.6 s (6.71 periods), wall: 1.841 hours, Δt:   6.24, CFL: 9.50e-01
+i:  44000, t:   300055.1 s (6.72 periods), wall: 1.845 hours, Δt:   6.11, CFL: 9.50e-01
+i:  44100, t:   300640.2 s (6.73 periods), wall: 1.849 hours, Δt:   5.59, CFL: 9.50e-01
+i:  44200, t:   301178.3 s (6.75 periods), wall: 1.854 hours, Δt:   5.32, CFL: 9.50e-01
+i:  44300, t:   301695.6 s (6.76 periods), wall: 1.858 hours, Δt:   5.41, CFL: 9.50e-01
+i:  44400, t:   302218.0 s (6.77 periods), wall: 1.862 hours, Δt:   5.39, CFL: 9.50e-01
+i:  44500, t:   302719.4 s (6.78 periods), wall: 1.867 hours, Δt:   5.15, CFL: 9.50e-01
+i:  44600, t:   303215.5 s (6.79 periods), wall: 1.871 hours, Δt:   4.97, CFL: 9.50e-01
+i:  44700, t:   303690.3 s (6.80 periods), wall: 1.875 hours, Δt:   4.89, CFL: 9.50e-01
+i:  44800, t:   304197.7 s (6.81 periods), wall: 1.879 hours, Δt:   5.35, CFL: 9.50e-01
+i:  44900, t:   304735.1 s (6.83 periods), wall: 1.884 hours, Δt:   5.68, CFL: 9.50e-01
+i:  45000, t:   305318.1 s (6.84 periods), wall: 1.888 hours, Δt:   5.90, CFL: 9.50e-01
+i:  45100, t:   305878.6 s (6.85 periods), wall: 1.892 hours, Δt:   5.52, CFL: 9.50e-01
+i:  45200, t:   306442.7 s (6.86 periods), wall: 1.897 hours, Δt:   6.11, CFL: 9.50e-01
+i:  45300, t:   307027.6 s (6.88 periods), wall: 1.901 hours, Δt:   6.05, CFL: 9.50e-01
+i:  45400, t:   307655.7 s (6.89 periods), wall: 1.905 hours, Δt:   6.46, CFL: 9.50e-01
+i:  45500, t:   308324.0 s (6.91 periods), wall: 1.909 hours, Δt:   7.04, CFL: 9.50e-01
+i:  45600, t:   309055.2 s (6.92 periods), wall: 1.914 hours, Δt:   8.08, CFL: 9.50e-01
+i:  45700, t:   309848.6 s (6.94 periods), wall: 1.918 hours, Δt:   7.66, CFL: 9.50e-01
+i:  45800, t:   310784.2 s (6.96 periods), wall: 1.922 hours, Δt:  11.11, CFL: 9.50e-01
+i:  45900, t:   311986.0 s (6.99 periods), wall: 1.927 hours, Δt:  13.19, CFL: 9.50e-01
+i:  46000, t:   313144.7 s (7.01 periods), wall: 1.931 hours, Δt:  10.67, CFL: 9.50e-01
+i:  46100, t:   314153.1 s (7.04 periods), wall: 1.935 hours, Δt:   9.88, CFL: 9.50e-01
+i:  46200, t:   315070.2 s (7.06 periods), wall: 1.940 hours, Δt:   8.82, CFL: 9.50e-01
+i:  46300, t:   315905.8 s (7.08 periods), wall: 1.944 hours, Δt:   8.75, CFL: 9.50e-01
+i:  46400, t:   316745.4 s (7.10 periods), wall: 1.948 hours, Δt:   8.10, CFL: 9.50e-01
+i:  46500, t:   317509.4 s (7.11 periods), wall: 1.953 hours, Δt:   7.33, CFL: 9.50e-01
+i:  46600, t:   318209.2 s (7.13 periods), wall: 1.957 hours, Δt:   7.09, CFL: 9.50e-01
+i:  46700, t:   318875.9 s (7.14 periods), wall: 1.961 hours, Δt:   6.60, CFL: 9.50e-01
+i:  46800, t:   319531.7 s (7.16 periods), wall: 1.966 hours, Δt:   6.65, CFL: 9.50e-01
+i:  46900, t:   320178.5 s (7.17 periods), wall: 1.970 hours, Δt:   6.43, CFL: 9.50e-01
+i:  47000, t:   320805.1 s (7.19 periods), wall: 1.974 hours, Δt:   6.15, CFL: 9.50e-01
+i:  47100, t:   321393.7 s (7.20 periods), wall: 1.978 hours, Δt:   5.61, CFL: 9.50e-01
+i:  47200, t:   321935.1 s (7.21 periods), wall: 1.983 hours, Δt:   5.34, CFL: 9.50e-01
+i:  47300, t:   322465.1 s (7.22 periods), wall: 1.987 hours, Δt:   5.18, CFL: 9.50e-01
+i:  47400, t:   322970.4 s (7.23 periods), wall: 1.991 hours, Δt:   5.18, CFL: 9.50e-01
+i:  47500, t:   323461.1 s (7.25 periods), wall: 1.996 hours, Δt:   4.93, CFL: 9.50e-01
+i:  47600, t:   323945.7 s (7.26 periods), wall: 2.000 hours, Δt:   4.70, CFL: 9.50e-01
+i:  47700, t:   324408.5 s (7.27 periods), wall: 2.004 hours, Δt:   4.72, CFL: 9.50e-01
+i:  47800, t:   324883.7 s (7.28 periods), wall: 2.008 hours, Δt:   4.47, CFL: 9.50e-01
+i:  47900, t:   325341.0 s (7.29 periods), wall: 2.013 hours, Δt:   5.00, CFL: 9.50e-01
+i:  48000, t:   325857.4 s (7.30 periods), wall: 2.017 hours, Δt:   5.29, CFL: 9.50e-01
+i:  48100, t:   326376.8 s (7.31 periods), wall: 2.021 hours, Δt:   5.42, CFL: 9.50e-01
+i:  48200, t:   326898.1 s (7.32 periods), wall: 2.025 hours, Δt:   4.87, CFL: 9.50e-01
+i:  48300, t:   327394.6 s (7.33 periods), wall: 2.030 hours, Δt:   5.15, CFL: 9.50e-01
+i:  48400, t:   327891.1 s (7.35 periods), wall: 2.034 hours, Δt:   4.98, CFL: 9.50e-01
+i:  48500, t:   328375.0 s (7.36 periods), wall: 2.038 hours, Δt:   4.72, CFL: 9.50e-01
+i:  48600, t:   328883.8 s (7.37 periods), wall: 2.043 hours, Δt:   5.29, CFL: 9.50e-01
+i:  48700, t:   329417.7 s (7.38 periods), wall: 2.047 hours, Δt:   5.38, CFL: 9.50e-01
+i:  48800, t:   329985.5 s (7.39 periods), wall: 2.051 hours, Δt:   5.69, CFL: 9.50e-01
+i:  48900, t:   330565.5 s (7.41 periods), wall: 2.055 hours, Δt:   6.33, CFL: 9.50e-01
+i:  49000, t:   331221.0 s (7.42 periods), wall: 2.060 hours, Δt:   7.65, CFL: 9.50e-01
+i:  49100, t:   332038.1 s (7.44 periods), wall: 2.064 hours, Δt:   8.74, CFL: 9.50e-01
+i:  49200, t:   333014.4 s (7.46 periods), wall: 2.068 hours, Δt:  11.63, CFL: 9.50e-01
+i:  49300, t:   334152.9 s (7.49 periods), wall: 2.073 hours, Δt:  11.13, CFL: 9.50e-01
+i:  49400, t:   335257.1 s (7.51 periods), wall: 2.077 hours, Δt:  10.85, CFL: 9.50e-01
+i:  49500, t:   336286.4 s (7.53 periods), wall: 2.081 hours, Δt:  10.49, CFL: 9.50e-01
+i:  49600, t:   337252.2 s (7.55 periods), wall: 2.086 hours, Δt:   9.66, CFL: 9.50e-01
+i:  49700, t:   338175.7 s (7.58 periods), wall: 2.090 hours, Δt:   9.11, CFL: 9.50e-01
+i:  49800, t:   339035.6 s (7.59 periods), wall: 2.094 hours, Δt:   8.26, CFL: 9.50e-01
+i:  49900, t:   339828.8 s (7.61 periods), wall: 2.099 hours, Δt:   7.82, CFL: 9.50e-01
+i:  50000, t:   340573.9 s (7.63 periods), wall: 2.103 hours, Δt:   7.39, CFL: 9.50e-01
+i:  50100, t:   341279.8 s (7.65 periods), wall: 2.107 hours, Δt:   6.96, CFL: 9.50e-01
+i:  50200, t:   341955.9 s (7.66 periods), wall: 2.111 hours, Δt:   6.72, CFL: 9.50e-01
+i:  50300, t:   342600.0 s (7.67 periods), wall: 2.116 hours, Δt:   6.42, CFL: 9.50e-01
+i:  50400, t:   343204.5 s (7.69 periods), wall: 2.120 hours, Δt:   5.74, CFL: 9.50e-01
+i:  50500, t:   343761.7 s (7.70 periods), wall: 2.124 hours, Δt:   5.59, CFL: 9.50e-01
+i:  50600, t:   344297.2 s (7.71 periods), wall: 2.129 hours, Δt:   5.37, CFL: 9.50e-01
+i:  50700, t:   344843.1 s (7.72 periods), wall: 2.133 hours, Δt:   5.53, CFL: 9.50e-01
+i:  50800, t:   345382.2 s (7.74 periods), wall: 2.137 hours, Δt:   5.34, CFL: 9.50e-01
+i:  50900, t:   345899.0 s (7.75 periods), wall: 2.141 hours, Δt:   4.79, CFL: 9.50e-01
+i:  51000, t:   346348.0 s (7.76 periods), wall: 2.146 hours, Δt:   4.28, CFL: 9.50e-01
+i:  51100, t:   346796.7 s (7.77 periods), wall: 2.150 hours, Δt:   4.98, CFL: 9.50e-01
+i:  51200, t:   347290.3 s (7.78 periods), wall: 2.154 hours, Δt:   5.30, CFL: 9.50e-01
+i:  51300, t:   347785.1 s (7.79 periods), wall: 2.158 hours, Δt:   5.00, CFL: 9.50e-01
+i:  51400, t:   348301.1 s (7.80 periods), wall: 2.163 hours, Δt:   5.24, CFL: 9.50e-01
+i:  51500, t:   348823.9 s (7.81 periods), wall: 2.167 hours, Δt:   5.24, CFL: 9.50e-01
+i:  51600, t:   349359.3 s (7.83 periods), wall: 2.171 hours, Δt:   5.55, CFL: 9.50e-01
+i:  51700, t:   349893.8 s (7.84 periods), wall: 2.176 hours, Δt:   5.45, CFL: 9.50e-01
+i:  51800, t:   350453.4 s (7.85 periods), wall: 2.180 hours, Δt:   5.84, CFL: 9.50e-01
+i:  51900, t:   351057.4 s (7.86 periods), wall: 2.184 hours, Δt:   6.16, CFL: 9.50e-01
+i:  52000, t:   351660.2 s (7.88 periods), wall: 2.188 hours, Δt:   5.97, CFL: 9.50e-01
+i:  52100, t:   352267.0 s (7.89 periods), wall: 2.193 hours, Δt:   6.29, CFL: 9.50e-01
+i:  52200, t:   352879.2 s (7.91 periods), wall: 2.197 hours, Δt:   6.50, CFL: 9.50e-01
+i:  52300, t:   353523.9 s (7.92 periods), wall: 2.201 hours, Δt:   6.90, CFL: 9.50e-01
+i:  52400, t:   354246.4 s (7.94 periods), wall: 2.205 hours, Δt:   6.62, CFL: 9.50e-01
+i:  52500, t:   355002.3 s (7.95 periods), wall: 2.210 hours, Δt:   8.86, CFL: 9.50e-01
+i:  52600, t:   355871.0 s (7.97 periods), wall: 2.214 hours, Δt:   9.28, CFL: 9.50e-01
+i:  52700, t:   356889.8 s (7.99 periods), wall: 2.218 hours, Δt:  10.92, CFL: 9.50e-01
+i:  52800, t:   357902.9 s (8.02 periods), wall: 2.223 hours, Δt:   9.48, CFL: 9.50e-01
+i:  52900, t:   358851.8 s (8.04 periods), wall: 2.227 hours, Δt:  10.07, CFL: 9.50e-01
+i:  53000, t:   359778.3 s (8.06 periods), wall: 2.231 hours, Δt:   9.31, CFL: 9.50e-01
+i:  53100, t:   360664.8 s (8.08 periods), wall: 2.236 hours, Δt:   8.81, CFL: 9.50e-01
+i:  53200, t:   361479.8 s (8.10 periods), wall: 2.240 hours, Δt:   7.77, CFL: 9.50e-01
+i:  53300, t:   362225.0 s (8.11 periods), wall: 2.244 hours, Δt:   7.44, CFL: 9.50e-01
+i:  53400, t:   362937.4 s (8.13 periods), wall: 2.249 hours, Δt:   7.07, CFL: 9.50e-01
+i:  53500, t:   363619.2 s (8.15 periods), wall: 2.253 hours, Δt:   6.54, CFL: 9.50e-01
+i:  53600, t:   364240.7 s (8.16 periods), wall: 2.257 hours, Δt:   6.06, CFL: 9.50e-01
+i:  53700, t:   364844.0 s (8.17 periods), wall: 2.261 hours, Δt:   6.19, CFL: 9.50e-01
+i:  53800, t:   365450.4 s (8.19 periods), wall: 2.266 hours, Δt:   5.95, CFL: 9.50e-01
+i:  53900, t:   366034.0 s (8.20 periods), wall: 2.270 hours, Δt:   5.80, CFL: 9.50e-01
+i:  54000, t:   366604.1 s (8.21 periods), wall: 2.274 hours, Δt:   5.71, CFL: 9.50e-01
+i:  54100, t:   367157.0 s (8.22 periods), wall: 2.279 hours, Δt:   5.48, CFL: 9.50e-01
+i:  54200, t:   367700.1 s (8.24 periods), wall: 2.283 hours, Δt:   5.56, CFL: 9.50e-01
+i:  54300, t:   368236.2 s (8.25 periods), wall: 2.287 hours, Δt:   5.40, CFL: 9.50e-01
+i:  54400, t:   368751.4 s (8.26 periods), wall: 2.291 hours, Δt:   4.89, CFL: 9.50e-01
+i:  54500, t:   369191.0 s (8.27 periods), wall: 2.296 hours, Δt:   4.69, CFL: 9.50e-01
+i:  54600, t:   369657.8 s (8.28 periods), wall: 2.300 hours, Δt:   4.80, CFL: 9.50e-01
+i:  54700, t:   370139.4 s (8.29 periods), wall: 2.304 hours, Δt:   5.01, CFL: 9.50e-01
+i:  54800, t:   370633.1 s (8.30 periods), wall: 2.308 hours, Δt:   4.86, CFL: 9.50e-01
+i:  54900, t:   371114.5 s (8.31 periods), wall: 2.313 hours, Δt:   4.92, CFL: 9.50e-01
+i:  55000, t:   371633.3 s (8.33 periods), wall: 2.317 hours, Δt:   5.23, CFL: 9.50e-01
+i:  55100, t:   372163.7 s (8.34 periods), wall: 2.321 hours, Δt:   5.33, CFL: 9.50e-01
+i:  55200, t:   372694.5 s (8.35 periods), wall: 2.325 hours, Δt:   5.20, CFL: 9.50e-01
+i:  55300, t:   373235.9 s (8.36 periods), wall: 2.330 hours, Δt:   5.81, CFL: 9.50e-01
+i:  55400, t:   373823.4 s (8.37 periods), wall: 2.334 hours, Δt:   6.29, CFL: 9.50e-01
+i:  55500, t:   374462.7 s (8.39 periods), wall: 2.338 hours, Δt:   6.78, CFL: 9.50e-01
+i:  55600, t:   375099.5 s (8.40 periods), wall: 2.343 hours, Δt:   6.68, CFL: 9.50e-01
+i:  55700, t:   375817.2 s (8.42 periods), wall: 2.347 hours, Δt:   7.55, CFL: 9.50e-01
+i:  55800, t:   376605.4 s (8.44 periods), wall: 2.351 hours, Δt:   8.41, CFL: 9.50e-01
+i:  55900, t:   377487.6 s (8.46 periods), wall: 2.355 hours, Δt:   9.77, CFL: 9.50e-01
+i:  56000, t:   378559.5 s (8.48 periods), wall: 2.360 hours, Δt:  12.52, CFL: 9.50e-01
+i:  56100, t:   379739.9 s (8.51 periods), wall: 2.364 hours, Δt:  10.81, CFL: 9.50e-01
+i:  56200, t:   380711.1 s (8.53 periods), wall: 2.368 hours, Δt:  10.08, CFL: 9.50e-01
+i:  56300, t:   381633.1 s (8.55 periods), wall: 2.373 hours, Δt:   8.73, CFL: 9.50e-01
+i:  56400, t:   382444.4 s (8.57 periods), wall: 2.377 hours, Δt:   7.88, CFL: 9.50e-01
+i:  56500, t:   383234.4 s (8.58 periods), wall: 2.381 hours, Δt:   7.82, CFL: 9.50e-01
+i:  56600, t:   383970.8 s (8.60 periods), wall: 2.386 hours, Δt:   7.38, CFL: 9.50e-01
+i:  56700, t:   384690.1 s (8.62 periods), wall: 2.390 hours, Δt:   7.32, CFL: 9.50e-01
+i:  56800, t:   385409.2 s (8.63 periods), wall: 2.394 hours, Δt:   7.19, CFL: 9.50e-01
+i:  56900, t:   386107.5 s (8.65 periods), wall: 2.398 hours, Δt:   6.80, CFL: 9.50e-01
+i:  57000, t:   386749.9 s (8.66 periods), wall: 2.403 hours, Δt:   6.44, CFL: 9.50e-01
+i:  57100, t:   387355.6 s (8.68 periods), wall: 2.407 hours, Δt:   6.11, CFL: 9.50e-01
+i:  57200, t:   387908.2 s (8.69 periods), wall: 2.411 hours, Δt:   5.05, CFL: 9.50e-01
+i:  57300, t:   388403.0 s (8.70 periods), wall: 2.416 hours, Δt:   5.05, CFL: 9.50e-01
+i:  57400, t:   388908.9 s (8.71 periods), wall: 2.420 hours, Δt:   5.37, CFL: 9.50e-01
+i:  57500, t:   389443.5 s (8.72 periods), wall: 2.424 hours, Δt:   5.58, CFL: 9.50e-01
+i:  57600, t:   389986.5 s (8.74 periods), wall: 2.428 hours, Δt:   5.61, CFL: 9.50e-01
+i:  57700, t:   390506.5 s (8.75 periods), wall: 2.433 hours, Δt:   5.23, CFL: 9.50e-01
+i:  57800, t:   390999.0 s (8.76 periods), wall: 2.437 hours, Δt:   4.55, CFL: 9.50e-01
+i:  57900, t:   391461.0 s (8.77 periods), wall: 2.441 hours, Δt:   4.82, CFL: 9.50e-01
+i:  58000, t:   391939.2 s (8.78 periods), wall: 2.445 hours, Δt:   4.90, CFL: 9.50e-01
+i:  58100, t:   392419.8 s (8.79 periods), wall: 2.450 hours, Δt:   4.86, CFL: 9.50e-01
+i:  58200, t:   392903.8 s (8.80 periods), wall: 2.454 hours, Δt:   4.74, CFL: 9.50e-01
+i:  58300, t:   393382.2 s (8.81 periods), wall: 2.458 hours, Δt:   5.02, CFL: 9.50e-01
+i:  58400, t:   393889.3 s (8.82 periods), wall: 2.462 hours, Δt:   5.18, CFL: 9.50e-01
+i:  58500, t:   394405.2 s (8.84 periods), wall: 2.467 hours, Δt:   5.37, CFL: 9.50e-01
+i:  58600, t:   394942.3 s (8.85 periods), wall: 2.471 hours, Δt:   5.29, CFL: 9.50e-01
+i:  58700, t:   395501.2 s (8.86 periods), wall: 2.475 hours, Δt:   5.77, CFL: 9.50e-01
+i:  58800, t:   396090.0 s (8.87 periods), wall: 2.479 hours, Δt:   6.20, CFL: 9.50e-01
+i:  58900, t:   396725.9 s (8.89 periods), wall: 2.484 hours, Δt:   6.56, CFL: 9.50e-01
+i:  59000, t:   397396.1 s (8.90 periods), wall: 2.488 hours, Δt:   7.16, CFL: 9.50e-01
+i:  59100, t:   398097.6 s (8.92 periods), wall: 2.492 hours, Δt:   7.12, CFL: 9.50e-01
+i:  59200, t:   398836.5 s (8.93 periods), wall: 2.496 hours, Δt:   8.58, CFL: 9.50e-01
+i:  59300, t:   399715.3 s (8.95 periods), wall: 2.501 hours, Δt:   9.81, CFL: 9.50e-01
+i:  59400, t:   400718.1 s (8.98 periods), wall: 2.505 hours, Δt:  10.86, CFL: 9.50e-01
+i:  59500, t:   401746.5 s (9.00 periods), wall: 2.509 hours, Δt:  10.86, CFL: 9.50e-01
+i:  59600, t:   402770.5 s (9.02 periods), wall: 2.514 hours, Δt:  10.37, CFL: 9.50e-01
+i:  59700, t:   403676.1 s (9.04 periods), wall: 2.518 hours, Δt:   8.59, CFL: 9.50e-01
+i:  59800, t:   404502.2 s (9.06 periods), wall: 2.522 hours, Δt:   8.02, CFL: 9.50e-01
+i:  59900, t:   405297.4 s (9.08 periods), wall: 2.527 hours, Δt:   7.39, CFL: 9.50e-01
+i:  60000, t:   405995.8 s (9.09 periods), wall: 2.531 hours, Δt:   6.80, CFL: 9.50e-01
+i:  60100, t:   406670.4 s (9.11 periods), wall: 2.535 hours, Δt:   6.72, CFL: 9.50e-01
+i:  60200, t:   407324.7 s (9.12 periods), wall: 2.540 hours, Δt:   6.44, CFL: 9.50e-01
+i:  60300, t:   407957.9 s (9.14 periods), wall: 2.544 hours, Δt:   6.33, CFL: 9.50e-01
+i:  60400, t:   408571.8 s (9.15 periods), wall: 2.548 hours, Δt:   6.00, CFL: 9.50e-01
+i:  60500, t:   409154.1 s (9.17 periods), wall: 2.552 hours, Δt:   5.68, CFL: 9.50e-01
+i:  60600, t:   409715.4 s (9.18 periods), wall: 2.557 hours, Δt:   5.80, CFL: 9.50e-01
+i:  60700, t:   410240.1 s (9.19 periods), wall: 2.561 hours, Δt:   5.25, CFL: 9.50e-01
+i:  60800, t:   410748.1 s (9.20 periods), wall: 2.565 hours, Δt:   4.91, CFL: 9.50e-01
+i:  60900, t:   411256.7 s (9.21 periods), wall: 2.569 hours, Δt:   5.06, CFL: 9.50e-01
+i:  61000, t:   411757.8 s (9.22 periods), wall: 2.574 hours, Δt:   4.94, CFL: 9.50e-01
+i:  61100, t:   412250.4 s (9.23 periods), wall: 2.578 hours, Δt:   4.87, CFL: 9.50e-01
+i:  61200, t:   412736.0 s (9.25 periods), wall: 2.582 hours, Δt:   4.97, CFL: 9.50e-01
+i:  61300, t:   413228.9 s (9.26 periods), wall: 2.586 hours, Δt:   5.09, CFL: 9.50e-01
+i:  61400, t:   413714.4 s (9.27 periods), wall: 2.591 hours, Δt:   5.07, CFL: 9.50e-01
+i:  61500, t:   414217.4 s (9.28 periods), wall: 2.595 hours, Δt:   5.17, CFL: 9.50e-01
+i:  61600, t:   414710.6 s (9.29 periods), wall: 2.599 hours, Δt:   4.89, CFL: 9.50e-01
+i:  61700, t:   415179.6 s (9.30 periods), wall: 2.603 hours, Δt:   4.61, CFL: 9.50e-01
+i:  61800, t:   415672.7 s (9.31 periods), wall: 2.608 hours, Δt:   4.98, CFL: 9.50e-01
+i:  61900, t:   416167.1 s (9.32 periods), wall: 2.612 hours, Δt:   4.98, CFL: 9.50e-01
+i:  62000, t:   416615.5 s (9.33 periods), wall: 2.616 hours, Δt:   4.32, CFL: 9.50e-01
+i:  62100, t:   417068.5 s (9.34 periods), wall: 2.620 hours, Δt:   4.86, CFL: 9.50e-01
+i:  62200, t:   417599.3 s (9.35 periods), wall: 2.625 hours, Δt:   6.13, CFL: 9.50e-01
+i:  62300, t:   418205.5 s (9.37 periods), wall: 2.629 hours, Δt:   6.23, CFL: 9.50e-01
+i:  62400, t:   418831.8 s (9.38 periods), wall: 2.633 hours, Δt:   6.27, CFL: 9.50e-01
+i:  62500, t:   419506.9 s (9.40 periods), wall: 2.638 hours, Δt:   7.33, CFL: 9.50e-01
+i:  62600, t:   420285.6 s (9.41 periods), wall: 2.642 hours, Δt:   8.30, CFL: 9.50e-01
+i:  62700, t:   421126.2 s (9.43 periods), wall: 2.646 hours, Δt:   7.92, CFL: 9.50e-01
+i:  62800, t:   421997.2 s (9.45 periods), wall: 2.650 hours, Δt:   8.91, CFL: 9.50e-01
+i:  62900, t:   422942.4 s (9.47 periods), wall: 2.655 hours, Δt:  10.93, CFL: 9.50e-01
+i:  63000, t:   423973.3 s (9.50 periods), wall: 2.659 hours, Δt:  10.38, CFL: 9.50e-01
+i:  63100, t:   424968.9 s (9.52 periods), wall: 2.663 hours, Δt:   9.41, CFL: 9.50e-01
+i:  63200, t:   425852.0 s (9.54 periods), wall: 2.668 hours, Δt:   9.42, CFL: 9.50e-01
+i:  63300, t:   426735.8 s (9.56 periods), wall: 2.672 hours, Δt:   8.51, CFL: 9.50e-01
+i:  63400, t:   427509.1 s (9.58 periods), wall: 2.676 hours, Δt:   7.30, CFL: 9.50e-01
+i:  63500, t:   428228.6 s (9.59 periods), wall: 2.681 hours, Δt:   7.17, CFL: 9.50e-01
+i:  63600, t:   428932.5 s (9.61 periods), wall: 2.685 hours, Δt:   7.21, CFL: 9.50e-01
+i:  63700, t:   429627.4 s (9.62 periods), wall: 2.689 hours, Δt:   7.05, CFL: 9.50e-01
+i:  63800, t:   430290.2 s (9.64 periods), wall: 2.693 hours, Δt:   6.48, CFL: 9.50e-01
+i:  63900, t:   430927.3 s (9.65 periods), wall: 2.698 hours, Δt:   6.54, CFL: 9.50e-01
+i:  64000, t:   431565.1 s (9.67 periods), wall: 2.702 hours, Δt:   6.21, CFL: 9.50e-01
+i:  64100, t:   432176.4 s (9.68 periods), wall: 2.706 hours, Δt:   6.05, CFL: 9.50e-01
+i:  64200, t:   432762.0 s (9.69 periods), wall: 2.711 hours, Δt:   5.80, CFL: 9.50e-01
+i:  64300, t:   433320.5 s (9.71 periods), wall: 2.715 hours, Δt:   5.57, CFL: 9.50e-01
+i:  64400, t:   433882.8 s (9.72 periods), wall: 2.719 hours, Δt:   5.54, CFL: 9.50e-01
+i:  64500, t:   434425.3 s (9.73 periods), wall: 2.723 hours, Δt:   5.63, CFL: 9.50e-01
+i:  64600, t:   434986.1 s (9.74 periods), wall: 2.728 hours, Δt:   5.69, CFL: 9.50e-01
+i:  64700, t:   435551.9 s (9.76 periods), wall: 2.732 hours, Δt:   5.94, CFL: 9.50e-01
+i:  64800, t:   436138.8 s (9.77 periods), wall: 2.736 hours, Δt:   5.81, CFL: 9.50e-01
+i:  64900, t:   436680.5 s (9.78 periods), wall: 2.740 hours, Δt:   5.40, CFL: 9.50e-01
+i:  65000, t:   437225.3 s (9.79 periods), wall: 2.745 hours, Δt:   5.19, CFL: 9.50e-01
+i:  65100, t:   437720.5 s (9.81 periods), wall: 2.749 hours, Δt:   5.03, CFL: 9.50e-01
+i:  65200, t:   438212.8 s (9.82 periods), wall: 2.753 hours, Δt:   4.97, CFL: 9.50e-01
+i:  65300, t:   438698.8 s (9.83 periods), wall: 2.757 hours, Δt:   4.60, CFL: 9.50e-01
+i:  65400, t:   439173.3 s (9.84 periods), wall: 2.762 hours, Δt:   4.79, CFL: 9.50e-01
+i:  65500, t:   439672.8 s (9.85 periods), wall: 2.766 hours, Δt:   5.19, CFL: 9.50e-01
+i:  65600, t:   440200.1 s (9.86 periods), wall: 2.770 hours, Δt:   5.63, CFL: 9.50e-01
+i:  65700, t:   440731.4 s (9.87 periods), wall: 2.774 hours, Δt:   5.40, CFL: 9.50e-01
+i:  65800, t:   441290.5 s (9.89 periods), wall: 2.779 hours, Δt:   6.06, CFL: 9.50e-01
+i:  65900, t:   441907.2 s (9.90 periods), wall: 2.783 hours, Δt:   6.39, CFL: 9.50e-01
+i:  66000, t:   442580.4 s (9.91 periods), wall: 2.787 hours, Δt:   6.98, CFL: 9.50e-01
+i:  66100, t:   443297.6 s (9.93 periods), wall: 2.792 hours, Δt:   7.50, CFL: 9.50e-01
+i:  66200, t:   444150.0 s (9.95 periods), wall: 2.796 hours, Δt:  10.02, CFL: 9.50e-01
+i:  66300, t:   445247.3 s (9.97 periods), wall: 2.800 hours, Δt:  12.30, CFL: 9.50e-01
+i:  66400, t:   446494.1 s (10.00 periods), wall: 2.805 hours, Δt:  12.50, CFL: 9.50e-01
+i:  66500, t:   447624.1 s (10.03 periods), wall: 2.809 hours, Δt:  10.99, CFL: 9.50e-01
+i:  66600, t:   448632.0 s (10.05 periods), wall: 2.813 hours, Δt:   9.70, CFL: 9.50e-01
+i:  66700, t:   449542.4 s (10.07 periods), wall: 2.817 hours, Δt:   8.69, CFL: 9.50e-01
+i:  66800, t:   450377.1 s (10.09 periods), wall: 2.822 hours, Δt:   8.21, CFL: 9.50e-01
+i:  66900, t:   451173.2 s (10.11 periods), wall: 2.826 hours, Δt:   7.66, CFL: 9.50e-01
+i:  67000, t:   451892.6 s (10.12 periods), wall: 2.830 hours, Δt:   7.15, CFL: 9.50e-01
+i:  67100, t:   452589.8 s (10.14 periods), wall: 2.835 hours, Δt:   7.08, CFL: 9.50e-01
+i:  67200, t:   453274.7 s (10.15 periods), wall: 2.839 hours, Δt:   6.85, CFL: 9.50e-01
+i:  67300, t:   453938.0 s (10.17 periods), wall: 2.843 hours, Δt:   6.59, CFL: 9.50e-01
+i:  67400, t:   454576.5 s (10.18 periods), wall: 2.847 hours, Δt:   6.38, CFL: 9.50e-01
+i:  67500, t:   455198.0 s (10.20 periods), wall: 2.852 hours, Δt:   6.15, CFL: 9.50e-01
+i:  67600, t:   455786.3 s (10.21 periods), wall: 2.856 hours, Δt:   5.95, CFL: 9.50e-01
+i:  67700, t:   456376.1 s (10.22 periods), wall: 2.860 hours, Δt:   5.96, CFL: 9.50e-01
+i:  67800, t:   456922.6 s (10.24 periods), wall: 2.865 hours, Δt:   5.29, CFL: 9.50e-01
+i:  67900, t:   457434.4 s (10.25 periods), wall: 2.869 hours, Δt:   4.83, CFL: 9.50e-01
+i:  68000, t:   457902.9 s (10.26 periods), wall: 2.873 hours, Δt:   4.78, CFL: 9.50e-01
+i:  68100, t:   458381.4 s (10.27 periods), wall: 2.877 hours, Δt:   4.93, CFL: 9.50e-01
+i:  68200, t:   458863.4 s (10.28 periods), wall: 2.882 hours, Δt:   4.65, CFL: 9.50e-01
+i:  68300, t:   459308.6 s (10.29 periods), wall: 2.886 hours, Δt:   4.43, CFL: 9.50e-01
+i:  68400, t:   459782.8 s (10.30 periods), wall: 2.890 hours, Δt:   4.97, CFL: 9.50e-01
+i:  68500, t:   460289.3 s (10.31 periods), wall: 2.894 hours, Δt:   5.08, CFL: 9.50e-01
+i:  68600, t:   460815.9 s (10.32 periods), wall: 2.899 hours, Δt:   5.49, CFL: 9.50e-01
+i:  68700, t:   461371.6 s (10.34 periods), wall: 2.903 hours, Δt:   5.68, CFL: 9.50e-01
+i:  68800, t:   461910.7 s (10.35 periods), wall: 2.907 hours, Δt:   5.36, CFL: 9.50e-01
+i:  68900, t:   462462.8 s (10.36 periods), wall: 2.911 hours, Δt:   5.47, CFL: 9.50e-01
+i:  69000, t:   462997.1 s (10.37 periods), wall: 2.916 hours, Δt:   5.81, CFL: 9.50e-01
+i:  69100, t:   463619.6 s (10.39 periods), wall: 2.920 hours, Δt:   6.58, CFL: 9.50e-01
+i:  69200, t:   464256.0 s (10.40 periods), wall: 2.924 hours, Δt:   7.08, CFL: 9.50e-01
+i:  69300, t:   464986.5 s (10.42 periods), wall: 2.929 hours, Δt:   7.52, CFL: 9.50e-01
+i:  69400, t:   465728.8 s (10.43 periods), wall: 2.933 hours, Δt:   8.13, CFL: 9.50e-01
+i:  69500, t:   466632.4 s (10.45 periods), wall: 2.937 hours, Δt:   9.84, CFL: 9.50e-01
+i:  69600, t:   467652.9 s (10.48 periods), wall: 2.941 hours, Δt:  12.66, CFL: 9.50e-01
+i:  69700, t:   468848.3 s (10.50 periods), wall: 2.946 hours, Δt:  12.35, CFL: 9.50e-01
+i:  69800, t:   470003.4 s (10.53 periods), wall: 2.950 hours, Δt:  10.57, CFL: 9.50e-01
+i:  69900, t:   470934.3 s (10.55 periods), wall: 2.954 hours, Δt:   8.74, CFL: 9.50e-01
+i:  70000, t:   471755.1 s (10.57 periods), wall: 2.959 hours, Δt:   7.67, CFL: 9.50e-01
+i:  70100, t:   472497.5 s (10.58 periods), wall: 2.963 hours, Δt:   7.27, CFL: 9.50e-01
+i:  70200, t:   473191.0 s (10.60 periods), wall: 2.967 hours, Δt:   7.04, CFL: 9.50e-01
+i:  70300, t:   473905.1 s (10.62 periods), wall: 2.972 hours, Δt:   7.37, CFL: 9.50e-01
+i:  70400, t:   474623.7 s (10.63 periods), wall: 2.976 hours, Δt:   7.14, CFL: 9.50e-01
+i:  70500, t:   475318.3 s (10.65 periods), wall: 2.980 hours, Δt:   6.94, CFL: 9.50e-01
+i:  70600, t:   475989.9 s (10.66 periods), wall: 2.984 hours, Δt:   6.65, CFL: 9.50e-01
+i:  70700, t:   476623.9 s (10.68 periods), wall: 2.989 hours, Δt:   6.05, CFL: 9.50e-01
+i:  70800, t:   477207.4 s (10.69 periods), wall: 2.993 hours, Δt:   5.78, CFL: 9.50e-01
+i:  70900, t:   477775.2 s (10.70 periods), wall: 2.997 hours, Δt:   5.82, CFL: 9.50e-01
+i:  71000, t:   478340.1 s (10.72 periods), wall: 3.002 hours, Δt:   5.60, CFL: 9.50e-01
+i:  71100, t:   478877.3 s (10.73 periods), wall: 3.006 hours, Δt:   5.43, CFL: 9.50e-01
+i:  71200, t:   479411.1 s (10.74 periods), wall: 3.010 hours, Δt:   5.42, CFL: 9.50e-01
+i:  71300, t:   479948.2 s (10.75 periods), wall: 3.014 hours, Δt:   5.74, CFL: 9.50e-01
+i:  71400, t:   480505.5 s (10.76 periods), wall: 3.019 hours, Δt:   5.65, CFL: 9.50e-01
+i:  71500, t:   481042.0 s (10.78 periods), wall: 3.023 hours, Δt:   5.29, CFL: 9.50e-01
+i:  71600, t:   481518.2 s (10.79 periods), wall: 3.027 hours, Δt:   4.51, CFL: 9.50e-01
+i:  71700, t:   481965.6 s (10.80 periods), wall: 3.031 hours, Δt:   4.61, CFL: 9.50e-01
+i:  71800, t:   482465.3 s (10.81 periods), wall: 3.036 hours, Δt:   5.14, CFL: 9.50e-01
+i:  71900, t:   482967.2 s (10.82 periods), wall: 3.040 hours, Δt:   5.16, CFL: 9.50e-01
+i:  72000, t:   483471.0 s (10.83 periods), wall: 3.044 hours, Δt:   4.95, CFL: 9.50e-01
+i:  72100, t:   483974.0 s (10.84 periods), wall: 3.048 hours, Δt:   5.03, CFL: 9.50e-01
+i:  72200, t:   484476.9 s (10.85 periods), wall: 3.053 hours, Δt:   5.23, CFL: 9.50e-01
+i:  72300, t:   485006.4 s (10.86 periods), wall: 3.057 hours, Δt:   5.33, CFL: 9.50e-01
+i:  72400, t:   485562.8 s (10.88 periods), wall: 3.061 hours, Δt:   5.72, CFL: 9.50e-01
+i:  72500, t:   486125.8 s (10.89 periods), wall: 3.065 hours, Δt:   6.24, CFL: 9.50e-01
+i:  72600, t:   486746.9 s (10.90 periods), wall: 3.070 hours, Δt:   6.69, CFL: 9.50e-01
+
+[877447] signal 15: Terminated
+in expression starting at /home/tll46/SRIM-2026/Stokes/3D/Tidal3D.jl:226
+unknown function (ip: 0x72a7b8c87082) at /home/tll46/.julia/artifacts/2c8e4324b86fc70a7c041ce8dc72b5f9b41a7a98/lib/libcuda.so
+unknown function (ip: 0x72a7b8d2a899) at /home/tll46/.julia/artifacts/2c8e4324b86fc70a7c041ce8dc72b5f9b41a7a98/lib/libcuda.so
+unknown function (ip: 0x72a7b9d2d064) at /home/tll46/.julia/artifacts/2c8e4324b86fc70a7c041ce8dc72b5f9b41a7a98/lib/libcuda.so
+unknown function (ip: 0x72a7b8dd7d56) at /home/tll46/.julia/artifacts/2c8e4324b86fc70a7c041ce8dc72b5f9b41a7a98/lib/libcuda.so
+cuStreamSynchronize at /home/tll46/.julia/artifacts/2c8e4324b86fc70a7c041ce8dc72b5f9b41a7a98/lib/libcuda.so (unknown line)
+unchecked_cuStreamSynchronize at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/libcuda.jl:5269 [inlined]
+#synchronization_worker##0 at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:125
+take! at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:56
+synchronization_worker at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:119
+unknown function (ip: 0x72a7e85b41af) at (unknown file)
+unknown function (ip: 0x72a8201129af) at (unknown file)
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+jl_parallel_gc_threadfun at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/gc-stock.c:3640
+unknown function (ip: 0x72a8c929caa3) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: 0x72a8c9329c6b) at /lib/x86_64-linux-gnu/libc.so.6
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+task_done_hook at ./task.jl:868
+jfptr_task_done_hook_59905.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+jl_finish_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:341
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1263
+unknown function (ip: (nil)) at (unknown file)
+unknown function (ip: 0x72a8c9298d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+#wait#398 at ./condition.jl:141
+wait at ./condition.jl:136 [inlined]
+put! at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:40
+nonblocking_synchronize at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:175
+#synchronize#593 at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:207
+synchronize at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/synchronization.jl:201 [inlined]
+synchronize at /home/tll46/.julia/packages/CUDACore/NlVPI/src/memory.jl:580 [inlined]
+synchronize at /home/tll46/.julia/packages/CUDACore/NlVPI/src/array.jl:494
+#712 at /home/tll46/.julia/packages/CUDACore/NlVPI/src/array.jl:617 [inlined]
+context! at /home/tll46/.julia/packages/CUDACore/NlVPI/lib/cudadrv/state.jl:157 [inlined]
+unsafe_copyto! at /home/tll46/.julia/packages/CUDACore/NlVPI/src/array.jl:612
+copyto! at /home/tll46/.julia/packages/CUDACore/NlVPI/src/array.jl:564 [inlined]
+getindex at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/indexing.jl:52 [inlined]
+scalar_getindex at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/indexing.jl:36 [inlined]
+_getindex at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/indexing.jl:19 [inlined]
+getindex at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/indexing.jl:17 [inlined]
+macro expansion at /home/tll46/.julia/packages/GPUArraysCore/aNaXo/src/GPUArraysCore.jl:206 [inlined]
+#_mapreduce#48 at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/mapreduce.jl:88
+_mapreduce at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/mapreduce.jl:40 [inlined]
+#mapreduce#46 at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/mapreduce.jl:35 [inlined]
+mapreduce at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/mapreduce.jl:35 [inlined]
+#_sum#738 at ./reducedim.jl:984 [inlined]
+_sum at ./reducedim.jl:984 [inlined]
+#sum#736 at ./reducedim.jl:980 [inlined]
+sum at ./reducedim.jl:980 [inlined]
+_mean at /home/tll46/.julia/packages/GPUArrays/VNJ6B/src/host/statistics.jl:27 [inlined]
+#mean#2 at /home/tll46/.julia/packages/Statistics/gbcbG/src/Statistics.jl:178 [inlined]
+mean at /home/tll46/.julia/packages/Statistics/gbcbG/src/Statistics.jl:178 [inlined]
+solve! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Solvers/fourier_tridiagonal_poisson_solver.jl:253
+solve! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Solvers/fourier_tridiagonal_poisson_solver.jl:232 [inlined]
+solve_for_pressure! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Models/NonhydrostaticModels/solve_for_pressure.jl:124 [inlined]
+compute_pressure_correction! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Models/NonhydrostaticModels/pressure_correction.jl:14
+pressure_correction_rk3_substep! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Models/NonhydrostaticModels/nonhydrostatic_rk3_substep.jl:59
+rk3_substep! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Models/NonhydrostaticModels/nonhydrostatic_rk3_substep.jl:11 [inlined]
+#time_step!#10 at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/TimeSteppers/runge_kutta_3.jl:154
+time_step! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/TimeSteppers/runge_kutta_3.jl:103
+unknown function (ip: 0x72a7e4774c2b) at (unknown file)
+time_step! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Simulations/run.jl:247
+#run!#7 at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Simulations/run.jl:176
+run! at /home/tll46/.julia/packages/Oceananigans/p6AAO/src/Simulations/run.jl:156
+unknown function (ip: 0x72a7e7320412) at (unknown file)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+do_call at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:123
+eval_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:243
+eval_stmt_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:194 [inlined]
+eval_body at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:707
+jl_interpret_toplevel_thunk at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:898
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1035
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:975
+ijl_toplevel_eval at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1047
+ijl_toplevel_eval_in at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1092
+eval at ./boot.jl:489
+include_string at ./loading.jl:2874
+_include at ./loading.jl:2934
+include at ./Base.jl:306
+exec_options at ./client.jl:317
+_start at ./client.jl:550
+jfptr__start_63319.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+true_main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:971
+jl_repl_entrypoint at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:1139
+main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/cli/loader_exe.c:58
+unknown function (ip: 0x72a8c922a1c9) at /lib/x86_64-linux-gnu/libc.so.6
+__libc_start_main at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+unknown function (ip: 0x4010b8) at /workspace/srcdir/glibc-2.17/csu/../sysdeps/x86_64/start.S
+unknown function (ip: (nil)) at (unknown file)
+Allocations: 1568316971 (Pool: 1520929459; Big: 47387512); GC: 7840
+[ Info: Oceananigans will use 16 threads
+[ Info: Case Ri0: Ri = 0, N² = 0 s⁻², δ = 0.397 m, Re_δ = 1790, 15 periods
+[ Info: Bottom Δz = 0.0869 m (4.6 points across δ); Δx = 0.417 m, Δy = 0.208 m
+[ Info: x-y slice at k = 6 (z = 0.478 m ≈ δ)
+[ Info: Initializing simulation...
+[ Info:     ... simulation initialization complete (19.830 seconds)
+[ Info: Executing initial time step...
+[ Info:     ... initial time step complete (4.404 seconds).
+i:  72700, t:   487385.2 s (10.92 periods), wall: 3.074 hours, Δt:   6.16, CFL: 9.50e-01
+i:  72800, t:   488062.8 s (10.93 periods), wall: 3.078 hours, Δt:   8.05, CFL: 9.50e-01
+i:  72900, t:   488886.6 s (10.95 periods), wall: 3.083 hours, Δt:   8.79, CFL: 9.50e-01
+i:  73000, t:   489784.7 s (10.97 periods), wall: 3.087 hours, Δt:   9.66, CFL: 9.50e-01
+i:  73100, t:   490862.7 s (11.00 periods), wall: 3.091 hours, Δt:  11.51, CFL: 9.50e-01
+i:  73200, t:   491965.9 s (11.02 periods), wall: 3.096 hours, Δt:  11.01, CFL: 9.50e-01
+i:  73300, t:   493013.4 s (11.04 periods), wall: 3.100 hours, Δt:   9.70, CFL: 9.50e-01
+i:  73400, t:   493950.9 s (11.07 periods), wall: 3.104 hours, Δt:   9.21, CFL: 9.50e-01
+i:  73500, t:   494795.5 s (11.08 periods), wall: 3.108 hours, Δt:   7.87, CFL: 9.50e-01
+i:  73600, t:   495540.8 s (11.10 periods), wall: 3.113 hours, Δt:   7.32, CFL: 9.50e-01
+i:  73700, t:   496260.0 s (11.12 periods), wall: 3.117 hours, Δt:   7.17, CFL: 9.50e-01
+i:  73800, t:   496946.8 s (11.13 periods), wall: 3.121 hours, Δt:   6.88, CFL: 9.50e-01
+i:  73900, t:   497611.6 s (11.15 periods), wall: 3.126 hours, Δt:   6.56, CFL: 9.50e-01
+i:  74000, t:   498252.8 s (11.16 periods), wall: 3.130 hours, Δt:   6.36, CFL: 9.50e-01
+i:  74100, t:   498871.0 s (11.18 periods), wall: 3.134 hours, Δt:   6.31, CFL: 9.50e-01
+i:  74200, t:   499491.2 s (11.19 periods), wall: 3.138 hours, Δt:   6.19, CFL: 9.50e-01
+i:  74300, t:   500096.1 s (11.20 periods), wall: 3.143 hours, Δt:   6.09, CFL: 9.50e-01
+i:  74400, t:   500690.6 s (11.22 periods), wall: 3.147 hours, Δt:   5.84, CFL: 9.50e-01
+i:  74500, t:   501244.2 s (11.23 periods), wall: 3.151 hours, Δt:   5.87, CFL: 9.50e-01
+i:  74600, t:   501790.4 s (11.24 periods), wall: 3.155 hours, Δt:   5.31, CFL: 9.50e-01
+i:  74700, t:   502336.7 s (11.25 periods), wall: 3.160 hours, Δt:   5.78, CFL: 9.50e-01
+i:  74800, t:   502896.1 s (11.27 periods), wall: 3.164 hours, Δt:   5.26, CFL: 9.50e-01
+i:  74900, t:   503394.6 s (11.28 periods), wall: 3.168 hours, Δt:   4.98, CFL: 9.50e-01
+i:  75000, t:   503888.9 s (11.29 periods), wall: 3.172 hours, Δt:   5.07, CFL: 9.50e-01
+i:  75100, t:   504369.7 s (11.30 periods), wall: 3.177 hours, Δt:   4.87, CFL: 9.50e-01
+i:  75200, t:   504860.2 s (11.31 periods), wall: 3.181 hours, Δt:   5.05, CFL: 9.50e-01
+i:  75300, t:   505364.9 s (11.32 periods), wall: 3.185 hours, Δt:   5.12, CFL: 9.50e-01
+i:  75400, t:   505867.8 s (11.33 periods), wall: 3.190 hours, Δt:   5.05, CFL: 9.50e-01
+i:  75500, t:   506396.1 s (11.34 periods), wall: 3.194 hours, Δt:   5.73, CFL: 9.50e-01
+i:  75600, t:   506960.6 s (11.36 periods), wall: 3.198 hours, Δt:   5.66, CFL: 9.50e-01
+i:  75700, t:   507542.4 s (11.37 periods), wall: 3.202 hours, Δt:   5.91, CFL: 9.50e-01
+i:  75800, t:   508099.9 s (11.38 periods), wall: 3.207 hours, Δt:   5.60, CFL: 9.50e-01
+i:  75900, t:   508691.1 s (11.40 periods), wall: 3.211 hours, Δt:   6.21, CFL: 9.50e-01
+i:  76000, t:   509381.2 s (11.41 periods), wall: 3.215 hours, Δt:   7.69, CFL: 9.50e-01
+i:  76100, t:   510149.7 s (11.43 periods), wall: 3.219 hours, Δt:   8.18, CFL: 9.50e-01
+i:  76200, t:   510987.8 s (11.45 periods), wall: 3.224 hours, Δt:   9.34, CFL: 9.50e-01
+i:  76300, t:   511929.1 s (11.47 periods), wall: 3.228 hours, Δt:  10.23, CFL: 9.50e-01
+i:  76400, t:   512970.0 s (11.49 periods), wall: 3.232 hours, Δt:  11.48, CFL: 9.50e-01
+i:  76500, t:   514063.9 s (11.52 periods), wall: 3.237 hours, Δt:  11.11, CFL: 9.50e-01
+i:  76600, t:   515110.4 s (11.54 periods), wall: 3.241 hours, Δt:  10.23, CFL: 9.50e-01
+i:  76700, t:   516066.8 s (11.56 periods), wall: 3.245 hours, Δt:   9.32, CFL: 9.50e-01
+i:  76800, t:   516939.6 s (11.58 periods), wall: 3.250 hours, Δt:   8.25, CFL: 9.50e-01
+i:  76900, t:   517726.6 s (11.60 periods), wall: 3.254 hours, Δt:   7.85, CFL: 9.50e-01
+i:  77000, t:   518453.0 s (11.61 periods), wall: 3.258 hours, Δt:   6.92, CFL: 9.50e-01
+i:  77100, t:   519129.3 s (11.63 periods), wall: 3.263 hours, Δt:   6.71, CFL: 9.50e-01
+i:  77200, t:   519771.6 s (11.64 periods), wall: 3.267 hours, Δt:   6.44, CFL: 9.50e-01
+i:  77300, t:   520409.0 s (11.66 periods), wall: 3.271 hours, Δt:   6.48, CFL: 9.50e-01
+i:  77400, t:   521044.5 s (11.67 periods), wall: 3.275 hours, Δt:   6.35, CFL: 9.50e-01
+i:  77500, t:   521661.9 s (11.69 periods), wall: 3.280 hours, Δt:   6.20, CFL: 9.50e-01
+i:  77600, t:   522267.3 s (11.70 periods), wall: 3.284 hours, Δt:   6.11, CFL: 9.50e-01
+i:  77700, t:   522859.1 s (11.71 periods), wall: 3.288 hours, Δt:   5.90, CFL: 9.50e-01
+i:  77800, t:   523433.2 s (11.73 periods), wall: 3.292 hours, Δt:   5.84, CFL: 9.50e-01
+i:  77900, t:   524011.5 s (11.74 periods), wall: 3.297 hours, Δt:   5.70, CFL: 9.50e-01
+i:  78000, t:   524564.1 s (11.75 periods), wall: 3.301 hours, Δt:   5.48, CFL: 9.50e-01
+i:  78100, t:   525089.6 s (11.76 periods), wall: 3.305 hours, Δt:   5.46, CFL: 9.50e-01
+i:  78200, t:   525612.3 s (11.77 periods), wall: 3.310 hours, Δt:   5.33, CFL: 9.50e-01
+i:  78300, t:   526122.7 s (11.79 periods), wall: 3.314 hours, Δt:   5.00, CFL: 9.50e-01
+i:  78400, t:   526619.5 s (11.80 periods), wall: 3.318 hours, Δt:   4.95, CFL: 9.50e-01
+i:  78500, t:   527131.2 s (11.81 periods), wall: 3.322 hours, Δt:   5.31, CFL: 9.50e-01
+i:  78600, t:   527667.3 s (11.82 periods), wall: 3.327 hours, Δt:   5.58, CFL: 9.50e-01
+i:  78700, t:   528228.3 s (11.83 periods), wall: 3.331 hours, Δt:   5.93, CFL: 9.50e-01
+i:  78800, t:   528794.5 s (11.85 periods), wall: 3.335 hours, Δt:   5.53, CFL: 9.50e-01
+i:  78900, t:   529374.2 s (11.86 periods), wall: 3.339 hours, Δt:   6.39, CFL: 9.50e-01
+i:  79000, t:   530025.4 s (11.87 periods), wall: 3.344 hours, Δt:   6.70, CFL: 9.50e-01
+i:  79100, t:   530684.7 s (11.89 periods), wall: 3.348 hours, Δt:   6.47, CFL: 9.50e-01
+i:  79200, t:   531345.5 s (11.90 periods), wall: 3.352 hours, Δt:   6.80, CFL: 9.50e-01
+i:  79300, t:   532010.0 s (11.92 periods), wall: 3.356 hours, Δt:   7.41, CFL: 9.50e-01
+i:  79400, t:   532772.9 s (11.93 periods), wall: 3.361 hours, Δt:   9.00, CFL: 9.50e-01
+i:  79500, t:   533605.7 s (11.95 periods), wall: 3.365 hours, Δt:   8.93, CFL: 9.50e-01
+i:  79600, t:   534535.4 s (11.97 periods), wall: 3.369 hours, Δt:  10.51, CFL: 9.50e-01
+i:  79700, t:   535644.4 s (12.00 periods), wall: 3.374 hours, Δt:  11.18, CFL: 9.50e-01
+i:  79800, t:   536690.7 s (12.02 periods), wall: 3.378 hours, Δt:  10.67, CFL: 9.50e-01
+i:  79900, t:   537688.8 s (12.04 periods), wall: 3.382 hours, Δt:   9.41, CFL: 9.50e-01
+i:  80000, t:   538574.8 s (12.06 periods), wall: 3.387 hours, Δt:   8.49, CFL: 9.50e-01
+i:  80100, t:   539368.2 s (12.08 periods), wall: 3.391 hours, Δt:   7.78, CFL: 9.50e-01
+i:  80200, t:   540127.2 s (12.10 periods), wall: 3.395 hours, Δt:   7.59, CFL: 9.50e-01
+i:  80300, t:   540858.0 s (12.12 periods), wall: 3.399 hours, Δt:   7.37, CFL: 9.50e-01
+i:  80400, t:   541565.7 s (12.13 periods), wall: 3.404 hours, Δt:   6.78, CFL: 9.50e-01
+i:  80500, t:   542216.8 s (12.15 periods), wall: 3.408 hours, Δt:   6.37, CFL: 9.50e-01
+i:  80600, t:   542835.0 s (12.16 periods), wall: 3.412 hours, Δt:   6.29, CFL: 9.50e-01
+i:  80700, t:   543446.3 s (12.17 periods), wall: 3.417 hours, Δt:   6.10, CFL: 9.50e-01
+i:  80800, t:   544039.0 s (12.19 periods), wall: 3.421 hours, Δt:   5.91, CFL: 9.50e-01
+i:  80900, t:   544625.7 s (12.20 periods), wall: 3.425 hours, Δt:   5.89, CFL: 9.50e-01
+i:  81000, t:   545214.8 s (12.21 periods), wall: 3.429 hours, Δt:   5.97, CFL: 9.50e-01
+i:  81100, t:   545809.0 s (12.23 periods), wall: 3.434 hours, Δt:   6.09, CFL: 9.50e-01
+i:  81200, t:   546412.3 s (12.24 periods), wall: 3.438 hours, Δt:   6.23, CFL: 9.50e-01
+i:  81300, t:   547032.0 s (12.25 periods), wall: 3.442 hours, Δt:   6.18, CFL: 9.50e-01
+i:  81400, t:   547629.7 s (12.27 periods), wall: 3.446 hours, Δt:   5.69, CFL: 9.50e-01
+i:  81500, t:   548226.7 s (12.28 periods), wall: 3.451 hours, Δt:   5.97, CFL: 9.50e-01
+i:  81600, t:   548787.2 s (12.29 periods), wall: 3.455 hours, Δt:   5.23, CFL: 9.50e-01
+i:  81700, t:   549305.8 s (12.31 periods), wall: 3.459 hours, Δt:   5.33, CFL: 9.50e-01
