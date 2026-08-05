@@ -3,7 +3,7 @@
 r = nothing
 profile = nothing
 
-for p in [0,1]
+for p in [2,3]
 global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay)
     for ratio in [31.6, 75.0]
         global r = ratio
