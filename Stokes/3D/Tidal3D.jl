@@ -192,7 +192,7 @@ u_tide = Forcing(tidal_forcing, parameters = (; U₀, ω))
 # zero for z ≤ Lz, so the physical domain is genuinely undamped; it reaches 1 at
 # the lid and has zero slope at both ends, so waves entering the sponge meet no
 # abrupt change in damping (which would itself reflect).
-sponge_rate = 20ω
+sponge_rate = 5ω
 @inline top_mask(x, y, z) = sinpi(clamp((z - Lz) / L_sponge, 0, 1) / 2)^2
 
 u_sponge = Relaxation(rate = sponge_rate, mask = top_mask,
@@ -314,10 +314,6 @@ if get(ENV, "TIDAL_SMOKE", "0") == "1"
     @info "Smoke test: stopping after 20 iterations"
 end
 
-# OLD: cfl = 0.95 — contradicted the paper value quoted in the header, and is
-# aggressive now that advection is centered (non-dissipative, so grid-scale
-# noise is no longer damped by an upwind stencil).
-# wizard = TimeStepWizard(cfl = 0.95, max_change = 1.2, max_Δt = max_Δt)
 wizard = TimeStepWizard(cfl = 0.72, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
@@ -384,15 +380,15 @@ simulation.output_writers[:xy_slices] =
 U  = Field(Average(u, dims = (1, 2)))
 V  = Field(Average(v, dims = (1, 2)))
 B  = Field(Average(b, dims = (1, 2)))
-uw = Field(Average(u * w, dims = (1, 2)))
-vw = Field(Average(v * w, dims = (1, 2)))
-wb = Field(Average(w * b, dims = (1, 2)))
-uu = Field(Average(u^2,  dims = (1, 2)))
-vv = Field(Average(v^2,  dims = (1, 2)))
-ww = Field(Average(w^2,  dims = (1, 2)))
+#uw = Field(Average(u * w, dims = (1, 2)))
+#vw = Field(Average(v * w, dims = (1, 2)))
+#wb = Field(Average(w * b, dims = (1, 2)))
+#uu = Field(Average(u^2,  dims = (1, 2)))
+#vv = Field(Average(v^2,  dims = (1, 2)))
+#ww = Field(Average(w^2,  dims = (1, 2)))
 
 simulation.output_writers[:profiles] =
-    JLD2Writer(model, (; U, V, B, uw, vw, wb, uu, vv, ww),
+    JLD2Writer(model, (; U, V, B),
                filename = filename * "_profiles.jld2",
                schedule = TimeInterval(T_tide / 200),
                overwrite_existing = true,
