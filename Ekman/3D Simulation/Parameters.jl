@@ -10,9 +10,9 @@ const Pr  = 10                  # Prandtl number
 const z₀  = 0.0016              # m (roughness length)
 
 # Dimensions
-const Lx, Ly, Lz = 75,75,30
+const Lx, Ly, Lz = 75,75,40
 # Grid size
-const Nx, Ny, Nz = 100,100,360
+const Nx, Ny, Nz = 100,100,400
 
 # Duration and timestep
 const max_Δt   = 7.5            # maximum allowable timestep
@@ -38,26 +38,28 @@ const Ri_star = N²/f₀^2         # frictional Richardson
 
 if !@isdefined(profile) || isnothing(profile)
     const profile = 2           # type of initial buoyancy profile
-                                # (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay)
+                                # (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay, 4=softplus)
 end
 const mask = 1                  # type of masking in sponge layer (0=piecewise, 1=Gaussian)
 const H = Lz + S                # domain height, with sponge layer
 
-# If using profile == "nonlinear"
 if profile == 1
     if !@isdefined(T) || isnothing(T)
         const T = 10            # adjusts when sharp change in buoyancy occurs
     end
 elseif profile == 2
-    if !@isdefined(efactor) || isnothing(efactor)
-        const efactor = 1
+    if !@isdefined(Lᴰ) || isnothing(Lᴰ)
+        const Lᴰ = Lz           # decay length of exp profile with fixed buoyancy difference
     end
-    const Lᴰ = efactor*Lz       # decay length of exponential profile with fixed buoyancy difference
 elseif profile == 3
-    if !@isdefined(efactor) || isnothing(efactor)
-        const efactor = 1
+    if !@isdefined(Lᴰ) || isnothing(Lᴰ)
+        const Lᴰ = Lz           # decay length of exp profile with fixed top gradient
     end
-    const Lᴰ = efactor*Lz       # decay length of exponential profile with fixed top gradient
+elseif profile == 4
+    if !@isdefined(T) || isnothing(T)
+        const T = 10            # change in buoyancy
+    end
+    sharp = 6                   # changes how sharply buoyancy profile changes
 end
 
 const kick = 0.01*U∞            # amplitude of random perturbation

@@ -7,31 +7,10 @@ using Plots.PlotMeasures # using units for borders
 
 # Import parameters
 include("Parameters.jl")
-if profile == 0
-    save_folder = "Ekman/3D Simulation/Linear/Animations/"
-elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Nonlinear/Animations/T=%.2f/",T)
-elseif profile == 2
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Animations/L=%.2fLz/",efactor)
-elseif profile == 3
-    save_folder = @sprintf("Ekman/3D Simulation/Linear + exponential decay/Animations/L=%.2fLz/",efactor)
-else
-    save_folder = @sprintf("Ekman/3D Simulation/Animations/%.2f/",T)
-end
-mkpath(save_folder)
-
-# Set the filename (without the extension)
-if profile == 0
-    root = @sprintf("Ekman/Data/0/Ekman r=%.1f",r)
-elseif profile == 1
-    root = @sprintf("Ekman/Data/1/Ekman r=%.1f, T=%.2f",r,T)
-elseif profile == 2
-    root = @sprintf("Ekman/Data/2/Ekman r=%.1f, L=%.1fLz",r,efactor)
-elseif profile == 3
-    root = @sprintf("Ekman/Data/3/Ekman r=%.1f, L=%.1fLz",r,efactor)
-else
-    root = @sprintf("Ekman/Data/Ekman r=%.1f",r)
-end
+# Sets the following:
+# Root data file name:    "root"
+# Folder to be saved in:  "save_folder"
+include("Anim_filename.jl")
 
 # ============================  #
 ## Buoyancy gradient animation ##
@@ -39,15 +18,15 @@ end
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
-b_ic = FieldTimeSeries(root * "_b.jld2", "b")
+b_ic = FieldTimeSeries(root * "Buoyancy.jld2", "b")
 
 ## Load in coordinate arrays
 ## We do this separately for each variable since Oceananigans uses a staggered grid
 xb, yb, zb = nodes(b_ic)
 
 ## Now, open the file with our data
-file_vel = jldopen(root * "_velocity.jld2")
-file_b   = jldopen(root * "_b.jld2")
+file_vel = jldopen(root * "Velocity.jld2")
+file_b   = jldopen(root * "Buoyancy.jld2")
 
 ## Extract a vector of iterations
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
@@ -114,15 +93,15 @@ close(file_vel)
 close(file_b)
 
 # Save the animation to a file
-mp4(anim, save_folder*@sprintf("Ekman Plot r = %.1f.mp4", r), fps = 30) # hide
+mp4(anim, save_folder*@sprintf("Anim r = %.1f.mp4", r), fps = 30) # hide
 
 #  ==========================  #
 ## Average velocity animation ##
 #  ==========================  #
 
 # Load FieldTimeSeries directly
-u_avg_series = FieldTimeSeries(root * " average velocity.jld2", "u_avg")
-v_avg_series = FieldTimeSeries(root * " average velocity.jld2", "v_avg")
+u_avg_series = FieldTimeSeries(root * " Avg_vel.jld2", "u_avg")
+v_avg_series = FieldTimeSeries(root * " Avg_vel.jld2", "v_avg")
 
 # Extract simulation times and interior vertical nodes (strips halos, matching length 180)
 times = u_avg_series.times
@@ -180,7 +159,7 @@ anim = @animate for i in 1:length(times)
     # next!(p)
 end
 
-mp4(anim, save_folder*@sprintf("Ekman Velocity Plot r = %.1f.mp4", r), fps = 60)
+mp4(anim, save_folder*@sprintf("Velocity Anim r = %.1f.mp4", r), fps = 60)
 
 
 # ============================= #
@@ -188,7 +167,7 @@ mp4(anim, save_folder*@sprintf("Ekman Velocity Plot r = %.1f.mp4", r), fps = 60)
 # ============================= #
 
 @info "Loading vorticity time series..."
-vort_file = root * " average vorticity.jld2"
+vort_file = root * "Avg_vort.jld2"
 
 ωx_avg_series = FieldTimeSeries(vort_file, "ωx_avg")
 ωy_avg_series = FieldTimeSeries(vort_file, "ωy_avg")
@@ -263,4 +242,4 @@ anim_vort = @animate for i in 1:length(vort_times)
     # next!(p)
 end
 
-mp4(anim_vort, save_folder*@sprintf("Ekman Vorticity Plot r = %.1f.mp4", r), fps = 60)
+mp4(anim_vort, save_folder*@sprintf("Vorticity Anim r = %.1f.mp4", r), fps = 60)

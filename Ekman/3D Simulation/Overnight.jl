@@ -3,9 +3,9 @@
 r = nothing
 profile = nothing
 
-for p in [2,3]
+for p in [2, 3]
 global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay)
-    for ratio in [31.6, 75.0]
+    for ratio in [0.5, 2, 5]
         global r = ratio
 
         if profile == 0         # linear
@@ -15,14 +15,19 @@ global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=line
                 global T = value
                 include("Ekman 3D.jl")
             end
-        elseif profile == 2     # exponential with fixed buoyancy difference
-            for factor in [0.2, 0.5, 1, 1.5]
-                global efactor = factor
+        elseif profile == 2     # exponential with fixed buoyancy difference of N
+            for value in [10, 20, 40, 60]
+                global Lᴰ = value
                 include("Ekman 3D.jl")
             end
         elseif profile == 3     # linear + exponential decay
-            for factor in [0.1, 0.2, 1, 1.5]
-                global efactor = factor
+            for value in [5, 10, 20, 40]
+                global Lᴰ = value
+                include("Ekman 3D.jl")
+            end
+        elseif profile == 4     # softplus
+            for value in [5, 10, 20, 30]
+                global T = value
                 include("Ekman 3D.jl")
             end
         end

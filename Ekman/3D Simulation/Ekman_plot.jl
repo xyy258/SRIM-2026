@@ -1,41 +1,22 @@
 ENV["GKSwstype"] = "100"
 
-using Oceananigans, JLD2, NCDatasets, Plots, Printf
+using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures
+# using NCDatasets
 
 # Import parameters
 include("Parameters.jl")
-if profile == 0
-    save_folder = "Ekman/3D Simulation/Linear/Plots/"
-elseif profile == 1
-    save_folder = @sprintf("Ekman/3D Simulation/Nonlinear/Plots/T=%.2f/",T)
-elseif profile == 2
-    save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Plots/L=%.2fLz/",efactor)
-elseif profile == 3
-    save_folder = @sprintf("Ekman/3D Simulation/Linear + exponential decay/Plots/L=%.2fLz/",efactor)
-else
-    save_folder = @sprintf("Ekman/3D Simulation/Plots/%.2f/",T)
-end
-mkpath(save_folder)
-
-if profile == 0
-    root = @sprintf("Ekman/Data/0/Ekman r=%.1f",r)
-elseif profile == 1
-    root = @sprintf("Ekman/Data/1/Ekman r=%.1f, T=%.2f",r,T)
-elseif profile == 2
-    root = @sprintf("Ekman/Data/2/Ekman r=%.1f, L=%.1fLz",r,efactor)
-elseif profile == 3
-    root = @sprintf("Ekman/Data/3/Ekman r=%.1f, L=%.1fLz",r,efactor)
-else
-    root = @sprintf("Ekman/Data/Ekman r=%.1f",r)
-end
+# Sets the following:
+# Root data file name:    "root"
+# Folder to be saved in:  "save_folder"
+include("Plot_filename.jl")
 
 #  ======================================================  #
 ## Plot of average buoyancy gradient with depth over time ##
 #  ======================================================  #
 
 # Set the filename
-filename = root * " average buoyancy gradient"
+filename = root * "Avg_grad_b"
 
 db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
@@ -77,7 +58,7 @@ savefig(save_folder*@sprintf("Buoyancy gradient plot r = %.1f.png",r))
 ##  Horizontally averaged buoyancy profile ##
 #  =======================================  #
 
-filename = root * " average buoyancy"
+filename = root * "Avg_b"
 b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
 
 # Extract grid coordinates using znodes
@@ -120,7 +101,7 @@ savefig(save_folder*@sprintf("Averaged buoyancy profile r = %.1f.png",r))
 ## Horizontally averaged buoyancy gradient profile ##
 #  ===============================================  #
 
-filename = root * " average buoyancy gradient"
+filename = root * "Avg_grad_b"
 db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
 # Extract grid coordinates using znodes
@@ -163,8 +144,8 @@ savefig(save_folder*@sprintf("Averaged buoyancy gradient profile r = %.1f.png",r
 ##   Hodograph plot   ##
 #  ==================  #
 
-u_series = FieldTimeSeries(root * " average velocity.jld2", "u_avg")
-v_series = FieldTimeSeries(root * " average velocity.jld2", "v_avg")
+u_series = FieldTimeSeries(root * "Avg_vel.jld2", "u_avg")
+v_series = FieldTimeSeries(root * "Avg_vel.jld2", "v_avg")
 
 xu, yu, zu = nodes(u_series)
 zC = znodes(u_series.grid, Center())
