@@ -40,11 +40,19 @@ arch = GPU()          # start Julia with `julia -t auto`
 # OLD (Gayen reproduction): 64, 64, 256. NEW: reduced by default for the
 # L_strat sweep — 8 runs at ~8 periods is only affordable at coarser resolution.
 # The new regime (U₀ = 4 cm/s, ω = 1e-4) has Re_s ≈ 5640 > the paper's 1788, so
-# this is a deliberate resolution compromise, not paper-fidelity. Override per
-# run with NX/NY/NZ env vars.
-Nx = parse(Int, get(ENV, "NX", "48"))
-Ny = parse(Int, get(ENV, "NY", "48"))
-Nz = parse(Int, get(ENV, "NZ", "192"))
+# this is a deliberate resolution compromise, not paper-fidelity. To change the
+# resolution, edit the literals below — there is no longer a shell override.
+#
+# OLD: overridable from the shell —
+#   Nx = parse(Int, get(ENV, "NX", "48"))
+#   Ny = parse(Int, get(ENV, "NY", "48"))
+#   Nz = parse(Int, get(ENV, "NZ", "192"))
+# NEW: fixed here. The env-var indirection meant the resolution a given run
+# actually used lived in whichever shell launched it (run_sweep.sh exported
+# 32×32×128), so the source alone did not say what grid the output came from.
+Nx = 48
+Ny = 48
+Nz = 192
 
 n_frames = 200 * n_periods          # animation frames (same cadence per period)
 duration = n_periods * T_tide

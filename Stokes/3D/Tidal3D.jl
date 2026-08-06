@@ -6,7 +6,8 @@ using Printf
 using Oceananigans
 using Oceananigans.AbstractOperations: ∂x, ∂z   # for spanwise-averaged vorticity
 using CUDA
-
+# Later plan to remove buoyancy tracer and rerun
+# tanh profile so there is a smooth change in derivative
 # 3D Tidal (Stokes) boundary layer following Gayen, Sarkar & Taylor (2010).
 # Run one case with:   julia -t auto --project=. Tidal3D.jl Ri0
 # (then Ri500, Ri2500 — those restart from the Ri0 turbulent state).
