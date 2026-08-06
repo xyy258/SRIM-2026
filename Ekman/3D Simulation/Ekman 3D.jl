@@ -212,7 +212,7 @@ b = model.tracers.b # extract the buoyancy
 if profile == 0
     filename = @sprintf("Ekman/Data/0/r=%.1f/",r)
 elseif profile == 1
-    filename = @sprintf("Ekman/Data/1/r=%.1f, T=%.2f/",r,T)
+    filename = @sprintf("Ekman/Data/1/r=%.1f, T=%.1f/",r,T)
 elseif profile == 2
     filename = @sprintf("Ekman/Data/2/r=%.1f, L=%1.f/",r,Lᴰ)
 elseif profile == 3

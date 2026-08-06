@@ -20,19 +20,3 @@ else
     root = @sprintf("Ekman/Data/r=%.1f/",r)
 end
 mkpath(save_folder)
-
-function root_path(r_val)
-    if profile == 0
-        return @sprintf("Ekman/Data/0/r=%.1f/", r_val)
-    elseif profile == 1
-        return @sprintf("Ekman/Data/1/r=%.1f, T=%.1f/", r_val, T)
-    elseif profile == 2
-        return @sprintf("Ekman/Data/2/r=%.1f, L=%.1f/", r_val, Lᴰ)
-    elseif profile == 3
-        return @sprintf("Ekman/Data/3/r=%.1f, L=%.1f/", r_val, Lᴰ)
-    elseif profile == 4
-        return @sprintf("Ekman/Data/3/r=%.1f, T=%.1f/", r_val, T)
-    else
-        return @sprintf("Ekman/Data/r=%.1f/", r_val)
-    end
-end

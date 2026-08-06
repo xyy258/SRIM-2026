@@ -5,7 +5,7 @@ if profile == 0
     root = @sprintf("Ekman/Data/0/r=%.1f/",r)
 elseif profile == 1
     save_folder = @sprintf("Ekman/3D Simulation/Nonlinear/Animations/T=%.1f/",T)
-    root = @sprintf("Ekman/Data/1/r=%.1f, T=%.2f/",r,T)
+    root = @sprintf("Ekman/Data/1/r=%.1f, T=%.1f/",r,T)
 elseif profile == 2
     save_folder = @sprintf("Ekman/3D Simulation/Exponential with fixed Δb/Animations/L=%.1f/",Lᴰ)
     root = @sprintf("Ekman/Data/2/r=%.1f, L=%.1f/",r,Lᴰ)

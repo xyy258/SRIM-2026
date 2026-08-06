@@ -12,9 +12,9 @@ include("Parameters.jl")
 # Folder to be saved in:  "save_folder"
 include("Anim_filename.jl")
 
-# ============================  #
-## Buoyancy gradient animation ##
-# ============================  #
+# ===================  #
+## Buoyancy animation ##
+# ===================  #
 
 # Read in the first iteration.  We do this to load the grid
 # filename * ".jld2" concatenates the extension to the end of the filename
@@ -32,7 +32,7 @@ file_b   = jldopen(root * "Buoyancy.jld2")
 iterations = parse.(Int, keys(file_vel["timeseries/t"]))
 t_save = zeros(length(iterations))
 
-@info "Making animation of buoyancy gradient heatmaps..."
+@info "Making animation of buoyancy heatmaps..."
 
 # Masking for (0,Lz)
 Lzmask  = zb[findall(x -> x < Lz, zb)]
@@ -93,7 +93,7 @@ close(file_vel)
 close(file_b)
 
 # Save the animation to a file
-mp4(anim, save_folder*@sprintf("Anim r = %.1f.mp4", r), fps = 30) # hide
+mp4(anim, save_folder*@sprintf("Buoyancy/r = %.1f.mp4", r), fps = 30) # hide
 
 #  ==========================  #
 ## Average velocity animation ##
@@ -159,7 +159,7 @@ anim = @animate for i in 1:length(times)
     # next!(p)
 end
 
-mp4(anim, save_folder*@sprintf("Velocity Anim r = %.1f.mp4", r), fps = 60)
+mp4(anim, save_folder*@sprintf("Velocity/r = %.1f.mp4", r), fps = 60)
 
 
 # ============================= #
@@ -242,4 +242,4 @@ anim_vort = @animate for i in 1:length(vort_times)
     # next!(p)
 end
 
-mp4(anim_vort, save_folder*@sprintf("Vorticity Anim r = %.1f.mp4", r), fps = 60)
+mp4(anim_vort, save_folder*@sprintf("Vorticity/r = %.1f.mp4", r), fps = 60)
