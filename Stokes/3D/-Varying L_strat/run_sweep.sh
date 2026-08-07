@@ -26,7 +26,10 @@
 set -u
 cd /home/tll46/SRIM-2026/Stokes/3D || exit 1
 export GKSwstype=100                 # headless GR for plotting
-export NX=32 NY=32 NZ=128            # reduced resolution for the sweep
+# OLD: export NX=32 NY=32 NZ=128     # reduced resolution for the sweep
+# The grid is now fixed at 48×48×192 in Tidal3D.jl and no longer reads NX/NY/NZ,
+# so exporting them here would have no effect while still being logged below.
+GRID_DESC="48x48x192 (fixed in Tidal3D.jl)"
 
 SPIN_PERIODS="${SPIN_PERIODS:-5}"
 PERIODS="${PERIODS:-8}"
@@ -40,7 +43,7 @@ log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*"; }
 
 periods_of() { grep -oE '\([0-9.]+ periods\)' "logs/$1.log" 2>/dev/null | tail -1 | grep -oE '[0-9.]+'; }
 
-log "=== L_strat sweep start: L ∈ {$L_VALUES} m, Ri ∈ {$RI_VALUES}, ${PERIODS} periods, grid ${NX}×${NY}×${NZ} ==="
+log "=== L_strat sweep start: L ∈ {$L_VALUES} m, Ri ∈ {$RI_VALUES}, ${PERIODS} periods, grid ${GRID_DESC} ==="
 
 # ---------------- 1. Spin-up (fresh turbulent velocities) ----------------
 SPIN_OUT="output_L${SPIN_L}_${SPIN_CASE}"

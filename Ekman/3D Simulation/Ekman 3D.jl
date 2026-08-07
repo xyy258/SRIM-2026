@@ -73,6 +73,9 @@ elseif profile == 2     # exponential with fixed buoyancy difference
 elseif profile == 3     # linear with exponential decay
     @inline bᵢ(x,y,z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
     Profile = "linear with exponential decay"
+elseif profile == 4     # softplus
+    @inline bᵢ(x,y,z) = N²/sharp*log(1+exp(sharp*(z-T)))
+    Profile = "softplus"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -147,7 +150,7 @@ Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f\n",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
 
-open(@sprintf("Ekman/3D Simulation/r=%.1f parameters.txt",r), "w") do file
+open(@sprintf("Ekman/3D Simulation/Parameters/r=%.1f parameters.txt",r), "w") do file
     write(file, @sprintf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %.1f × %.1f × %.1f
@@ -178,7 +181,7 @@ simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.9, max_change = 1.2, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -188,7 +191,7 @@ simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
 
 start_time = time_ns()
 
-progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, CFL: %.2e\n",
+progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 5f, CFL: %.2e\n",
     sim.model.clock.iteration,
     sim.model.clock.time,
     prettytime(1e-9 * (time_ns() - start_time)),
@@ -202,34 +205,37 @@ simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b # extract the buoyancy
 
-# Set the name of the output file
+# Set the name of the output file in
+# Folder: "data_folder"
+# File name: "filename"
+# Remember to also update "Filename.jl"
 if profile == 0
-    data_folder = "Ekman/Data/0/"
-    filename = @sprintf("Ekman/Data/0/Ekman r=%.1f",r)
+    filename = @sprintf("Ekman/Data/0/r=%.1f/",r)
 elseif profile == 1
-    data_folder = "Ekman/Data/1/"
-    filename = @sprintf("Ekman/Data/1/Ekman r=%.1f, T=%.2f",r,T)
+    filename = @sprintf("Ekman/Data/1/r=%.1f, T=%.1f/",r,T)
 elseif profile == 2
-    data_folder = "Ekman/Data/2/"
-    filename = @sprintf("Ekman/Data/2/Ekman r=%.1f, L=%.1fLz",r,efactor)
+    filename = @sprintf("Ekman/Data/2/r=%.1f, L=%.1f/",r,Lᴰ)
 elseif profile == 3
-    data_folder = "Ekman/Data/3/"
-    filename = @sprintf("Ekman/Data/3/Ekman r=%.1f, L=%.1fLz",r,efactor)
+    filename = @sprintf("Ekman/Data/3/r=%.1f, L=%.1f/",r,Lᴰ)
+elseif profile == 4
+    filename = @sprintf("Ekman/Data/4/r=%.1f, T=%.1f/",r,T)
+else
+    filename = @sprintf("Ekman/Data/r=%.1f/",r)
 end
-mkpath(data_folder)
+mkpath(filename)
 
 simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
-               filename = filename * "_velocity.jld2",
+               filename = filename * "Velocity.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(100),
+               schedule = TimeInterval(200),
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:xz_b_c] =
     JLD2Writer(model, (; b),
-               filename = filename * "_b.jld2",
+               filename = filename * "Buoyancy.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(100),
+               schedule = TimeInterval(200),
                overwrite_existing = true,
                with_halos = false)
 
@@ -248,23 +254,23 @@ db_dz_avg = Field(Average(∂z(b), dims=(1,2)))
 
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
-                filename = filename * " average buoyancy gradient.jld2",
+                filename = filename * "Avg_grad_b.jld2",
                 schedule = TimeInterval(100),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
-                filename = filename * " average buoyancy.jld2",
-                schedule = IterationInterval(50),
+                filename = filename * "Avg_b.jld2",
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
-                filename = filename * " average velocity.jld2",
-                schedule = IterationInterval(50),
+                filename = filename * "Avg_vel.jld2",
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
-                filename = filename * " average vorticity.jld2",
-                schedule = IterationInterval(50),
+                filename = filename * "Avg_vort.jld2",
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =

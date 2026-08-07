@@ -1,13 +1,10 @@
-# Shared case parameters for the Gayen, Sarkar & Taylor (2010) reproduction.
+# Shared case parameters for Tidal3D.jl
 # Every script (simulation, animation, profiles, figures) includes this file and
 # selects the case from the command line:  julia Tidal3D.jl Ri500
 #
-# The paper defines its cases by Ri = N∞² / ω² ∈ {0, 500, 2500} at fixed
-# Re_s = U₀ δ_s / ν = 1790.  Everything else below is derived from that.
-#
 # Declared `const` so closures that capture these (forcing, sponge masks)
 # compile to fast kernels.
-
+# Run for sqrt(Ri) = 0.5,1,2,5,10
 using Printf
 
 const case = isempty(ARGS) ? "Ri0" : ARGS[1]
@@ -47,9 +44,8 @@ const T_tide = 2π / ω
 # reference gradient and switching the buoyancy term off in Tidal3D.jl, so the
 # Ri = 0 thermal panels of figures 4 and 5 are meaningful rather than blank.
 const N²     = Ri * ω^2                    # buoyancy frequency² actually felt
-const N²_ref = Ri > 0 ? N² : ω^2           # far-field gradient carried by b
 const passive_scalar = Ri == 0
-
+const sharp = 6
 # ---------------- Background stratification: EXPONENTIAL ----------------
 # Reverting to the -Varying L_strat configuration. The stratification vanishes at
 # the seabed and recovers exponentially to the far-field N∞² over a scale L:
@@ -71,10 +67,10 @@ const L_frac = parse(Float64, get(ENV, "L_STRAT_LZ", "0.5"))
 # ---------------- Domain ----------------
 # Paper §2.4: lx = 50 δ_s, ly = 25 δ_s, test section lz = 70 δ_s with the
 # sponge spanning 70 δ_s – 90 δ_s, i.e. 5.95 × 2.98 × 10.73 m here.
-const Lx      = 50δ            # streamwise  ≈ 5.960 m
-const Ly      = 25δ            # spanwise    ≈ 2.980 m
+const Lx      = 10           
+const Ly      = 10           
 const Lz_test = 70δ            # top of the analysed test section ≈ 8.344 m
-const Lz      = 150δ           # PHYSICAL domain ≈ 21.213 m
+const Lz      = 40           # PHYSICAL domain = 40m
 
 # OLD: the sponge was a slice taken out of the top of the Lz-tall grid — a
 # Gaussian centred on the lid, so the uppermost ~20 δ_s of the physical domain
@@ -85,24 +81,33 @@ const Lz      = 150δ           # PHYSICAL domain ≈ 21.213 m
 # z = Lz, so all 150 δ_s of physical domain evolve freely. Lz remains the
 # physical domain everywhere else in the code: L_strat = L_frac·Lz, the
 # background buoyancy profile, and plot limits are all unchanged by this.
-const L_sponge = 20δ           # thickness of the added damping layer ≈ 2.828 m
-const Lz_total = Lz + L_sponge # full grid height ≈ 24.042 m
+const L_sponge = 10           
+const Lz_total = Lz + L_sponge 
 
 # ---------------- Exponential background (needs Lz) ----------------
 # L set as a fraction of the domain height (L_frac read above), then the
 # exponential background and its buoyancy integral.
 const L_strat = L_frac * Lz
 
-@inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
-@inline b_background(z)  = N²_ref * (z + L_strat * (exp(-z / L_strat) - 1))
-
-# ---------------- Run length ----------------
-# Target; the overnight driver (run_night.sh) may stop a case earlier at a
-# wall-clock deadline. Every half period is a U∞ = 0 snapshot, so cutting a run
-# at any half-period boundary still leaves a phase-consistent restart state.
-# The paper's figure 5 late time is t = ωt_d = 50, i.e. 7.96 tidal periods, so
-# 8 completed periods already covers the range those figures span.
-const n_periods = parse(Int, get(ENV, "N_PERIODS", "12"))
+@inline N²_background(z) = N² * (1 - exp(-z / L_strat))
+@inline b_background(z)  = N² * (z + L_strat * (exp(-z / L_strat) - 1))
+if profile == 0         # linear
+    @inline b_background(z) = N² * z
+    Profile = "linear"
+elseif profile == 1     # nonlinear
+    @inline b_background(z) = N²*z*(1-exp(-0.2*(z/T)^5))
+    Profile = "nonlinear"
+elseif profile == 2     # exponential with fixed buoyancy difference
+    @inline b_background(z) = N²*Lz*(Lᴰ*(exp(z/Lᴰ)-1)-z)/(Lᴰ*(exp(Lz/Lᴰ)-1)-Lz)
+    Profile = "exponential"
+elseif profile == 3     # linear with exponential decay
+    @inline b_background(z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
+    Profile = "linear with exponential decay"
+elseif profile == 4     # softplus, T is a parameter, taking values {5,10,20,30}
+    @inline b_background(z) = N²/sharp*log(1+exp(sharp*(z-T)))
+    Profile = "linear with exponential decay"
+end
+const n_periods = 4
 
 # ---------------- Output naming ----------------
 # Each run is tagged by its stratification scale L as a fraction of Lz and its Ri
@@ -120,4 +125,4 @@ mkpath(outdir)
                Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, L_sponge/δ, Lz_total/δ, n_periods,
                passive_scalar ? " (b is a passive scalar)" : "")
 @info @sprintf("Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = %.2f m = %.1f δ_s (N²_bg/N∞² = %.3f at z = δ_s, %.3f at lid z = Lz)",
-               L_strat, L_strat/δ, N²_background(δ)/N²_ref, N²_background(Lz)/N²_ref)
+               L_strat, L_strat/δ, N²_background(δ)/N², N²_background(Lz)/N²)
