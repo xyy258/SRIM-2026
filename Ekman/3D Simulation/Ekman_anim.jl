@@ -2,7 +2,6 @@ ENV["GKSwstype"] = "100"
 
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures # using units for borders
-# using ProgressMeter
 # using NCDatasets
 
 # Import parameters
@@ -10,7 +9,7 @@ include("Parameters.jl")
 # Sets the following:
 # Root data file name:    "root"
 # Folder to be saved in:  "save_folder"
-include("Anim_filename.jl")
+include("Filename_anim.jl")
 
 # ===================  #
 ## Buoyancy animation ##
@@ -39,7 +38,7 @@ Lzmask  = zb[findall(x -> x < Lz, zb)]
 NLzmask = length(Lzmask)
 
 # Masking for certain height from bottom of domain
-z_mask = findall(x -> x < 30,zb)
+z_mask = findall(x -> x < 50,zb)
 zbmask = zb[z_mask]
 Nzmask = length(zbmask)
 
@@ -51,8 +50,6 @@ clim_abs = maximum(
     maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial[:,1:Nzmask])' / N²)
     for iter in iterations
 )
-# Progress meter
-# p = Progress(length(iterations); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for (i, iter) in enumerate(iterations)
     if i % 200 == 0
@@ -66,7 +63,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     b_xz_plot = heatmap(xb, Lzmask, b_xz'/N²;
         color = :thermal,
-        clims = (0.95*minimum(b_xz'/N²), 1.05.*maximum(b_xz'/N²)),
+        clims = (0, 1.05.*maximum(b_xz'/N²)),
         xlabel = "x", ylabel = "z",
         xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
 
@@ -85,14 +82,12 @@ anim = @animate for (i, iter) in enumerate(iterations)
         size = (1000, 550),
         title = [b_title b_diff_title],
         margin = 25px)
-
-    # Advance progress meter
-    # next!(p)
 end
 close(file_vel)
 close(file_b)
 
 # Save the animation to a file
+mkpath(save_folder*"Buoyancy")
 mp4(anim, save_folder*@sprintf("Buoyancy/r = %.1f.mp4", r), fps = 30) # hide
 
 #  ==========================  #
@@ -100,8 +95,8 @@ mp4(anim, save_folder*@sprintf("Buoyancy/r = %.1f.mp4", r), fps = 30) # hide
 #  ==========================  #
 
 # Load FieldTimeSeries directly
-u_avg_series = FieldTimeSeries(root * " Avg_vel.jld2", "u_avg")
-v_avg_series = FieldTimeSeries(root * " Avg_vel.jld2", "v_avg")
+u_avg_series = FieldTimeSeries(root * "Avg_vel.jld2", "u_avg")
+v_avg_series = FieldTimeSeries(root * "Avg_vel.jld2", "v_avg")
 
 # Extract simulation times and interior vertical nodes (strips halos, matching length 180)
 times = u_avg_series.times
@@ -110,9 +105,6 @@ zu    = znodes(u_avg_series[1])
 ylimits = (0,Lz)
 
 @info "Making animation of plane-averaged velocity profiles..."
-
-# Progress meter
-# p = Progress(length(times); desc = "Rendering Animation: ", color = :cyan)
 
 anim = @animate for i in 1:length(times)
 
@@ -154,11 +146,9 @@ anim = @animate for i in 1:length(times)
         size       = (1000,600),
         margin     = 25px,
         plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
-
-    # Progress
-    # next!(p)
 end
 
+mkpath(save_folder*"Velocity")
 mp4(anim, save_folder*@sprintf("Velocity/r = %.1f.mp4", r), fps = 60)
 
 
@@ -184,9 +174,6 @@ zz = znodes(ωz_avg_series[1])
 ylimits = (0,Lz)
 
 @info "Making animation of plane-averaged vorticity profiles..."
-
-# Progress meter
-# p = Progress(length(vort_times); desc = "Rendering Animation: ", color = :cyan)
 
 anim_vort = @animate for i in 1:length(vort_times)
 
@@ -237,9 +224,7 @@ anim_vort = @animate for i in 1:length(vort_times)
          size       = (1000, 600),
          margin     = 25px,
          plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t))
-
-    # Progress
-    # next!(p)
 end
 
+mkpath(save_folder*"Vorticity")
 mp4(anim_vort, save_folder*@sprintf("Vorticity/r = %.1f.mp4", r), fps = 60)

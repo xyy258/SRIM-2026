@@ -9,7 +9,7 @@ include("Parameters.jl")
 # Sets the following:
 # Root data file name:    "root"
 # Folder to be saved in:  "save_folder"
-include("Plot_filename.jl")
+include("Filename_plot.jl")
 
 #  ======================================================  #
 ## Plot of average buoyancy gradient with depth over time ##
@@ -52,7 +52,8 @@ heatmap(t_save*f₀, zbconcat, gradient_data[1:Nzconcat, :]/N²,
         size   = (1000,400),
         margin = 25px,
         color  = :thermal) # :thermal is great for highlighting intensifying gradients
-savefig(save_folder*@sprintf("Buoyancy gradient plot r = %.1f.png",r))
+mkpath(save_folder*"Buoyancy gradient plot")
+savefig(save_folder*@sprintf("Buoyancy gradient plot/r = %.1f.png",r))
 
 #  =======================================  #
 ##  Horizontally averaged buoyancy profile ##
@@ -94,8 +95,8 @@ plot(b_plot_initial/N², z_plot,
 plot!(b_plot_final/N², z_plot,
       linewidth = 2,
       label     = "Final")
-
-savefig(save_folder*@sprintf("Averaged buoyancy profile r = %.1f.png",r))
+mkpath(save_folder*"Averaged buoyancy profile")
+savefig(save_folder*@sprintf("Averaged buoyancy profile/r = %.1f.png",r))
 
 #  ===============================================  #
 ## Horizontally averaged buoyancy gradient profile ##
@@ -138,7 +139,8 @@ plot!(db_dz_plot_final/N², z_plot,
       linewidth = 2,
       label = "Final")
 
-savefig(save_folder*@sprintf("Averaged buoyancy gradient profile r = %.1f.png",r))
+mkpath(save_folder*"Averaged buoyancy gradient profile")
+savefig(save_folder*@sprintf("Averaged buoyancy gradient profile/r = %.1f.png",r))
 
 #  ==================  #
 ##   Hodograph plot   ##
@@ -185,4 +187,5 @@ plot(u_slice/U∞, v_slice/U∞,
     legend         = false,
     title          = @sprintf("Ekman Hodograph r = N/f = %.1f",r)
 )
-savefig(save_folder*@sprintf("Hodograph r = %.1f.png",r))
+mkpath(save_folder*"Hodograph")
+savefig(save_folder*@sprintf("Hodograph/r = %.1f.png",r))

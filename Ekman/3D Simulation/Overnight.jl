@@ -3,9 +3,9 @@
 r = nothing
 profile = nothing
 
-for p in [2, 3]
-global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay)
-    for ratio in [0.5, 2, 5]
+for p in [4]
+global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay, 4=softplus)
+    for ratio in [10, 31.6]
         global r = ratio
 
         if profile == 0         # linear
@@ -26,7 +26,7 @@ global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=line
                 include("Ekman 3D.jl")
             end
         elseif profile == 4     # softplus
-            for value in [5, 10, 20, 30]
+            for value in [5, 10, 15, 20, 30]
                 global T = value
                 include("Ekman 3D.jl")
             end

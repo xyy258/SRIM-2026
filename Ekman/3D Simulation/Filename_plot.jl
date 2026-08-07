@@ -14,7 +14,7 @@ elseif profile == 3
     root = @sprintf("Ekman/Data/3/r=%.1f, L=%.1f/",r,Lᴰ)
 elseif profile == 4
     save_folder = @sprintf("Ekman/3D Simulation/Softplus/Plots/T=%.1f/",T)
-    root = @sprintf("Ekman/Data/3/r=%.1f, T=%.1f/",r,T)
+    root = @sprintf("Ekman/Data/4/r=%.1f, T=%.1f/",r,T)
 else
     save_folder = @sprintf("Ekman/3D Simulation/Plots/%.1f/",T)
     root = @sprintf("Ekman/Data/r=%.1f/",r)

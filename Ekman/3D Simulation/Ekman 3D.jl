@@ -75,7 +75,7 @@ elseif profile == 3     # linear with exponential decay
     Profile = "linear with exponential decay"
 elseif profile == 4     # softplus
     @inline bᵢ(x,y,z) = N²/sharp*log(1+exp(sharp*(z-T)))
-    Profile = "linear with exponential decay"
+    Profile = "softplus"
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -181,7 +181,7 @@ simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.85, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.9, max_change = 1.2, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -191,7 +191,7 @@ simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
 
 start_time = time_ns()
 
-progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 6f, CFL: %.2e\n",
+progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 5f, CFL: %.2e\n",
     sim.model.clock.iteration,
     sim.model.clock.time,
     prettytime(1e-9 * (time_ns() - start_time)),
@@ -214,15 +214,15 @@ if profile == 0
 elseif profile == 1
     filename = @sprintf("Ekman/Data/1/r=%.1f, T=%.1f/",r,T)
 elseif profile == 2
-    filename = @sprintf("Ekman/Data/2/r=%.1f, L=%1.f/",r,Lᴰ)
+    filename = @sprintf("Ekman/Data/2/r=%.1f, L=%.1f/",r,Lᴰ)
 elseif profile == 3
-    filename = @sprintf("Ekman/Data/3/r=%.1f, L=%1.f/",r,Lᴰ)
+    filename = @sprintf("Ekman/Data/3/r=%.1f, L=%.1f/",r,Lᴰ)
 elseif profile == 4
-    filename = @sprintf("Ekman/Data/3/r=%.1f, T=%1.f/",r,T)
+    filename = @sprintf("Ekman/Data/4/r=%.1f, T=%.1f/",r,T)
 else
     filename = @sprintf("Ekman/Data/r=%.1f/",r)
 end
-mkpath(data_folder)
+mkpath(filename)
 
 simulation.output_writers[:xz_velocity] =
     JLD2Writer(model, (; u, v, w),
@@ -260,17 +260,17 @@ simulation.output_writers[:avg_db_dz] =
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
                 filename = filename * "Avg_b.jld2",
-                schedule = TimeInterval(500),
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg),
                 filename = filename * "Avg_vel.jld2",
-                schedule = TimeInterval(500),
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
                 filename = filename * "Avg_vort.jld2",
-                schedule = TimeInterval(500),
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 # NetCDF output file
 # simulation.output_writers[:avg_db_dz] =
