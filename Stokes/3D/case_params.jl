@@ -1,19 +1,40 @@
 # Shared case parameters for Tidal3D.jl
 # Every script (simulation, animation, profiles, figures) includes this file and
-# selects the case from the command line:  julia Tidal3D.jl Ri500
+# selects the case from the command line, with the run knobs in the environment:
+#     PROFILE=4 T_STRAT=10 julia --project=. Tidal3D.jl sqrtRi2
+#
+# IMPORTANT: PROFILE and T_STRAT feed into `casetag`, so every post-processing
+# script must be invoked with the SAME values as the run it is reading, or it
+# will look in the wrong output directory and reconstruct the wrong background.
+#
+# Current sweep: profile 4 (softplus), T ∈ {5, 10, 20, 30} m,
+# √Ri ∈ {0.5, 1, 2, 5, 10} → 20 runs.
 #
 # Declared `const` so closures that capture these (forcing, sponge masks)
 # compile to fast kernels.
-# Run for sqrt(Ri) = 0.5,1,2,5,10
 using Printf
 
 const case = isempty(ARGS) ? "Ri0" : ARGS[1]
 
+# Named cases from the Gayen reproduction, kept so old commands still work.
 const Ri_targets = Dict("Ri0" => 0.0, "Ri500" => 500.0, "Ri2500" => 2500.0)
-haskey(Ri_targets, case) ||
-    error("Unknown case \"$case\" — use one of: Ri0, Ri500, Ri2500")
 
-const Ri = Ri_targets[case]
+# The softplus sweep is parameterised by √Ri ∈ {0.5, 1, 2, 5, 10}, i.e.
+# Ri ∈ {0.25, 1, 4, 25, 100} — values the fixed dict above cannot express.
+# Accept either "sqrtRi<v>" or "Ri<v>", with 'p' standing in for the decimal
+# point so the case name is also a safe directory name:
+#     sqrtRi0p5 → Ri = 0.25      Ri0p25 → Ri = 0.25
+function parse_Ri(c)
+    haskey(Ri_targets, c) && return Ri_targets[c]
+    for (pat, f) in ((r"^sqrtRi([0-9]+(?:p[0-9]+)?)$", x -> x^2),
+                     (r"^Ri([0-9]+(?:p[0-9]+)?)$",     identity))
+        m = match(pat, c)
+        m === nothing || return f(parse(Float64, replace(m[1], "p" => ".")))
+    end
+    error("Unknown case \"$c\" — use Ri0/Ri500/Ri2500, or sqrtRi0p5 / Ri0p25 style")
+end
+
+const Ri = parse_Ri(case)
 
 # ---------------- Physical parameters ----------------
 # These are the paper's own dimensional values, quoted verbatim in their §2.4:
@@ -45,84 +66,148 @@ const T_tide = 2π / ω
 # Ri = 0 thermal panels of figures 4 and 5 are meaningful rather than blank.
 const N²     = Ri * ω^2                    # buoyancy frequency² actually felt
 const passive_scalar = Ri == 0
-const sharp = 6
-# ---------------- Background stratification: EXPONENTIAL ----------------
-# Reverting to the -Varying L_strat configuration. The stratification vanishes at
-# the seabed and recovers exponentially to the far-field N∞² over a scale L:
-#
-#     N²_bg(z) = N∞² [1 − exp(−z/L)]
-#     b_bg(z)  = N∞² [z + L (exp(−z/L) − 1)]      (b_bg(0) = 0, b_bg′(0) = 0)
-#
-# The initial buoyancy IS this profile (Tidal3D.jl: bᵢ = b_background), and the
-# sponge target and top-gradient BC relax toward it — the full L_strat set-up,
-# not just an initial condition.
-#
-# L is now set as a FRACTION of the domain height Lz = 90 δ_s ≈ 12.73 m, via
-# L_STRAT_LZ, sweeping {0.2, 0.5, 1.0, 1.5} Lz. For L ≳ Lz the far field is only
-# partly established inside the domain — at the lid N²_bg/N∞² = 1 − e^{−Lz/L}
-# (0.993, 0.865, 0.632, 0.487 for the four fractions) — which is the regime under
-# study here. The definitions follow the Domain block below since they need Lz.
+
+# The far-field gradient the b tracer actually carries. For Ri = 0, N² = 0 but b
+# is still advected as a passive scalar, so post-processing needs a finite
+# reference to normalize by — ω² stands in there. Used by Tidal3Danimation.jl and
+# Tidal3Dprofiles.jl; do not delete without updating both.
+const N²_ref = Ri > 0 ? N² : ω^2
+
+# Softplus sharpness (m⁻¹), profile 4 only. WARNING: the 10–90 % width of the
+# transition in db/dz is 2ln9/sharp = 0.73 m at sharp = 6, while the vertical
+# grid coarsens to Δz ≈ 0.43 m above z ≈ 10 m — so for T = 10, 20, 30 the initial
+# pycnocline spans under 2 cells and starts life as a numerical step. Only T = 5
+# (Δz ≈ 0.13 m, ~5.6 cells) is properly resolved. Lower `sharp` to ~1 for a 4.4 m
+# transition (~10 cells) if the T-dependence is meant to be the signal.
+const sharp = parse(Float64, get(ENV, "SHARP", "6"))
+
+# Which background buoyancy profile the run uses (the if-chain below). Set from
+# the shell alongside the other run knobs, e.g.
+#     PROFILE=4 T_STRAT=10 julia --project=. Tidal3D.jl sqrtRi2
+# NOTE these must be `const`: b_background and N²_background are evaluated
+# inside GPU kernels (the initial condition and the sponge target), so every
+# global they capture has to be constant-folded at compile time.
+const profile = parse(Int,     get(ENV, "PROFILE",  "4"))
+const T       = parse(Float64, get(ENV, "T_STRAT", "10.0"))   # profiles 1 and 4
+
+# ---------------- Exponential-background scale (profiles 2 and 3 only) --------
+# Sets L_strat = L_frac · Lz, the e-folding scale over which the stratification
+# recovers to the far field. UNUSED by the current softplus sweep — profile 4
+# takes its length scale from T instead — but kept as the knob for profiles 2/3.
+# The definition of L_strat itself follows the Domain block, since it needs Lz.
 const L_frac = parse(Float64, get(ENV, "L_STRAT_LZ", "0.5"))
 
 # ---------------- Domain ----------------
-# Paper §2.4: lx = 50 δ_s, ly = 25 δ_s, test section lz = 70 δ_s with the
-# sponge spanning 70 δ_s – 90 δ_s, i.e. 5.95 × 2.98 × 10.73 m here.
-const Lx      = 10           
-const Ly      = 10           
-const Lz_test = 70δ            # top of the analysed test section ≈ 8.344 m
-const Lz      = 40           # PHYSICAL domain = 40m
+# The paper's §2.4 box is lx = 50 δ_s, ly = 25 δ_s, lz = 70 δ_s. This run is much
+# taller in absolute terms (10 × 10 × 40 m = 71 × 71 × 283 δ_s) because the
+# softplus pycnocline sits at z = T up to 30 m and needs clear water above it.
+const Lx      = 10             # streamwise (m)
+const Ly      = 10             # spanwise (m)
+const Lz      = 50             # PHYSICAL domain height (m)
 
-# OLD: the sponge was a slice taken out of the top of the Lz-tall grid — a
-# Gaussian centred on the lid, so the uppermost ~20 δ_s of the physical domain
-# was permanently relaxed and the free interior was really only 0 – ~126 δ_s.
-#
-# NEW: the sponge SITS ON TOP of the physical domain. The grid is built to
+# The sponge SITS ON TOP of the physical domain: the grid is built to
 # Lz_total = Lz + L_sponge and the damping mask is identically zero at and below
-# z = Lz, so all 150 δ_s of physical domain evolve freely. Lz remains the
-# physical domain everywhere else in the code: L_strat = L_frac·Lz, the
-# background buoyancy profile, and plot limits are all unchanged by this.
-const L_sponge = 10           
-const Lz_total = Lz + L_sponge 
+# z = Lz, so the whole physical domain evolves freely. Lz remains the physical
+# domain everywhere else in the code.
+const L_sponge = 10
+const Lz_total = Lz + L_sponge
 
-# ---------------- Exponential background (needs Lz) ----------------
-# L set as a fraction of the domain height (L_frac read above), then the
-# exponential background and its buoyancy integral.
+# Top of the analysed / plotted section. In the paper this was a structural
+# boundary (test section 0–70 δ_s, sponge above it); here the sponge lives above
+# Lz instead, so this is now purely a diagnostic and plotting height — the cell
+# count logged by Tidal3D.jl and the vertical range of Tidal3Danimation.jl.
+#
+# It therefore has to cover the feature under study. For the T-parameterised
+# profiles that is the pycnocline at z = T, so the window tracks T with ~10 m of
+# headroom (T = 5 → 15 m, 10 → 20, 20 → 30, 30 → 40) rather than sitting at a
+# fixed 70 δ_s = 9.9 m, which would have cropped the pycnocline out of every
+# animation with T ≥ 10. LZ_TEST overrides it.
+const Lz_test_default = profile in (1, 4) ? min(Lz, max(70δ, T + 10)) : min(Lz, 70δ)
+const Lz_test = parse(Float64, get(ENV, "LZ_TEST", string(Lz_test_default)))
+
+# ---------------- Exponential background scale (needs Lz) ----------------
 const L_strat = L_frac * Lz
 
-@inline N²_background(z) = N² * (1 - exp(-z / L_strat))
-@inline b_background(z)  = N² * (z + L_strat * (exp(-z / L_strat) - 1))
+# N²_background MUST stay the exact derivative of b_background in every branch:
+# it supplies the top gradient BC (Tidal3D.jl), while b_background supplies the
+# initial condition and the sponge target. If they disagree the lid fights the
+# interior. Each pair below is written with no auxiliary local bindings so the
+# whole expression constant-folds inside the GPU kernel.
+#
+# These scale with N²_ref, NOT N². The two are equal whenever Ri > 0, but at
+# Ri = 0 (√Ri = 0 in the sweep) N² = 0, which would make b_background ≡ 0 — the
+# tracer would carry no background at all, every T would give an identical run,
+# and the figure 4/5 panels would be blank. N²_ref = ω² there instead, so Ri = 0
+# is a genuine passive scalar advected through the same softplus profile, which
+# is what the paper's Ri = 0 case is. The buoyancy FORCE is still off (Tidal3D.jl
+# passes buoyancy = nothing when passive_scalar), so this adds no dynamics.
 if profile == 0         # linear
-    @inline b_background(z) = N² * z
+    @inline b_background(z)  = N²_ref * z
+    @inline N²_background(z) = N²_ref * one(z)
     Profile = "linear"
 elseif profile == 1     # nonlinear
-    @inline b_background(z) = N²*z*(1-exp(-0.2*(z/T)^5))
+    # a = 0.2 (z/T)^5, so 5a = (z/T)^5 and b′ = N²_ref[1 − e^{−a}(1 − 5a)].
+    @inline b_background(z)  = N²_ref*z*(1-exp(-0.2*(z/T)^5))
+    @inline N²_background(z) = N²_ref * (1 - exp(-0.2*(z/T)^5) * (1 - (z/T)^5))
     Profile = "nonlinear"
 elseif profile == 2     # exponential with fixed buoyancy difference
-    @inline b_background(z) = N²*Lz*(Lᴰ*(exp(z/Lᴰ)-1)-z)/(Lᴰ*(exp(Lz/Lᴰ)-1)-Lz)
+    # Normalised so b(0) = 0 and b(Lz) = N²_ref·Lz regardless of L_strat.
+    @inline b_background(z)  = N²_ref*Lz*(L_strat*(exp(z/L_strat)-1)-z) /
+                               (L_strat*(exp(Lz/L_strat)-1)-Lz)
+    @inline N²_background(z) = N²_ref*Lz*(exp(z/L_strat)-1) /
+                               (L_strat*(exp(Lz/L_strat)-1)-Lz)
     Profile = "exponential"
 elseif profile == 3     # linear with exponential decay
-    @inline b_background(z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
+    @inline b_background(z)  = N²_ref*(z+L_strat*(exp(-z/L_strat)-1))
+    @inline N²_background(z) = N²_ref * (1 - exp(-z / L_strat))
     Profile = "linear with exponential decay"
 elseif profile == 4     # softplus, T is a parameter, taking values {5,10,20,30}
-    @inline b_background(z) = N²/sharp*log(1+exp(sharp*(z-T)))
-    Profile = "linear with exponential decay"
+    # b = N²_ref/s · log(1 + e^{s(z−T)}) → b′ = N²_ref·sigmoid(s(z−T)): unstratified
+    # below z = T, N²_ref above, over a transition of width ~1/sharp.
+    @inline b_background(z)  = N²_ref/sharp*log(1+exp(sharp*(z-T)))
+    @inline N²_background(z) = N²_ref/(1+exp(-sharp*(z-T)))
+    Profile = "softplus"
+else
+    error("Unknown profile $profile — set PROFILE to one of 0,1,2,3,4")
 end
 const n_periods = 4
 
 # ---------------- Output naming ----------------
-# Each run is tagged by its stratification scale L as a fraction of Lz and its Ri
-# case, e.g. L0p5Lz_Ri500, so the four-value sweep does not collide on disk
-# (a fractional fraction like 0.5 becomes "0p5", 1.0 becomes "1").
-const Lfrac_lbl = isinteger(L_frac) ? string(Int(L_frac)) : replace(string(L_frac), "." => "p")
-const casetag  = "L" * Lfrac_lbl * "Lz_" * case
+# The tag carries everything that changes the physics, so the 20-run softplus
+# sweep cannot collide on disk: e.g. P4_T10_sqrtRi2. Decimal points become "p"
+# so the tag is a safe directory name. Note the writers use
+# overwrite_existing = true, so a tag collision silently destroys existing data.
+num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
+
+const shape_lbl = profile in (1, 4) ? "_T" * num_lbl(T) :
+                  profile in (2, 3) ? "_L" * num_lbl(L_frac) * "Lz" : ""
+# RUN_TAG overrides the whole tag — used to park the one shared spin-up run in
+# output_spinup/ rather than under a case name it does not really belong to.
+const casetag  = get(ENV, "RUN_TAG", "P" * string(profile) * shape_lbl * "_" * case)
 const outdir   = "output_" * casetag
 const filename = joinpath(outdir, "TidalBL3D_" * casetag)
 mkpath(outdir)
 
-@info @sprintf("Case %s (L = %.3f Lz = %.2f m): Ri = %g, N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
-               casetag, L_frac, L_strat, Ri, N², δ, Re_s)
+# Default source of turbulent velocities for a restart. ONE Ri = 0 spin-up on
+# this grid serves every case in the sweep: the velocity field does not depend
+# on the buoyancy profile, so T and Ri may vary freely against it. Produce it with
+#     RUN_TAG=spinup julia --project=. Tidal3D.jl Ri0
+const spinup_default = joinpath("output_spinup", "TidalBL3D_spinup_fields.jld2")
+
+@info @sprintf("Case %s: Ri = %g (√Ri = %g), N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
+               casetag, Ri, sqrt(Ri), N², δ, Re_s)
 @info @sprintf("Domain %.3f × %.3f × %.3f m = %.0f × %.0f × %.0f δ_s (physical), + %.1f δ_s sponge on top → grid top %.0f δ_s, %d periods%s",
                Lx, Ly, Lz, Lx/δ, Ly/δ, Lz/δ, L_sponge/δ, Lz_total/δ, n_periods,
                passive_scalar ? " (b is a passive scalar)" : "")
-@info @sprintf("Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = %.2f m = %.1f δ_s (N²_bg/N∞² = %.3f at z = δ_s, %.3f at lid z = Lz)",
-               L_strat, L_strat/δ, N²_background(δ)/N², N²_background(Lz)/N²)
+@info @sprintf("Analysed/plotted section: 0 – %.2f m = %.0f δ_s%s",
+               Lz_test, Lz_test/δ,
+               profile in (1, 4) ? @sprintf(" (pycnocline at T = %.1f m)", T) : "")
+# Report the profile that actually ran. Normalizing by N²_ref (not N²) keeps the
+# ratios finite and shape-only at Ri = 0, where the passive scalar carries the
+# same profile scaled by ω².
+nrat(z) = N²_background(z) / N²_ref
+@info @sprintf("Background: %s (profile %d)%s — N²_bg/N∞² = %.3f at z = δ_s, %.3f at z = Lz, %.3f at lid; Δb over domain = %.3g m s⁻²",
+               Profile, profile,
+               profile in (1, 4) ? @sprintf(", T = %.1f m = %.1f δ_s", T, T/δ) :
+               profile in (2, 3) ? @sprintf(", L = %.2f m = %.1f δ_s", L_strat, L_strat/δ) : "",
+               nrat(δ), nrat(Lz), nrat(Lz_total), b_background(Lz_total) - b_background(0.0))
