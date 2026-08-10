@@ -5,12 +5,23 @@ using Oceananigans, JLD2, Plots, Printf
 # pycnocline at z = T, N∞² above, over a transition of width ~1/sharp.
 #
 # Time–depth heatmap of the plane-averaged buoyancy gradient ∂⟨b⟩/∂z normalized
-# by the far-field N∞² = Ri·ω².
-# Panel grid: rows = T ∈ {5, 10, 20, 30} m, columns = √Ri ∈ {0, 0.5, 1, 2, 5, 10}.
+# by the far-field N∞² = Ri·ω². Stratification is labelled by N/ω = √Ri.
 #
-# Reads only *_profiles.jld2 written by Tidal3D.jl.
+# Produces, in figures/:
+#   Figure4_softplus_T<T>.png   one per T, columns = N/ω          (the main output)
+#   Figure4_softplus_sweep.png  all T stacked, rows = T           (overview)
+#
+# COLORBARS ARE DRAWN BY HAND, as a narrow extra subplot beside each heatmap.
+# GR sizes a subplot's built-in colorbar from the FIGURE width, not the subplot
+# width, so in a 6-column layout each colorbar claimed ~6x its proper share and
+# squeezed every heatmap into an unreadable sliver. Passing colorbar = false and
+# building the ribbon as a heatmap in its own grid cell puts the widths back
+# under our control. Do not revert to `colorbar_title` / the automatic colorbar
+# unless the layout is one or two columns wide.
+#
+# Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
 #   julia --project=. Figure4_metres.jl
-# Subsets:  T_VALUES="10 20" SQRT_RI="1 2 5" julia --project=. Figure4_metres.jl
+# Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure4_metres.jl
 
 const ω  = 1e-4
 const f  = ω
@@ -24,13 +35,18 @@ const sharp = parse(Float64, get(ENV, "SHARP", "6"))
 const Lz    = 50.0
 
 parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))
-const T_values    = parse_list("T_VALUES", "5 10 20 30")
-const sqrtRi_vals = parse_list("SQRT_RI",  "0 0.5 1 2 5 10")
+const T_values = parse_list("T_VALUES", "5 10 20 30")
+# N/ω and √Ri are the same number; SQRT_RI is still honoured so the existing
+# sweep driver keeps working unchanged.
+const n_over_ω = parse_list("N_OVER_OMEGA", get(ENV, "SQRT_RI", "0 0.5 1 2 5 10"))
 
-# Tag builder matching case_params.jl: T = 5.0 → "5", √Ri = 0.5 → "0p5",
-# giving e.g. "P4_T5_sqrtRi0p5".
+# Tag builder matching case_params.jl: T = 5.0 → "5", N/ω = 0.5 → "0p5",
+# giving e.g. "P4_T5_sqrtRi0p5". The directory tags keep the sqrtRi spelling —
+# they name data already on disk — while every label the reader sees says N/ω.
 num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
 tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
+const outroot = get(ENV, "OUT_ROOT", "outputs")
+profiles_file(tag) = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_profiles.jld2")
 
 # Depth window per row, mirroring Lz_test in case_params.jl so the figure shows
 # the same section the animations do: the pycnocline at z = T plus headroom.
@@ -53,19 +69,15 @@ function delta_ustar(U_ts, zc, times)
     return ustar / f
 end
 
-panels = []
-nfound = 0
-for T in T_values, s in sqrtRi_vals
+# ---------------------------------------------------------------------------
+# Load every case once. Both the per-T figures and the combined overview are
+# built from this cache, so each profiles file is read a single time.
+# ---------------------------------------------------------------------------
+cases = Dict{Tuple{Float64,Float64},NamedTuple}()
+for T in T_values, s in n_over_ω
     tag   = tag_of(T, s)
-    Ri    = s^2
-    fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
-    if !isfile(fname)
-        @warn "Missing $fname — inserting empty panel for $tag"
-        push!(panels, plot(title = "$tag\n(no data)", framestyle = :box,
-                           showaxis = false, grid = false))
-        continue
-    end
-    global nfound += 1
+    fname = profiles_file(tag)
+    isfile(fname) || (@warn "Missing $fname — $tag will render as an empty panel"; continue)
 
     B_ts  = FieldTimeSeries(fname, "B")
     U_ts  = FieldTimeSeries(fname, "U")
@@ -79,18 +91,17 @@ for T in T_values, s in sqrtRi_vals
 
     zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])       # gradients at midpoints
     G  = diff(Bmean, dims = 1) ./ diff(zc)        # ∂b/∂z
-    δ  = delta_ustar(U_ts, zc, times)
 
-    # Normalize by N²_ref, matching case_params.jl: at √Ri = 0 the buoyancy is
+    # Normalize by N²_ref, matching case_params.jl: at N/ω = 0 the buoyancy is
     # zero but b is still advected as a passive scalar carrying the ω²-scaled
     # softplus background, so ω² is the reference there. Dividing by Ri·ω² would
-    # be a divide-by-zero and blank the whole √Ri = 0 column.
+    # be a divide-by-zero and blank the whole N/ω = 0 column.
+    Ri = s^2
     N²_ref = Ri > 0 ? Ri * ω^2 : ω^2
-    ks = findall(z -> z <= zmax_of(T), zg)
-    Gn = G[ks, :] ./ N²_ref
-    zm = zg[ks]
-    ωt = times .* ω
+    zmax = zmax_of(T)
+    ks = findall(z -> z <= zmax, zg)
 
+    Gn = G[ks, :] ./ N²_ref
     # Per-panel colour limits: with N²_bg → 0 below the pycnocline, a shared scale
     # would flatten every panel's near-bed structure into one colour. The range is
     # printed in the title since that costs cross-panel comparability.
@@ -100,25 +111,107 @@ for T in T_values, s in sqrtRi_vals
         gmin, gmax = gmin - pad, gmax + pad
     end
 
-    ttl = @sprintf("T=%d m, √Ri=%g (Ri=%g)\nδ=u*/f=%.2f m  [%.2f, %.2f]",
-                   Int(T), s, Ri, δ, gmin, gmax)
-    plt = heatmap(ωt, zm, Gn;
-                  clims = (gmin, gmax), color = gradient_map,
-                  xlabel = "ωt", ylabel = "z (m)", title = ttl,
-                  colorbar_title = "  ∂⟨b⟩/∂z / N²")
+    cases[(T, s)] = (ωt = times .* ω, z = zg[ks], Gn = Gn, zmax = zmax,
+                     gmin = gmin, gmax = gmax, δ = delta_ustar(U_ts, zc, times))
+end
+
+isempty(cases) && error("No profile files found under $outroot/ — run the simulations first")
+
+# ---------------------------------------------------------------------------
+# Panel construction
+# ---------------------------------------------------------------------------
+
+# A colorbar as a standalone subplot: a 2-column heatmap of its own value range,
+# ticks mirrored to the right so they read as labels on the ribbon.
+function cbar_panel(lo, hi)
+    yy = collect(range(lo, hi, length = 256))
+    heatmap([1, 2], yy, repeat(yy, 1, 2);
+            color = gradient_map, clims = (lo, hi), colorbar = false,
+            xticks = false, xlims = (0.5, 2.5), ylims = (lo, hi),
+            ymirror = true, framestyle = :box, tickfontsize = 6,
+            # Margins are set per subplot, not on the outer plot call: a global
+            # left margin wide enough for the "z (m)" guide would also inset every
+            # ribbon, stranding it half a cell from its own tick labels.
+            leftmargin = 0Plots.mm, rightmargin = 1Plots.mm)
+end
+
+blank() = plot(framestyle = :none, grid = false, showaxis = false)
+
+# ωt ticks. A fixed 0:5:25 covered a 4-period run exactly and labelled only the
+# first half of an 8-period one, so the step is chosen from the run length to
+# leave roughly five to seven labels either way.
+xtick_step(ωt_max) = ωt_max <= 30 ? 5 : 10
+
+# `first_col` gets the z axis labels; `show_xlabel` marks the bottom row.
+function case_panels(T, s; first_col, show_xlabel)
+    c = get(cases, (T, s), nothing)
+    if c === nothing
+        # Two cells per case, so a missing one still has to occupy both or every
+        # panel after it shifts into the wrong column.
+        return (plot(title = @sprintf("T=%d m, N/ω=%g\n(no data)", Int(T), s),
+                     framestyle = :box, showaxis = false, grid = false), blank())
+    end
+
+    # One line, so the panels can be short and wide like the earlier Figure 4s.
+    # The colour range is not repeated here — the colorbar ticks already show it.
+    ttl = @sprintf("T=%d m, N/ω=%g (Ri=%g)  (δ=u*/f=%.2f m)", Int(T), s, s^2, c.δ)
+    plt = heatmap(c.ωt, c.z, c.Gn;
+                  clims = (c.gmin, c.gmax), color = gradient_map, colorbar = false,
+                  xlims = (0, maximum(c.ωt)), ylims = (0, c.zmax),
+                  xticks = 0:xtick_step(maximum(c.ωt)):maximum(c.ωt),
+                  xlabel = show_xlabel ? "ωt" : "",
+                  ylabel = first_col ? "z (m)" : "",
+                  yformatter = first_col ? :auto : (_ -> ""),
+                  leftmargin = first_col ? 13Plots.mm : 3Plots.mm,
+                  rightmargin = 1Plots.mm,
+                  title = ttl)
     # Initial pycnocline height, the reference the mixed layer grows towards.
     hline!(plt, [T]; color = RGB(0.15, 0.15, 0.15), linestyle = :dash,
            linewidth = 1.2, label = "")
-    push!(panels, plt)
+    return (plt, cbar_panel(c.gmin, c.gmax))
 end
 
-nfound == 0 && error("No profile files found — run the simulations first")
+# Explicit column widths: heatmap gets ~3.5x the colorbar cell (which also has to
+# hold the ribbon's tick labels).
+const ncol = length(n_over_ω)
+column_widths(n) = (w = repeat([0.82, 0.18], n); w ./ sum(w))
 
-fig = plot(panels...; layout = (length(T_values), length(sqrtRi_vals)),
-           size = (390 * length(sqrtRi_vals), 330 * length(T_values)),
-           leftmargin = 5Plots.mm, rightmargin = 8Plots.mm,
-           bottommargin = 4Plots.mm, topmargin = 4Plots.mm,
-           plot_title = "Buoyancy gradient — softplus sweep (dashed = initial pycnocline z = T)",
-           plot_titlefontsize = 13)
+# ---------------------------------------------------------------------------
+# One figure per T
+# ---------------------------------------------------------------------------
+for T in T_values
+    any(haskey(cases, (T, s)) for s in n_over_ω) || continue
+    panels = []
+    for (si, s) in enumerate(n_over_ω)
+        p, cb = case_panels(T, s; first_col = si == 1, show_xlabel = true)
+        push!(panels, p, cb)
+    end
+    # Short and wide, matching the aspect of the earlier Figure 4s. The figure
+    # title takes a fixed FRACTION of the height, so on a short figure it has to
+    # be given a bigger share explicitly or it collides with the panel titles.
+    fig = plot(panels...; layout = grid(1, 2ncol, widths = column_widths(ncol)),
+               size = (480 * ncol, 370),
+               bottommargin = 12Plots.mm, topmargin = 4Plots.mm,
+               plot_title = @sprintf("Buoyancy gradient ∂⟨b⟩/∂z / N²  —  T = %d m  (dashed = initial pycnocline z = T)", Int(T)),
+               plot_titlefontsize = 14, plot_titlevspan = 0.15)
+    fname = joinpath(outdir, "Figure4_softplus_T" * num_lbl(T) * ".png")
+    savefig(fig, fname)
+    @info "Saved figures/" * basename(fname)
+end
+
+# ---------------------------------------------------------------------------
+# Combined overview: all T stacked
+# ---------------------------------------------------------------------------
+nrow = length(T_values)
+panels = []
+for (ti, T) in enumerate(T_values), (si, s) in enumerate(n_over_ω)
+    p, cb = case_panels(T, s; first_col = si == 1, show_xlabel = ti == nrow)
+    push!(panels, p, cb)
+end
+fig = plot(panels...; layout = grid(nrow, 2ncol, widths = column_widths(ncol)),
+           size = (480 * ncol, 275 * nrow),
+           bottommargin = 9Plots.mm, topmargin = 4Plots.mm,
+           plot_title = "Buoyancy gradient ∂⟨b⟩/∂z / N²  — softplus sweep (dashed = initial pycnocline z = T)",
+           plot_titlefontsize = 14, plot_titlevspan = 0.045)
 savefig(fig, joinpath(outdir, "Figure4_softplus_sweep.png"))
-@info "Saved figures/Figure4_softplus_sweep.png ($nfound of $(length(T_values)*length(sqrtRi_vals)) cases found)"
+@info "Saved figures/Figure4_softplus_sweep.png ($(length(cases)) of $(length(T_values)*ncol) cases found)"

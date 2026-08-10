@@ -1,0 +1,6 @@
+# Simulation output: several GB of .jld2 per sweep, and fully regenerable from
+# the scripts + case tags. Keep it out of the repo so `git add -A` stays safe.
+outputs/
+
+# Animations are large and regenerable from outputs/ via Tidal3Danimation.jl.
+*.mp4

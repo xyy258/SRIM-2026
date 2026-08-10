@@ -170,7 +170,10 @@ elseif profile == 4     # softplus, T is a parameter, taking values {5,10,20,30}
 else
     error("Unknown profile $profile — set PROFILE to one of 0,1,2,3,4")
 end
-const n_periods = 4
+# Tidal periods simulated. Env-settable so one driver can ask for a short
+# unstratified spin-up and long production cases: the sweep drivers have always
+# passed N_PERIODS for the spin-up, and until now it was silently ignored.
+const n_periods = parse(Int, get(ENV, "N_PERIODS", "8"))
 
 # ---------------- Output naming ----------------
 # The tag carries everything that changes the physics, so the 20-run softplus
@@ -182,9 +185,12 @@ num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
 const shape_lbl = profile in (1, 4) ? "_T" * num_lbl(T) :
                   profile in (2, 3) ? "_L" * num_lbl(L_frac) * "Lz" : ""
 # RUN_TAG overrides the whole tag — used to park the one shared spin-up run in
-# output_spinup/ rather than under a case name it does not really belong to.
+# outputs/spinup*/ rather than under a case name it does not really belong to.
 const casetag  = get(ENV, "RUN_TAG", "P" * string(profile) * shape_lbl * "_" * case)
-const outdir   = "output_" * casetag
+# Every run's data lives under one outputs/ root, one subdirectory per case, so
+# the working directory holds scripts rather than a few dozen output_* folders.
+const outroot  = get(ENV, "OUT_ROOT", "outputs")
+const outdir   = joinpath(outroot, casetag)
 const filename = joinpath(outdir, "TidalBL3D_" * casetag)
 mkpath(outdir)
 
@@ -192,7 +198,7 @@ mkpath(outdir)
 # this grid serves every case in the sweep: the velocity field does not depend
 # on the buoyancy profile, so T and Ri may vary freely against it. Produce it with
 #     RUN_TAG=spinup julia --project=. Tidal3D.jl Ri0
-const spinup_default = joinpath("output_spinup", "TidalBL3D_spinup_fields.jld2")
+const spinup_default = joinpath(outroot, "spinup", "TidalBL3D_spinup_fields.jld2")
 
 @info @sprintf("Case %s: Ri = %g (√Ri = %g), N² = %.4g s⁻², δ_s = %.4f m, Re_s = %.0f",
                casetag, Ri, sqrt(Ri), N², δ, Re_s)

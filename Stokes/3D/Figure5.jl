@@ -11,9 +11,11 @@ using Oceananigans, JLD2, Plots, Printf
 # Markers follow the paper: ∘ = mixed-layer height h_m where the normalized
 # gradient first reaches 0.1; △ = where Ri_g = N²/S² first reaches 0.25.
 #
-# Reads only *_profiles.jld2 written by Tidal3D.jl.
+# Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
+# Stratification is labelled by N/ω = √Ri; directory tags keep the sqrtRi
+# spelling because they name data already on disk.
 #   julia --project=. Figure5.jl
-# Subsets:  T_VALUES="10 20" SQRT_RI="1 2 5" julia --project=. Figure5.jl
+# Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure5.jl
 
 const ω  = 1e-4
 const f  = ω
@@ -30,8 +32,16 @@ const Lz    = 50.0
 
 parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))
 const T_values    = parse_list("T_VALUES", "5 10 20 30")
-const sqrtRi_vals = parse_list("SQRT_RI",  "0 0.5 1 2 5 10")
-const n_periods_plot = [1, 2, 3, 4]      # Tidal3D.jl runs n_periods = 4
+# N/ω and √Ri are the same number; SQRT_RI is still honoured so the existing
+# sweep driver keeps working unchanged.
+const n_over_ω = parse_list("N_OVER_OMEGA", get(ENV, "SQRT_RI", "0 0.5 1 2 5 10"))
+const outroot  = get(ENV, "OUT_ROOT", "outputs")
+# Whole periods to draw, one curve each. Four at a time, which is what the colour
+# ramp below holds; a longer list reuses its last colour. Runs are n_periods = 8
+# now, so a driver plotting the END of a run passes N_PERIODS_PLOT="5 6 7 8" —
+# the default is kept at 1–4 so existing 4-period data plots unchanged. Periods
+# past the end of a run are dropped rather than erroring.
+const n_periods_plot = parse.(Int, split(get(ENV, "N_PERIODS_PLOT", "1 2 3 4")))
 
 num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
 tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
@@ -72,10 +82,10 @@ outdir = joinpath(@__DIR__, "figures")
 mkpath(outdir)
 
 nsaved = 0
-for T in T_values, s in sqrtRi_vals
+for T in T_values, s in n_over_ω
     tag   = tag_of(T, s)
     Ri    = s^2
-    fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
+    fname = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_profiles.jld2")
     isfile(fname) || (@warn "Missing $fname — skipping $tag"; continue)
 
     B_ts = FieldTimeSeries(fname, "B")
@@ -167,7 +177,7 @@ for T in T_values, s in sqrtRi_vals
 
     fig = plot(pa, pb; layout = (1, 2), size = (950, 620), leftmargin = 5Plots.mm,
                bottommargin = 5Plots.mm,
-               plot_title = @sprintf("T = %d m, √Ri = %g (Ri = %g) — thermal field (δ = u*/f = %.2f m)",
+               plot_title = @sprintf("T = %d m, N/ω = %g (Ri = %g) — thermal field (δ = u*/f = %.2f m)",
                                      Int(T), s, Ri, δ),
                plot_titlefontsize = 12)
     savefig(fig, joinpath(outdir, "Figure5_$tag.png"))
@@ -175,4 +185,4 @@ for T in T_values, s in sqrtRi_vals
     global nsaved += 1
 end
 
-@info "Figure 5: saved $nsaved of $(length(T_values)*length(sqrtRi_vals)) cases"
+@info "Figure 5: saved $nsaved of $(length(T_values)*length(n_over_ω)) cases"

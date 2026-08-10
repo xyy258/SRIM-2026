@@ -1,6 +1,7 @@
 #!/bin/bash
 # Softplus sweep driver: profile 4, T ∈ {5,10,20,30} m × √Ri ∈ {0,0.5,1,2,5,10}
 # = 24 runs, 4 tidal periods each, then figures and animations.
+# All run data lands under outputs/<tag>/; figures under figures/.
 #
 # PER-T GRIDS. Each T gets a vertical grid refined only at its own pycnocline
 # (T_SWEEP = that T), so Nz is 254–290 rather than the 458 a shared grid needs.
@@ -57,7 +58,7 @@ for T in $T_VALUES; do
   export T_SWEEP="$T"
 
   SPIN_TAG="spinup_T${TL}"
-  SPIN_FIELDS="output_${SPIN_TAG}/TidalBL3D_${SPIN_TAG}_fields.jld2"
+  SPIN_FIELDS="outputs/${SPIN_TAG}/TidalBL3D_${SPIN_TAG}_fields.jld2"
   if [ ! -f "$SPIN_FIELDS" ]; then
       log "[$(elapsed)] T=${T}: spin-up (Ri0 from rest, ${SPIN_PERIODS} periods)"
       # FIELDS3D=1 is mandatory — the 3D snapshot IS the spin-up's product.
@@ -70,7 +71,7 @@ for T in $T_VALUES; do
 
   for S in $SQRT_RI; do
     RI=$(ri_case "$S"); TAG="P4_T${TL}_${RI}"
-    if [ -f "output_${TAG}/TidalBL3D_${TAG}_profiles.jld2" ]; then
+    if [ -f "outputs/${TAG}/TidalBL3D_${TAG}_profiles.jld2" ]; then
         log "  ${TAG} already present — skipping"; continue
     fi
     log "[$(elapsed)] run ${TAG}"
@@ -82,8 +83,8 @@ for T in $T_VALUES; do
         || log "  ${TAG} FAILED (see logs/${TAG}.log)"
     # The resume checkpoint is ~0.15 GB and is dead weight once a run finishes.
     if [ "${KEEP_CHECKPOINTS:-0}" != "1" ] && \
-       [ -f "output_${TAG}/TidalBL3D_${TAG}_profiles.jld2" ]; then
-        rm -f "output_${TAG}/TidalBL3D_${TAG}_checkpoint_iteration"*.jld2
+       [ -f "outputs/${TAG}/TidalBL3D_${TAG}_profiles.jld2" ]; then
+        rm -f "outputs/${TAG}/TidalBL3D_${TAG}_checkpoint_iteration"*.jld2
     fi
   done
 done
@@ -94,7 +95,7 @@ if [ "$SKIP_ANIM" != "1" ]; then
   for T in $T_VALUES; do
     for S in $SQRT_RI; do
       RI=$(ri_case "$S"); TAG="P4_T$(t_lbl "$T")_${RI}"
-      [ -f "output_${TAG}/TidalBL3D_${TAG}.jld2" ] || continue
+      [ -f "outputs/${TAG}/TidalBL3D_${TAG}.jld2" ] || continue
       log "  animation ${TAG}"
       T_STRAT=$T timeout 3600 julia --project=. Tidal3Danimation.jl "$RI" \
           >> "logs/post_${TAG}.log" 2>&1 || log "  ${TAG} animation failed"
@@ -110,6 +111,6 @@ T_VALUES="$T_VALUES" SQRT_RI="$SQRT_RI" timeout 3600 \
     julia --project=. Figure5.jl        >> logs/post_figures.log 2>&1 || log "  Figure5 failed"
 
 log "[$(elapsed)] === DONE ==="
-NDONE=$(ls -d output_P4_*/ 2>/dev/null | wc -l)
+NDONE=$(ls -d outputs/P4_*/ 2>/dev/null | wc -l)
 log "completed cases: ${NDONE} / $(( $(echo $T_VALUES | wc -w) * $(echo $SQRT_RI | wc -w) ))"
-du -sh output_P4_* output_spinup_* 2>/dev/null | tail -3
+du -sh outputs 2>/dev/null | tail -1

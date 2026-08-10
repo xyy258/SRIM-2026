@@ -2,7 +2,7 @@ using Oceananigans, JLD2, Plots, Printf
 
 # Analysis of horizontally averaged profiles saved by Tidal3D.jl for one case:
 #   julia --project=. Tidal3Dprofiles.jl Ri500
-# Produces (all in output_<case>/, labeled with the case):
+# Produces (all in outputs/<case>/, labeled with the case):
 #   1. Mean velocity profiles vs the laminar Stokes solution
 #   2. Friction velocity u_τ over the tidal cycle
 #   3. Turbulence intensity + Reynolds stress profiles at peak flow

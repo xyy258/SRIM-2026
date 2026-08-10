@@ -37,7 +37,7 @@ using CUDA
 #     4 softplus (default; T sets the pycnocline height, sharp its width).
 #     The uniform-background version is preserved in "-Centered - Linear/".
 #
-# Each case writes everything into output_<casetag>/ with labeled filenames.
+# Each case writes everything into outputs/<casetag>/ with labeled filenames.
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
@@ -340,7 +340,7 @@ if get(ENV, "TIDAL_SMOKE", "0") == "1"
     @info "Smoke test: stopping after $(simulation.stop_iteration) iterations"
 end
 
-wizard = TimeStepWizard(cfl = 0.72, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.9, max_change = 1.2, max_Δt = max_Δt)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
 start_time = time_ns()
