@@ -44,11 +44,20 @@ end
 zbconcat = zb[findall(<(Lz),zb)]
 Nzconcat = length(zbconcat)
 
+bscale = (r==0 || isnothing(r)) ? 1 : N²
+
 @info "Plot of average buoyancy gradient heatmap with depth over time..."
-heatmap(t_save*f₀, zbconcat, gradient_data[1:Nzconcat, :]/N²,
+
+if (r==0 || isnothing(r)) == true
+    plot_title = @sprintf("(∂b/∂z) for N/f = %.1f",r)
+else
+    plot_title = @sprintf("(∂b/∂z)/N² for N/f = %.1f",r)
+end
+
+heatmap(t_save*f₀, zbconcat, gradient_data[1:Nzconcat, :]/bscale,
         xlabel = "tf",
         ylabel = "Height z",
-        title  = @sprintf("(∂b/∂z)/N² for N/f = %.1f",r),
+        title  = plot_title,
         size   = (1000,400),
         margin = 25px,
         color  = :thermal) # :thermal is great for highlighting intensifying gradients

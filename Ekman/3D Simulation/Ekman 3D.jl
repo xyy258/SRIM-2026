@@ -62,21 +62,22 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
-if profile == 0         # linear
-    @inline bᵢ(x,y,z) = N² * z
+scale = (r==0 || isnothing(r)) ? 1 : N²
+bᵢ = if profile == 0
     Profile = "linear"
-elseif profile == 1     # nonlinear
-    @inline bᵢ(x,y,z) = N²*z*(1-exp(-0.2*(z/T)^5))
+    (x, y, z) -> scale * z
+elseif profile == 1
     Profile = "nonlinear"
-elseif profile == 2     # exponential with fixed buoyancy difference
-    @inline bᵢ(x,y,z) = N²*Lz*(Lᴰ*(exp(z/Lᴰ)-1)-z)/(Lᴰ*(exp(Lz/Lᴰ)-1)-Lz)
+    (x, y, z) -> scale * z * (1 - exp(-0.2 * (z / T)^5))
+elseif profile == 2
     Profile = "exponential"
-elseif profile == 3     # linear with exponential decay
-    @inline bᵢ(x,y,z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
+    (x, y, z) -> scale * Lz * (Lᴰ * (exp(z / Lᴰ) - 1) - z) / (Lᴰ * (exp(Lz / Lᴰ) - 1) - Lz)
+elseif profile == 3
     Profile = "linear with exponential decay"
-elseif profile == 4     # softplus
-    @inline bᵢ(x,y,z) = N²/sharp*log(1+exp(sharp*(z-T)))
+    (x, y, z) -> scale * (z + Lᴰ * (exp(-z / Lᴰ) - 1))
+elseif profile == 4
     Profile = "softplus"
+    (x, y, z) -> (scale / sharp) * log(1 + exp(sharp * (z - T)))
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -110,12 +111,14 @@ b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                     #   target = LinearTarget{:z}(intercept = 0, gradient = N²))
                       target = b_target)
 
+buoyancy_model = !(r == 0 || isnothing(r)) ? BuoyancyTracer() : nothing
+
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
     advection   = Centered(order=4),
     timestepper = :RungeKutta3, # Timestepping scheme
     tracers     = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
-    buoyancy    = BuoyancyTracer(),
+    buoyancy    = buoyancy_model,
 
     # Closures for LES
     closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
@@ -138,7 +141,7 @@ set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
 @printf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
-Grid size                       %.1f × %.1f × %.1f
+Grid size                       %d × %d × %d
 Far stream velocity             U∞  = %.4f
 Square buoyancy frequency:      N²  = %.2e,
 Coriolis parameter:             f   = %.2e,
@@ -297,19 +300,18 @@ function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=10)
 end
 
 const n_points_fit = 10         # number of points near the bottom to fit
-const u_star_fit, z₀_fit, r2 = fit_log_layer(grid, u_avg_data, v_avg_data; κ=κ, n_points=n_points_fit)
+u_star_fit, z₀_fit, r2 = fit_log_layer(grid, u_avg_data, v_avg_data; κ=κ, n_points=n_points_fit)
 
 const u_star  = u_star_fit      # friction velocity
-const z₀      = z₀_fit          # m (roughness length)
-const δ       = u_star/f₀       # boundary layer lengthscale
-const Re_star = u_star*δ/ν₀     # frictional Reynolds
-const Ri_star = N²/f₀^2         # frictional Richardson
+δ       = u_star/f₀             # boundary layer lengthscale
+Re_star = u_star*δ/ν₀           # frictional Reynolds
+Ri_star = N²/f₀^2               # frictional Richardson
 
 @info "3D simulation parameters"
 
 @printf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
-Grid size                       %.1f × %.1f × %.1f
+Grid size                       %d × %d × %d
 Far stream velocity             U∞  = %.4f
 Square buoyancy frequency:      N²  = %.2e,
 Coriolis parameter:             f   = %.2e,
@@ -325,10 +327,12 @@ Frictional Reynolds             Re* = %.2e
 Frictional Richardson           Ri* = %.1f\n",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
 
-open(@sprintf("Ekman/3D Simulation/Parameters/r=%.1f parameters.txt",r), "w") do file
+param_dir = "Ekman/3D Simulation/Parameters"
+mkpath(param_dir)
+open(param_dir*@sprintf("r=%.1f parameters.txt",r), "w") do file
     write(file, @sprintf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
-Grid size                       %.1f × %.1f × %.1f
+Grid size                       %d × %d × %d
 Far stream velocity             U∞  = %.4f
 Square buoyancy frequency:      N²  = %.2e,
 Coriolis parameter:             f   = %.2e,
@@ -345,7 +349,5 @@ Frictional Richardson           Ri* = %.1f",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
 end
 
-if (r==0 || isnothing(r)) == false
-    include("Ekman_anim.jl")
-    include("Ekman_plot.jl")
-end
+include("Ekman_anim.jl")
+include("Ekman_plot.jl")
