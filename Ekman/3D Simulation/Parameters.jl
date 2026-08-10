@@ -16,7 +16,7 @@ const Nx, Ny, Nz = 100,100,400
 
 # Duration and timestep
 const max_Δt   = 7.5            # maximum allowable timestep
-const duration = 1e4            # non-dimensional duration of the simulation
+const duration = 25e4           # non-dimensional duration of the simulation
 
 # Sponge layer thickness
 const S = 10
