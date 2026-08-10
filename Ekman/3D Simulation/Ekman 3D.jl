@@ -134,6 +134,17 @@ model = NonhydrostaticModel(grid;
 # Send the initial conditions to the model to initialize the variables
 set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
 
+@info "3D simulation parameters"
+
+@printf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %.1f × %.1f × %.1f
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f\n",
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r)
+
 # Now, we create a 'simulation' to run the model for a specified length of time
 simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 
