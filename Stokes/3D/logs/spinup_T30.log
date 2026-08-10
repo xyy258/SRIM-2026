@@ -1326,3 +1326,1556 @@ i: 130900, t:  251197.5 s, ωt:  25.12 (4.00 periods), wall: 55.907 minutes, Δt
 [ Info:     ... initial time step complete (2.332 seconds).
 [ Info: Simulation is stopping after running for 55.651 minutes.
 [ Info: Simulation time 2.909 days equals or exceeds stop time 2.909 days.
+Precompiling packages...
+    815.8 ms  ✓ Preferences
+    592.6 ms  ✓ JLLWrappers
+   1370.7 ms  ✓ CUDA_Driver_jll
+  3 dependencies successfully precompiled in 3 seconds. 4 already precompiled.
+Precompiling packages...
+   1675.5 ms  ✓ CUDA_Runtime_jll
+  1 dependency successfully precompiled in 2 seconds. 30 already precompiled.
+  Activating project at `/cephfs/store/damtp/tll46/SRIM-2026/Stokes/3D`
+  Installing known registries into `~/.julia`
+       Added `General` registry to ~/.julia/registries
+   Installed libdecor_jll ───────────────── v0.2.2+0
+   Installed JpegTurbo_jll ──────────────── v3.2.0+0
+   Installed libfdk_aac_jll ─────────────── v2.0.4+0
+   Installed Libmount_jll ───────────────── v2.42.0+0
+   Installed GR_jll ─────────────────────── v0.73.26+0
+   Installed LRUCache ───────────────────── v1.6.2
+   Installed x265_jll ───────────────────── v4.1.0+0
+   Installed OffsetArrays ───────────────── v1.17.0
+   Installed cuFFT ──────────────────────── v6.2.1
+   Installed CUPTI ──────────────────────── v6.2.1
+   Installed aws_c_auth_jll ─────────────── v0.9.6+0
+   Installed LERC_jll ───────────────────── v4.1.0+0
+   Installed LoggingExtras ──────────────── v1.2.0
+   Installed FFTW ───────────────────────── v1.10.0
+   Installed Preferences ────────────────── v1.5.2
+   Installed TaylorSeries ───────────────── v0.20.10
+   Installed Opus_jll ───────────────────── v1.6.1+0
+   Installed LLVMLoopInfo ───────────────── v1.0.0
+   Installed Xorg_xkbcomp_jll ───────────── v1.4.7+0
+   Installed Measures ───────────────────── v0.3.3
+   Installed GR ─────────────────────────── v0.73.26
+   Installed RelocatableFolders ─────────── v1.0.1
+   Installed Contour ────────────────────── v0.6.3
+   Installed StaticArrays ───────────────── v1.9.18
+   Installed CUDATools ──────────────────── v6.2.1
+   Installed Xorg_xcb_util_wm_jll ───────── v0.4.2+0
+   Installed ConcurrentUtilities ────────── v2.5.1
+   Installed Grisu ──────────────────────── v1.0.2
+   Installed Tracy ──────────────────────── v0.1.6
+   Installed CubedSphere ────────────────── v0.3.4
+   Installed Xorg_xcb_util_image_jll ────── v0.4.1+0
+   Installed NVTX_jll ───────────────────── v3.2.2+0
+   Installed RecipesPipeline ────────────── v0.6.12
+   Installed cuSPARSE ───────────────────── v6.2.1
+   Installed FileIO ─────────────────────── v1.20.0
+   Installed ScopedValues ───────────────── v1.6.2
+   Installed PlotUtils ──────────────────── v1.4.4
+   Installed CEnum ──────────────────────── v0.5.0
+   Installed ColorSchemes ───────────────── v3.31.0
+   Installed DelimitedFiles ─────────────── v1.9.1
+   Installed Xorg_libSM_jll ─────────────── v1.2.6+0
+   Installed OpenSSL ────────────────────── v1.6.1
+   Installed BFloat16s ──────────────────── v0.6.1
+   Installed GPUArrays ──────────────────── v11.5.8
+   Installed HTTP ───────────────────────── v1.11.0
+   Installed Xorg_xcb_util_jll ──────────── v0.4.1+0
+   Installed libva_jll ──────────────────── v2.23.0+0
+   Installed Cairo_jll ──────────────────── v1.18.7+0
+   Installed Fontconfig_jll ─────────────── v2.17.1+0
+   Installed Statistics ─────────────────── v1.11.1
+   Installed RandomNumbers ──────────────── v1.6.0
+   Installed LibTracyClient_jll ─────────── v0.13.1+0
+   Installed IntelOpenMP_jll ────────────── v2025.2.0+0
+   Installed Xorg_libxkbfile_jll ────────── v1.2.0+0
+   Installed CUDA_Runtime_jll ───────────── v0.23.0+1
+   Installed cuRAND ─────────────────────── v6.2.1
+   Installed Xorg_libXinerama_jll ───────── v1.1.7+0
+   Installed CFTime ─────────────────────── v0.2.10
+   Installed aws_c_sdkutils_jll ─────────── v0.2.4+1
+   Installed EpollShim_jll ──────────────── v0.0.20230411+1
+   Installed Distances ──────────────────── v0.10.12
+   Installed Xorg_libXau_jll ────────────── v1.0.13+0
+   Installed aws_c_cal_jll ──────────────── v0.9.13+0
+   Installed Missings ───────────────────── v1.2.0
+   Installed MPIABI_jll ─────────────────── v0.1.5+0
+   Installed FFMPEG ─────────────────────── v0.4.5
+   Installed RealDot ────────────────────── v0.1.0
+   Installed IrrationalConstants ────────── v0.2.6
+   Installed MuladdMacro ────────────────── v0.2.6
+   Installed LLVM ───────────────────────── v9.10.1
+   Installed JLD2 ───────────────────────── v0.6.5
+   Installed OceanBioME ─────────────────── v0.18.0
+   Installed demumble_jll ───────────────── v1.3.0+0
+   Installed Xorg_libpciaccess_jll ──────── v0.19.0+0
+   Installed Pango_jll ──────────────────── v1.57.1+0
+   Installed Showoff ────────────────────── v1.0.3
+   Installed PtrArrays ──────────────────── v1.4.0
+   Installed CUDA_Driver_jll ────────────── v13.3.0+1
+   Installed cuSOLVER ───────────────────── v6.2.1
+   Installed JSON ───────────────────────── v1.6.1
+   Installed Hwloc_jll ──────────────────── v2.14.0+0
+   Installed xkbcommon_jll ──────────────── v1.13.0+0
+   Installed Bzip2_jll ──────────────────── v1.0.9+0
+   Installed Xorg_xcb_util_keysyms_jll ──── v0.4.1+0
+   Installed PlotThemes ─────────────────── v3.3.0
+   Installed HarfBuzz_jll ───────────────── v8.5.1+0
+   Installed SimpleBufferStream ─────────── v1.2.0
+   Installed XZ_jll ─────────────────────── v5.8.3+0
+   Installed CUDACore ───────────────────── v6.2.1
+   Installed MicrosoftMPI_jll ───────────── v10.1.4+3
+   Installed PkgVersion ─────────────────── v0.3.3
+   Installed NaNMath ────────────────────── v1.1.4
+   Installed CUDA_Runtime_Discovery ─────── v2.1.0
+   Installed ChunkCodecLibZstd ──────────── v1.0.0
+   Installed CUDA_Compiler_jll ──────────── v0.4.4+1
+   Installed StaticArraysCore ───────────── v1.4.4
+   Installed FriBidi_jll ────────────────── v1.0.17+0
+   Installed fzf_jll ────────────────────── v0.61.1+0
+   Installed TranscodingStreams ─────────── v0.11.3
+   Installed UnicodeFun ─────────────────── v0.4.1
+   Installed Lz4_jll ────────────────────── v1.10.1+0
+   Installed Random123 ──────────────────── v1.7.1
+   Installed MPIPreferences ─────────────── v0.1.12
+   Installed MbedTLS ────────────────────── v1.1.10
+   Installed x264_jll ───────────────────── v10164.0.1+0
+   Installed GLFW_jll ───────────────────── v3.4.1+1
+   Installed Colors ─────────────────────── v0.13.1
+   Installed GibbsSeaWater_jll ──────────── v3.5.2+0
+   Installed FreeType2_jll ──────────────── v2.14.3+1
+   Installed JLFzf ──────────────────────── v0.1.11
+   Installed DataStructures ─────────────── v0.19.6
+   Installed ExprTools ──────────────────── v0.1.10
+   Installed NetCDF_jll ─────────────────── v401.1000.0+0
+   Installed StatsAPI ───────────────────── v1.8.0
+   Installed CodecZlib ──────────────────── v0.7.8
+   Installed Qt6Svg_jll ─────────────────── v6.10.2+0
+   Installed HDF5_jll ───────────────────── v2.1.2+0
+   Installed Glob ───────────────────────── v1.5.0
+   Installed StatsBase ──────────────────── v0.34.12
+   Installed Xorg_libxcb_jll ────────────── v1.17.1+0
+   Installed s2n_tls_jll ────────────────── v1.7.3+0
+   Installed libpng_jll ─────────────────── v1.6.58+0
+   Installed libaom_jll ─────────────────── v3.13.3+0
+   Installed ExceptionUnwrapping ────────── v0.1.11
+   Installed mtdev_jll ──────────────────── v1.1.7+0
+   Installed Dbus_jll ───────────────────── v1.16.2+0
+   Installed Scratch ────────────────────── v1.3.0
+   Installed MPICH_jll ──────────────────── v5.0.1+0
+   Installed ColorTypes ─────────────────── v0.12.1
+   Installed Plots ──────────────────────── v1.41.6
+   Installed oneTBB_jll ─────────────────── v2022.3.0+0
+   Installed libzip_jll ─────────────────── v1.11.3+0
+   Installed eudev_jll ──────────────────── v3.2.14+0
+   Installed NVML ───────────────────────── v6.2.1
+   Installed Xorg_libXext_jll ───────────── v1.3.8+0
+   Installed aws_c_common_jll ───────────── v0.12.6+0
+   Installed Zstd_jll ───────────────────── v1.5.7+1
+   Installed TensorCore ─────────────────── v0.1.1
+   Installed TableTraits ────────────────── v1.0.1
+   Installed Xorg_xcb_util_cursor_jll ───── v0.1.6+0
+   Installed Expat_jll ──────────────────── v2.8.2+0
+   Installed ChunkCodecLibZlib ──────────── v1.1.0
+   Installed aws_c_http_jll ─────────────── v0.10.13+0
+   Installed HashArrayMappedTries ───────── v0.2.0
+   Installed Parsers ────────────────────── v2.8.6
+   Installed PrettyTables ───────────────── v3.4.2
+   Installed MKL_jll ────────────────────── v2025.2.0+0
+   Installed GibbsSeaWater ──────────────── v0.1.4
+   Installed OpenMPI_jll ────────────────── v5.0.11+0
+   Installed Format ─────────────────────── v1.3.7
+   Installed Libtiff_jll ────────────────── v4.7.3+0
+   Installed AbstractFFTs ───────────────── v1.5.0
+   Installed JLLWrappers ────────────────── v1.8.0
+   Installed aws_c_io_jll ───────────────── v0.26.3+0
+   Installed DataValueInterfaces ────────── v1.0.0
+   Installed ColorVectorSpace ───────────── v0.11.0
+   Installed ConstructionBase ───────────── v1.6.0
+   Installed OrderedCollections ─────────── v1.8.2
+   Installed ChunkCodecCore ─────────────── v1.0.1
+   Installed Libffi_jll ─────────────────── v3.4.7+0
+   Installed libevdev_jll ───────────────── v1.13.4+0
+   Installed LLVMExtra_jll ──────────────── v0.0.43+1
+   Installed NVTX ───────────────────────── v1.0.3
+   Installed Xorg_libXrender_jll ────────── v0.9.12+0
+   Installed aws_checksums_jll ──────────── v0.2.10+0
+   Installed ReactantCore ───────────────── v0.1.21
+   Installed NCDatasets ─────────────────── v0.14.15
+   Installed libinput_jll ───────────────── v1.28.1+0
+   Installed Ogg_jll ────────────────────── v1.3.6+0
+   Installed Xorg_libXi_jll ─────────────── v1.8.3+0
+   Installed Vulkan_Loader_jll ──────────── v1.3.243+0
+   Installed SeawaterPolynomials ────────── v0.3.10
+   Installed Qt6ShaderTools_jll ─────────── v6.10.2+1
+   Installed Qt6Declarative_jll ─────────── v6.10.2+2
+   Installed Reexport ───────────────────── v1.2.2
+   Installed CommonDataModel ────────────── v0.4.4
+   Installed LogExpFunctions ────────────── v1.0.1
+   Installed Quaternions ────────────────── v0.7.7
+   Installed mpif_jll ───────────────────── v0.1.7+0
+   Installed Ghostscript_jll ────────────── v9.55.1+0
+   Installed AliasTables ────────────────── v1.1.3
+   Installed Rotations ──────────────────── v1.7.1
+   Installed KernelAbstractions ─────────── v0.9.42
+   Installed FFTW_jll ───────────────────── v3.3.12+0
+   Installed MbedTLS_jll ────────────────── v2.28.1010+0
+   Installed MacroTools ─────────────────── v0.5.16
+   Installed UnsafeAtomics ──────────────── v0.3.1
+   Installed Xorg_libXcursor_jll ────────── v1.2.4+0
+   Installed NVPTX_LLVM_Backend_jll ─────── v22.1.7+1
+   Installed Krylov ─────────────────────── v0.10.8
+   Installed Libuuid_jll ────────────────── v2.42.0+0
+   Installed DocStringExtensions ────────── v0.9.5
+   Installed GPUArraysCore ──────────────── v0.2.0
+   Installed Blosc_jll ──────────────────── v1.21.7+0
+   Installed Xorg_xcb_util_renderutil_jll ─ v0.3.10+0
+   Installed Atomix ─────────────────────── v1.1.3
+   Installed libaec_jll ─────────────────── v1.1.7+0
+   Installed Xorg_libICE_jll ────────────── v1.1.2+0
+   Installed Adapt ──────────────────────── v4.7.0
+   Installed Crayons ────────────────────── v4.2.0
+   Installed libass_jll ─────────────────── v0.17.4+0
+   Installed Graphite2_jll ──────────────── v1.3.16+0
+   Installed StableRNGs ─────────────────── v1.0.4
+   Installed dlfcn_win32_jll ────────────── v1.4.2+0
+   Installed Pixman_jll ─────────────────── v0.46.4+0
+   Installed XML2_jll ───────────────────── v2.13.9+0
+   Installed Wayland_jll ────────────────── v1.24.0+0
+   Installed aws_c_compression_jll ──────── v0.3.2+0
+   Installed Xorg_xtrans_jll ────────────── v1.6.0+0
+   Installed Latexify ───────────────────── v0.16.11
+   Installed MPI ────────────────────────── v0.20.26
+   Installed GPUCompiler ────────────────── v1.23.0
+   Installed FFMPEG_jll ─────────────────── v8.1.2+0
+   Installed BitFlags ───────────────────── v0.1.10
+   Installed Tables ─────────────────────── v1.13.0
+   Installed libdrm_jll ─────────────────── v2.4.125+1
+   Installed Xorg_xkeyboard_config_jll ──── v2.47.0+2
+   Installed DataAPI ────────────────────── v1.16.0
+   Installed LLVMOpenMP_jll ─────────────── v22.1.7+0
+   Installed RecipesBase ────────────────── v1.3.4
+   Installed FixedPointNumbers ──────────── v0.8.6
+   Installed Xorg_libXrandr_jll ─────────── v1.5.6+0
+   Installed LAME_jll ───────────────────── v3.100.3+0
+   Installed Xorg_libXfixes_jll ─────────── v6.0.2+0
+   Installed Oceananigans ───────────────── v0.110.11
+   Installed Qt6Wayland_jll ─────────────── v6.10.2+1
+   Installed PrecompileTools ────────────── v1.3.4
+   Installed Libiconv_jll ───────────────── v1.18.0+0
+   Installed IteratorInterfaceExtensions ── v1.0.0
+   Installed GettextRuntime_jll ─────────── v0.22.4+0
+   Installed URIs ───────────────────────── v1.6.1
+   Installed Qt6Base_jll ────────────────── v6.10.2+2
+   Installed LaTeXStrings ───────────────── v1.4.0
+   Installed StructArrays ───────────────── v0.7.3
+   Installed GPUToolbox ─────────────────── v3.0.0
+   Installed libvorbis_jll ──────────────── v1.3.8+0
+   Installed Glib_jll ───────────────────── v2.86.3+0
+   Installed Libglvnd_jll ───────────────── v1.7.1+1
+   Installed JuliaNVTXCallbacks_jll ─────── v0.2.1+0
+   Installed MPItrampoline_jll ──────────── v5.5.6+0
+   Installed Requires ───────────────────── v1.3.1
+   Installed Xorg_libXdmcp_jll ──────────── v1.1.6+0
+   Installed Xorg_libX11_jll ────────────── v1.8.13+0
+   Installed Unzip ──────────────────────── v0.2.0
+   Installed cuBLAS ─────────────────────── v6.2.1
+   Installed SortingAlgorithms ──────────── v1.2.3
+   Installed StringManipulation ─────────── v0.4.5
+   Installed ExpressionExplorer ─────────── v1.1.4
+   Installed aws_c_s3_jll ───────────────── v0.11.5+0
+   Installed StructUtils ────────────────── v2.8.2
+   Installed DiskArrays ─────────────────── v0.4.22
+   Installed CUDA ───────────────────────── v6.2.1
+  Installing 108 artifacts
+   Installed artifact aws_c_sdkutils           54.9 KiB
+   Installed artifact NVTX                     13.7 KiB
+   Installed artifact aws_c_io                 181.7 KiB
+   Installed artifact libva                    235.7 KiB
+   Installed artifact LAME                     292.5 KiB
+   Installed artifact xkbcommon                298.7 KiB
+   Installed artifact FriBidi                  78.9 KiB
+   Installed artifact Xorg_libXcursor          227.1 KiB
+   Installed artifact demumble                 322.0 KiB
+   Installed artifact mtdev                    79.6 KiB
+   Installed artifact Qt6Svg                   386.4 KiB
+   Installed artifact Xorg_libpciaccess        26.2 KiB
+   Installed artifact Hwloc                    3.5 MiB
+   Installed artifact Xorg_libXinerama         25.5 KiB
+   Installed artifact Pango                    2.1 MiB
+   Installed artifact libfdk_aac               2.8 MiB
+   Installed artifact Fontconfig               984.8 KiB
+   Installed artifact XML2                     2.5 MiB
+   Installed artifact Vulkan_Loader            177.3 KiB
+   Installed artifact aws_c_auth               130.3 KiB
+   Installed artifact Libglvnd                 833.5 KiB
+   Installed artifact JuliaNVTXCallbacks       8.6 KiB
+   Installed artifact Cairo                    2.2 MiB
+   Installed artifact GibbsSeaWater            1.7 MiB
+   Installed artifact FFTW                     2.2 MiB
+   Installed artifact Xorg_libXext             286.6 KiB
+   Installed artifact Zstd                     646.0 KiB
+   Installed artifact Ghostscript              31.4 MiB
+   Installed artifact Glib                     7.7 MiB
+   Installed artifact Xorg_libXfixes           59.0 KiB
+   Installed artifact aws_c_http               387.4 KiB
+   Installed artifact JpegTurbo                1.9 MiB
+   Installed artifact libinput                 1.0 MiB
+   Installed artifact Lz4                      239.7 KiB
+   Installed artifact GR                       19.3 MiB
+   Installed artifact GLFW                     187.9 KiB
+   Installed artifact GettextRuntime           543.0 KiB
+   Installed artifact LLVMExtra                3.2 MiB
+   Installed artifact Qt6Wayland               1.4 MiB
+   Installed artifact Xorg_libXdmcp            67.7 KiB
+   Installed artifact libpng                   329.4 KiB
+   Installed artifact fzf                      3.3 MiB
+   Installed artifact libaom                   6.4 MiB
+   Installed artifact libass                   427.8 KiB
+   Installed artifact Dbus                     489.8 KiB
+   Installed artifact Xorg_xcb_util_keysyms    17.8 KiB
+   Installed artifact Xorg_libSM               164.1 KiB
+   Installed artifact libevdev                 117.1 KiB
+   Installed artifact Xorg_libXrender          435.9 KiB
+   Installed artifact XZ                       1.6 MiB
+   Installed artifact Xorg_libX11              4.8 MiB
+   Installed artifact Xorg_libXrandr           97.3 KiB
+   Installed artifact aws_c_compression        13.4 KiB
+   Installed artifact x265                     1.4 MiB
+   Installed artifact Graphite2                120.3 KiB
+   Installed artifact x264                     2.1 MiB
+   Installed artifact Xorg_libXau              36.6 KiB
+   Installed artifact Libiconv                 1.9 MiB
+   Installed artifact FFMPEG                   11.9 MiB
+   Installed artifact Xorg_libxcb              2.1 MiB
+   Installed artifact HarfBuzz                 1.7 MiB
+   Installed artifact FreeType2                1.5 MiB
+   Installed artifact eudev                    3.9 MiB
+   Installed artifact Xorg_xkbcomp             274.8 KiB
+   Installed artifact Pixman                   390.8 KiB
+   Installed artifact s2n_tls                  1.8 MiB
+   Installed artifact Libffi                   44.2 KiB
+   Installed artifact Xorg_libXi               1.6 MiB
+   Installed artifact Libtiff                  2.4 MiB
+   Installed artifact Xorg_xkeyboard_config    1.1 MiB
+   Installed artifact Xorg_xcb_util_renderutil 32.1 KiB
+   Installed artifact Xorg_xcb_util_wm         147.9 KiB
+   Installed artifact Qt6Base                  23.1 MiB
+   Installed artifact Xorg_xcb_util            39.5 KiB
+   Installed artifact NetCDF                   968.6 KiB
+   Installed artifact Blosc                    44.2 KiB
+   Installed artifact LERC                     267.4 KiB
+   Installed artifact Expat                    297.5 KiB
+   Installed artifact aws_checksums            87.0 KiB
+   Installed artifact Qt6ShaderTools           2.1 MiB
+   Installed artifact libaec                   50.4 KiB
+   Installed artifact Xorg_xtrans              48.2 KiB
+   Installed artifact Libuuid                  3.9 MiB
+   Installed artifact aws_c_cal                1.2 MiB
+   Installed artifact HDF5                     6.1 MiB
+   Installed artifact aws_c_s3                 143.0 KiB
+   Installed artifact LLVMOpenMP               680.4 KiB
+   Installed artifact libvorbis                271.0 KiB
+   Installed artifact libdecor                 44.1 KiB
+   Installed artifact Wayland                  390.6 KiB
+   Installed artifact libzip                   177.6 KiB
+   Installed artifact LibTracyClient           502.2 KiB
+   Installed artifact Xorg_libxkbfile          91.1 KiB
+   Installed artifact aws_c_common             285.2 KiB
+   Installed artifact Opus                     960.9 KiB
+   Installed artifact Libmount                 6.9 MiB
+   Installed artifact Ogg                      250.3 KiB
+   Installed artifact Bzip2                    503.5 KiB
+   Installed artifact Xorg_xcb_util_cursor     27.6 KiB
+   Installed artifact Xorg_libICE              384.9 KiB
+   Installed artifact MbedTLS                  2.2 MiB
+   Installed artifact Xorg_xcb_util_image      54.3 KiB
+   Installed artifact libdrm                   368.0 KiB
+   Installed artifact NVPTX_LLVM_Backend       24.5 MiB
+   Installed artifact MPICH                    8.8 MiB
+   Installed artifact CUDA_Compiler            134.8 MiB
+   Installed artifact Qt6Declarative           23.8 MiB
+   Installed artifact CUDA_Driver              145.9 MiB
+    Building GibbsSeaWater → `~/.julia/scratchspaces/44cfe95a-1eb2-52ea-b672-e2afdf69b78f/f4318e7a751703a5db8b57c112e5cd5c218d296b/build.log`
+Precompiling packages...
+   1584.7 ms  ✓ LaTeXStrings
+   1679.6 ms  ✓ TensorCore
+   1715.2 ms  ✓ StatsAPI
+   1793.5 ms  ✓ Measures
+   2061.6 ms  ✓ AbstractFFTs
+   2203.4 ms  ✓ IteratorInterfaceExtensions
+   2286.4 ms  ✓ LLVMLoopInfo
+   2523.2 ms  ✓ ExprTools
+   2563.8 ms  ✓ Contour
+   2798.6 ms  ✓ Glob
+   2811.7 ms  ✓ ExpressionExplorer
+   3074.4 ms  ✓ ChunkCodecCore
+   2400.5 ms  ✓ SeawaterPolynomials
+   2312.7 ms  ✓ Statistics
+   1812.7 ms  ✓ TableTraits
+   1759.5 ms  ✓ DataValueInterfaces
+   1971.0 ms  ✓ RealDot
+   4684.8 ms  ✓ OffsetArrays
+   2294.4 ms  ✓ StableRNGs
+   1891.3 ms  ✓ Reexport
+   3954.4 ms  ✓ RandomNumbers
+   1844.3 ms  ✓ SimpleBufferStream
+   6023.5 ms  ✓ Format
+   6300.8 ms  ✓ CEnum
+   2588.9 ms  ✓ DocStringExtensions
+   1960.3 ms  ✓ PtrArrays
+   1669.6 ms  ✓ HashArrayMappedTries
+   2660.7 ms  ✓ TranscodingStreams
+   2475.2 ms  ✓ DelimitedFiles
+   2383.6 ms  ✓ LRUCache
+   2050.9 ms  ✓ DataAPI
+   2191.6 ms  ✓ Adapt
+   6033.4 ms  ✓ Unzip
+   6873.4 ms  ✓ OrderedCollections
+   9094.5 ms  ✓ UnsafeAtomics
+   1535.5 ms  ✓ BitFlags
+   7399.8 ms  ✓ Grisu
+   2284.2 ms  ✓ StaticArraysCore
+   6353.1 ms  ✓ CUDA_Runtime_Discovery
+   2277.0 ms  ✓ Scratch
+   2215.8 ms  ✓ LoggingExtras
+   6122.4 ms  ✓ NaNMath
+   3730.7 ms  ✓ ConcurrentUtilities
+   6216.9 ms  ✓ ConstructionBase
+   9184.7 ms  ✓ IrrationalConstants
+   3135.8 ms  ✓ Preferences
+  12253.5 ms  ✓ MacroTools
+   4968.8 ms  ✓ CFTime
+   2730.7 ms  ✓ ExceptionUnwrapping
+   2532.2 ms  ✓ ChunkCodecLibZlib
+   8623.2 ms  ✓ Crayons
+   3293.6 ms  ✓ Requires
+   2461.6 ms  ✓ URIs
+   2518.3 ms  ✓ Statistics → SparseArraysExt
+   2501.0 ms  ✓ ReactantCore
+  12799.3 ms  ✓ FixedPointNumbers
+   5633.5 ms  ✓ UnicodeFun
+   8257.2 ms  ✓ BFloat16s
+   1977.1 ms  ✓ AliasTables
+   1896.3 ms  ✓ ScopedValues
+   1932.9 ms  ✓ CodecZlib
+   8779.4 ms  ✓ StructUtils
+   6419.4 ms  ✓ PkgVersion
+   5901.3 ms  ✓ AbstractFFTs → AbstractFFTsTestExt
+   3895.4 ms  ✓ Random123
+   1769.8 ms  ✓ LRUCache → SerializationExt
+   2455.8 ms  ✓ Adapt → AdaptSparseArraysExt
+   2347.6 ms  ✓ GPUArraysCore
+   1744.1 ms  ✓ Showoff
+   2107.0 ms  ✓ Atomix
+   1823.4 ms  ✓ ConstructionBase → ConstructionBaseLinearAlgebraExt
+   2056.8 ms  ✓ RelocatableFolders
+   2263.8 ms  ✓ JLLWrappers
+   2523.3 ms  ✓ LogExpFunctions
+   1882.6 ms  ✓ PrecompileTools
+   2186.0 ms  ✓ Quaternions
+   8387.5 ms  ✓ Distances
+   2586.7 ms  ✓ MPIPreferences
+   1911.3 ms  ✓ OffsetArrays → OffsetArraysAdaptExt
+   1749.8 ms  ✓ StructUtils → StructUtilsStaticArraysCoreExt
+   5804.9 ms  ✓ Missings
+   6297.1 ms  ✓ DataStructures
+   2397.8 ms  ✓ Graphite2_jll
+   2050.3 ms  ✓ dlfcn_win32_jll
+   2426.5 ms  ✓ LLVMOpenMP_jll
+   2577.3 ms  ✓ EpollShim_jll
+   2163.8 ms  ✓ Bzip2_jll
+   4220.4 ms  ✓ DiskArrays
+   3199.7 ms  ✓ Distances → DistancesSparseArraysExt
+   7705.1 ms  ✓ Tables
+   3330.3 ms  ✓ Libmount_jll
+   8309.2 ms  ✓ OpenSSL
+   3041.3 ms  ✓ Lz4_jll
+  17057.6 ms  ✓ TaylorSeries
+   2977.5 ms  ✓ libaec_jll
+   9699.5 ms  ✓ ColorTypes
+   3178.3 ms  ✓ Xorg_libpciaccess_jll
+   2564.7 ms  ✓ s2n_tls_jll
+   2863.1 ms  ✓ NVTX_jll
+   2723.2 ms  ✓ LibTracyClient_jll
+   2713.0 ms  ✓ Xorg_libICE_jll
+   2512.6 ms  ✓ libfdk_aac_jll
+   2695.6 ms  ✓ libpng_jll
+   3032.9 ms  ✓ Xorg_libXau_jll
+   2434.0 ms  ✓ demumble_jll
+   8283.7 ms  ✓ CUDA_Driver_jll
+   2513.7 ms  ✓ LAME_jll
+   2610.5 ms  ✓ fzf_jll
+   2664.5 ms  ✓ LERC_jll
+   2699.2 ms  ✓ Ogg_jll
+   3054.2 ms  ✓ XZ_jll
+   2722.3 ms  ✓ mtdev_jll
+   2405.0 ms  ✓ x265_jll
+   3343.4 ms  ✓ JpegTurbo_jll
+   2777.1 ms  ✓ Xorg_libSM_jll
+   4923.6 ms  ✓ IntelOpenMP_jll
+   3053.8 ms  ✓ x264_jll
+   2500.8 ms  ✓ MbedTLS_jll
+   2755.9 ms  ✓ libaom_jll
+   4187.6 ms  ✓ oneTBB_jll
+   2325.2 ms  ✓ MicrosoftMPI_jll
+   3306.5 ms  ✓ NVPTX_LLVM_Backend_jll
+   3582.5 ms  ✓ Zstd_jll
+   2770.2 ms  ✓ Xorg_xtrans_jll
+   3191.1 ms  ✓ GibbsSeaWater_jll
+   3160.5 ms  ✓ Opus_jll
+   3221.7 ms  ✓ Expat_jll
+  13826.9 ms  ✓ FileIO
+   3292.7 ms  ✓ JuliaNVTXCallbacks_jll
+   2224.4 ms  ✓ FFTW_jll
+   3224.7 ms  ✓ libevdev_jll
+   2760.7 ms  ✓ Libffi_jll
+   3387.3 ms  ✓ Libiconv_jll
+   3031.0 ms  ✓ eudev_jll
+   6190.3 ms  ✓ LLVMExtra_jll
+   2964.7 ms  ✓ Libuuid_jll
+   2814.5 ms  ✓ FriBidi_jll
+   2020.9 ms  ✓ SortingAlgorithms
+  27407.1 ms  ✓ Krylov
+   3059.3 ms  ✓ aws_c_common_jll
+   3560.1 ms  ✓ MuladdMacro
+   2495.9 ms  ✓ Pixman_jll
+   1847.3 ms  ✓ StructUtils → StructUtilsTablesExt
+   4135.6 ms  ✓ GibbsSeaWater
+   3168.3 ms  ✓ FreeType2_jll
+   2123.2 ms  ✓ ColorTypes → StyledStringsExt
+   4741.2 ms  ✓ MPItrampoline_jll
+   5916.6 ms  ✓ StringManipulation
+   6144.6 ms  ✓ RecipesBase
+   3143.0 ms  ✓ libdrm_jll
+   3249.2 ms  ✓ Tracy
+   4331.9 ms  ✓ CubedSphere
+   3159.3 ms  ✓ Xorg_libXdmcp_jll
+   5775.4 ms  ✓ CommonDataModel
+   3118.4 ms  ✓ JLFzf
+   3096.4 ms  ✓ libvorbis_jll
+   2281.3 ms  ✓ ChunkCodecLibZstd
+   7648.4 ms  ✓ StructArrays
+   2852.0 ms  ✓ Blosc_jll
+   4497.1 ms  ✓ MbedTLS
+   2907.4 ms  ✓ Libtiff_jll
+   3049.9 ms  ✓ libzip_jll
+   4868.8 ms  ✓ Ghostscript_jll
+   2938.4 ms  ✓ Dbus_jll
+   3630.3 ms  ✓ NVTX
+   3464.3 ms  ✓ Wayland_jll
+   2018.1 ms  ✓ StructArrays → StructArraysAdaptExt
+   3206.3 ms  ✓ XML2_jll
+   2834.3 ms  ✓ aws_checksums_jll
+   3537.9 ms  ✓ GettextRuntime_jll
+   3330.5 ms  ✓ aws_c_cal_jll
+  10997.2 ms  ✓ ColorVectorSpace
+   3336.3 ms  ✓ aws_c_compression_jll
+   2949.1 ms  ✓ aws_c_sdkutils_jll
+   1792.9 ms  ✓ StructArrays → StructArraysLinearAlgebraExt
+   4154.0 ms  ✓ Fontconfig_jll
+   2668.6 ms  ✓ StructArrays → StructArraysSparseArraysExt
+   2606.7 ms  ✓ libinput_jll
+  12625.8 ms  ✓ CUDA_Runtime_jll
+   2107.1 ms  ✓ aws_c_io_jll
+   2867.8 ms  ✓ Hwloc_jll
+   3055.5 ms  ✓ Glib_jll
+   6539.5 ms  ✓ Xorg_libxcb_jll
+   2968.2 ms  ✓ aws_c_http_jll
+  17658.5 ms  ✓ Colors
+   3420.5 ms  ✓ MPICH_jll
+  15938.6 ms  ✓ MKL_jll
+   4057.0 ms  ✓ MPIABI_jll
+   4390.2 ms  ✓ OpenMPI_jll
+   4034.2 ms  ✓ Xorg_xcb_util_jll
+   1797.4 ms  ✓ NVTX → NVTXColorsExt
+   2899.4 ms  ✓ Xorg_libX11_jll
+   2800.0 ms  ✓ aws_c_auth_jll
+   2451.8 ms  ✓ Xorg_xcb_util_image_jll
+   2597.4 ms  ✓ Xorg_xcb_util_renderutil_jll
+   4051.2 ms  ✓ mpif_jll
+  12611.0 ms  ✓ Latexify
+   3473.1 ms  ✓ Xorg_xcb_util_keysyms_jll
+  14250.4 ms  ✓ StatsBase
+   2253.3 ms  ✓ Xorg_libXfixes_jll
+   3098.2 ms  ✓ Xorg_xcb_util_wm_jll
+   3149.8 ms  ✓ Xorg_libXrender_jll
+   3143.7 ms  ✓ Xorg_libXext_jll
+   2659.0 ms  ✓ Xorg_libxkbfile_jll
+  31015.7 ms  ✓ StaticArrays
+   3783.7 ms  ✓ aws_c_s3_jll
+   3419.6 ms  ✓ Xorg_libXi_jll
+   4638.8 ms  ✓ Xorg_xcb_util_cursor_jll
+   4506.4 ms  ✓ Latexify → SparseArraysExt
+   2906.3 ms  ✓ Xorg_libXrandr_jll
+   4803.2 ms  ✓ Xorg_libXcursor_jll
+   4813.9 ms  ✓ Xorg_libXinerama_jll
+  28025.1 ms  ✓ Parsers
+   3427.1 ms  ✓ Cairo_jll
+   1984.3 ms  ✓ Adapt → AdaptStaticArraysExt
+   2722.3 ms  ✓ Xorg_xkbcomp_jll
+   3632.1 ms  ✓ Libglvnd_jll
+   2904.8 ms  ✓ StaticArrays → StaticArraysStatisticsExt
+   3662.5 ms  ✓ libva_jll
+   2946.9 ms  ✓ ConstructionBase → ConstructionBaseStaticArraysExt
+  15724.3 ms  ✓ ColorSchemes
+   3331.2 ms  ✓ TaylorSeries → TaylorSeriesSAExt
+   2708.6 ms  ✓ HarfBuzz_jll
+   3052.7 ms  ✓ Xorg_xkeyboard_config_jll
+   5323.8 ms  ✓ HDF5_jll
+  33654.3 ms  ✓ LLVM
+  21648.0 ms  ✓ MPI
+   4773.4 ms  ✓ libass_jll
+   5193.8 ms  ✓ xkbcommon_jll
+   6579.5 ms  ✓ Pango_jll
+  12496.2 ms  ✓ Rotations
+  25994.7 ms  ✓ FFTW
+  12107.4 ms  ✓ StructArrays → StructArraysStaticArraysExt
+   5548.8 ms  ✓ GPUToolbox
+   5100.7 ms  ✓ LLVM → BFloat16sExt
+   2293.0 ms  ✓ Vulkan_Loader_jll
+   3500.2 ms  ✓ FFMPEG_jll
+   8239.1 ms  ✓ NetCDF_jll
+   2761.5 ms  ✓ libdecor_jll
+   2604.7 ms  ✓ Rotations → RotationsRecipesBaseExt
+   2475.4 ms  ✓ FFMPEG
+  16182.6 ms  ✓ JSON
+   7777.1 ms  ✓ UnsafeAtomics → UnsafeAtomicsLLVM
+   3881.8 ms  ✓ Qt6Base_jll
+   3112.7 ms  ✓ GLFW_jll
+  18007.4 ms  ✓ KernelAbstractions
+   2226.3 ms  ✓ Qt6ShaderTools_jll
+   2280.0 ms  ✓ Qt6Svg_jll
+   3194.6 ms  ✓ GR_jll
+   2953.5 ms  ✓ KernelAbstractions → LinearAlgebraExt
+   3116.8 ms  ✓ StructArrays → StructArraysGPUArraysCoreExt
+   3398.5 ms  ✓ KernelAbstractions → SparseArraysExt
+  52821.9 ms  ✓ HTTP
+  10319.6 ms  ✓ Qt6Declarative_jll
+   3735.4 ms  ✓ FileIO → HTTPExt
+  30081.7 ms  ✓ PlotUtils
+   2348.0 ms  ✓ Qt6Wayland_jll
+  25380.5 ms  ✓ NCDatasets
+   8217.8 ms  ✓ PlotThemes
+  18412.5 ms  ✓ GPUArrays
+              ✗ NCDatasets → NCDatasetsMPIExt
+              ✗ RecipesPipeline
+              ✗ PrettyTables
+              ✗ CUDA_Compiler_jll
+  18426.2 ms  ✓ GR
+  79148.0 ms  ✓ JLD2
+   1665.7 ms  ✓ TaylorSeries → TaylorSeriesJLD2Ext
+   2130.8 ms  ✓ GPUArrays → JLD2Ext
+  62772.7 ms  ✓ GPUCompiler
+              ✗ CUDACore
+  33014.9 ms  ✓ Oceananigans
+   3687.4 ms  ✓ Oceananigans → OceananigansNCDatasetsExt
+              ✗ Plots
+              ✗ cuFFT
+              ✗ cuRAND
+              ✗ NVML
+              ✗ Plots → FileIOExt
+              ✗ cuBLAS
+              ✗ cuSPARSE
+              ✗ CUPTI
+              ✗ CUDATools
+              ✗ cuSOLVER
+              ✗ CUDA
+              ✗ MPI → CUDAExt
+              ✗ Oceananigans → OceananigansCUDAExt
+              ✗ Atomix → AtomixCUDAExt
+              ✗ OceanBioME
+  267 dependencies successfully precompiled in 393 seconds. 38 already precompiled.
+  1 dependency had output during precompilation:
+┌ MKL_jll
+│  Downloading artifact: IntelOpenMP
+│   Downloading artifact: oneTBB
+└  
+
+The following 6 direct dependencies failed to precompile:
+
+OceananigansCUDAExt 
+
+Failed to precompile OceananigansCUDAExt [f94e23a5-f871-5b8f-950a-1384bbd55a4b] to "/cephfs/home/tll46/.julia/compiled/v1.12/OceananigansCUDAExt/jl_BmSmJQ".
+Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ERROR: LoadError: InitError: Unable to automatically download/install artifact 'CUDA_Runtime' from sources listed in '/cephfs/home/tll46/.julia/packages/CUDA_Runtime_jll/IAakp/Artifacts.toml'.
+Sources attempted:
+- https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+    Error: RequestError: HTTP/2 404 while requesting https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+- https://github.com/JuliaBinaryWrappers/CUDA_Runtime_jll.jl/releases/download/CUDA_Runtime-v0.23.0+1/CUDA_Runtime.v0.23.0.x86_64-linux-gnu-cuda+13.3.tar.gz
+    Error: AssertionError: size == padded_size == 0
+This error may be a symptom of insufficient disk space on the device the tarball is being written to.
+
+
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] try_artifact_download_sources(name::String, hash::Base.SHA1, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, io::IOContext{IO}, progress::Nothing)
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:532
+  [3] try_artifact_download_sources
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:471 [inlined]
+  [4] ensure_artifact_installed(name::String, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, progress::Nothing, io::IOContext{IO})
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:461
+  [5] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [6] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [7] __artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:583
+  [8] _artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:557
+  [9] macro expansion
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:732 [inlined]
+ [10] find_artifact_dir()
+    @ CUDA_Runtime_jll ~/.julia/packages/JLLWrappers/Kp7TC/src/wrapper_generators.jl:13
+ [11] __init__()
+    @ CUDA_Runtime_jll ~/.julia/packages/CUDA_Runtime_jll/IAakp/src/wrappers/x86_64-linux-gnu-cuda+13.3.jl:21
+ [12] run_module_init(mod::Module, i::Int64)
+    @ Base ./loading.jl:1443
+ [13] register_restored_modules(sv::Core.SimpleVector, pkg::Base.PkgId, path::String)
+    @ Base ./loading.jl:1431
+ [14] _include_from_serialized(pkg::Base.PkgId, path::String, ocachepath::String, depmods::Vector{Any}; register::Bool)
+    @ Base ./loading.jl:1319
+ [15] _include_from_serialized
+    @ ./loading.jl:1274 [inlined]
+ [16] _require_search_from_serialized(pkg::Base.PkgId, sourcepath::String, build_id::UInt128, stalecheck::Bool; reasons::Dict{String, Int64}, DEPOT_PATH::Vector{String})
+    @ Base ./loading.jl:2115
+ [17] _require_search_from_serialized
+    @ ./loading.jl:2009 [inlined]
+ [18] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2627
+ [19] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [20] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [21] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [22] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [23] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [24] top-level scope
+    @ ~/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:34
+ [25] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [26] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [27] top-level scope
+    @ stdin:5
+ [28] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [29] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [30] include_string
+    @ ./loading.jl:2880 [inlined]
+ [31] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [32] _start()
+    @ Base ./client.jl:550
+during initialization of module CUDA_Runtime_jll
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDACore [bd0ed864-bdfe-4181-a5ed-ce625a5fdea2] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDACore/jl_oQP9Ur".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [18] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [19] top-level scope
+    @ stdin:5
+ [20] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [21] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [22] include_string
+    @ ./loading.jl:2880 [inlined]
+ [23] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [24] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDA/d59MT/src/CUDA.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDA [052768ef-5323-5732-b1bb-66c8b64840ba] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDA/jl_ATdZZT".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] top-level scope
+    @ ~/.julia/packages/Oceananigans/p6AAO/ext/OceananigansCUDAExt.jl:4
+ [18] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [19] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+    @ Base ./loading.jl:3024
+ [20] top-level scope
+    @ stdin:5
+ [21] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [22] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [23] include_string
+    @ ./loading.jl:2880 [inlined]
+ [24] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [25] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/Oceananigans/p6AAO/ext/OceananigansCUDAExt.jl:1
+in expression starting at stdin:5
+OceanBioME 
+
+Failed to precompile OceanBioME [a49af516-9db8-4be4-be45-1dad61c5a376] to "/cephfs/home/tll46/.julia/compiled/v1.12/OceanBioME/jl_Rxbh62".
+Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ERROR: LoadError: InitError: Unable to automatically download/install artifact 'CUDA_Runtime' from sources listed in '/cephfs/home/tll46/.julia/packages/CUDA_Runtime_jll/IAakp/Artifacts.toml'.
+Sources attempted:
+- https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+    Error: RequestError: HTTP/2 404 while requesting https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+- https://github.com/JuliaBinaryWrappers/CUDA_Runtime_jll.jl/releases/download/CUDA_Runtime-v0.23.0+1/CUDA_Runtime.v0.23.0.x86_64-linux-gnu-cuda+13.3.tar.gz
+    Error: AssertionError: size == padded_size == 0
+This error may be a symptom of insufficient disk space on the device the tarball is being written to.
+
+
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] try_artifact_download_sources(name::String, hash::Base.SHA1, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, io::IOContext{IO}, progress::Nothing)
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:532
+  [3] try_artifact_download_sources
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:471 [inlined]
+  [4] ensure_artifact_installed(name::String, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, progress::Nothing, io::IOContext{IO})
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:461
+  [5] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [6] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [7] __artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:583
+  [8] _artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:557
+  [9] macro expansion
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:732 [inlined]
+ [10] find_artifact_dir()
+    @ CUDA_Runtime_jll ~/.julia/packages/JLLWrappers/Kp7TC/src/wrapper_generators.jl:13
+ [11] __init__()
+    @ CUDA_Runtime_jll ~/.julia/packages/CUDA_Runtime_jll/IAakp/src/wrappers/x86_64-linux-gnu-cuda+13.3.jl:21
+ [12] run_module_init(mod::Module, i::Int64)
+    @ Base ./loading.jl:1443
+ [13] register_restored_modules(sv::Core.SimpleVector, pkg::Base.PkgId, path::String)
+    @ Base ./loading.jl:1431
+ [14] _include_from_serialized(pkg::Base.PkgId, path::String, ocachepath::String, depmods::Vector{Any}; register::Bool)
+    @ Base ./loading.jl:1319
+ [15] _include_from_serialized
+    @ ./loading.jl:1274 [inlined]
+ [16] _require_search_from_serialized(pkg::Base.PkgId, sourcepath::String, build_id::UInt128, stalecheck::Bool; reasons::Dict{String, Int64}, DEPOT_PATH::Vector{String})
+    @ Base ./loading.jl:2115
+ [17] _require_search_from_serialized
+    @ ./loading.jl:2009 [inlined]
+ [18] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2627
+ [19] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [20] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [21] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [22] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [23] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [24] top-level scope
+    @ ~/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:34
+ [25] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [26] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [27] top-level scope
+    @ stdin:5
+ [28] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [29] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [30] include_string
+    @ ./loading.jl:2880 [inlined]
+ [31] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [32] _start()
+    @ Base ./client.jl:550
+during initialization of module CUDA_Runtime_jll
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDACore [bd0ed864-bdfe-4181-a5ed-ce625a5fdea2] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDACore/jl_PMI7Pz".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [18] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [19] top-level scope
+    @ stdin:5
+ [20] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [21] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [22] include_string
+    @ ./loading.jl:2880 [inlined]
+ [23] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [24] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDA/d59MT/src/CUDA.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDA [052768ef-5323-5732-b1bb-66c8b64840ba] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDA/jl_KxqVPk".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] include(mapexpr::Function, mod::Module, _path::String)
+    @ Base ./Base.jl:307
+ [18] top-level scope
+    @ ~/.julia/packages/OceanBioME/i0pd0/src/Particles/Particles.jl:54
+ [19] include(mapexpr::Function, mod::Module, _path::String)
+    @ Base ./Base.jl:307
+ [20] top-level scope
+    @ ~/.julia/packages/OceanBioME/i0pd0/src/OceanBioME.jl:228
+ [21] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [22] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+    @ Base ./loading.jl:3024
+ [23] top-level scope
+    @ stdin:5
+ [24] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [25] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [26] include_string
+    @ ./loading.jl:2880 [inlined]
+ [27] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [28] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/OceanBioME/i0pd0/src/Particles/atomic_operations.jl:3
+in expression starting at /cephfs/home/tll46/.julia/packages/OceanBioME/i0pd0/src/Particles/Particles.jl:1
+in expression starting at /cephfs/home/tll46/.julia/packages/OceanBioME/i0pd0/src/OceanBioME.jl:1
+in expression starting at stdin:5
+
+FileIOExt 
+
+Failed to precompile FileIOExt [f5f51d8f-5827-5d2e-939b-192fcd6ec70c] to "/cephfs/home/tll46/.julia/compiled/v1.12/FileIOExt/jl_diWf8s".
+LLVM ERROR: IO failure on output stream: Disk quota exceeded
+ERROR: LoadError: Failed to precompile Plots [91a5bcdd-55d7-5caf-9e0b-520d859cae80] to "/cephfs/home/tll46/.julia/compiled/v1.12/Plots/jl_mR0XGv".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] top-level scope
+    @ ~/.julia/packages/Plots/GIume/ext/FileIOExt.jl:3
+ [18] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [19] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+    @ Base ./loading.jl:3024
+ [20] top-level scope
+    @ stdin:5
+ [21] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [22] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [23] include_string
+    @ ./loading.jl:2880 [inlined]
+ [24] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [25] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/Plots/GIume/ext/FileIOExt.jl:1
+in expression starting at stdin:5
+
+Plots 
+
+Failed to precompile Plots [91a5bcdd-55d7-5caf-9e0b-520d859cae80] to "/cephfs/home/tll46/.julia/compiled/v1.12/Plots/jl_YLFXu4".
+LLVM ERROR: IO failure on output stream: Disk quota exceeded
+
+NCDatasetsMPIExt 
+
+Failed to precompile NCDatasetsMPIExt [2aa2e1f4-b84f-5abf-b13f-3a71d7817f93] to "/cephfs/home/tll46/.julia/compiled/v1.12/NCDatasetsMPIExt/jl_f30e7B".
+LLVM ERROR: IO failure on output stream: Disk quota exceeded
+
+CUDA 
+
+Failed to precompile CUDA [052768ef-5323-5732-b1bb-66c8b64840ba] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDA/jl_xPr1vv".
+Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ERROR: LoadError: InitError: Unable to automatically download/install artifact 'CUDA_Runtime' from sources listed in '/cephfs/home/tll46/.julia/packages/CUDA_Runtime_jll/IAakp/Artifacts.toml'.
+Sources attempted:
+- https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+    Error: RequestError: HTTP/2 404 while requesting https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+- https://github.com/JuliaBinaryWrappers/CUDA_Runtime_jll.jl/releases/download/CUDA_Runtime-v0.23.0+1/CUDA_Runtime.v0.23.0.x86_64-linux-gnu-cuda+13.3.tar.gz
+    Error: AssertionError: size == padded_size == 0
+This error may be a symptom of insufficient disk space on the device the tarball is being written to.
+
+
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] try_artifact_download_sources(name::String, hash::Base.SHA1, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, io::IOContext{IO}, progress::Nothing)
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:532
+  [3] try_artifact_download_sources
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:471 [inlined]
+  [4] ensure_artifact_installed(name::String, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, progress::Nothing, io::IOContext{IO})
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:461
+  [5] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [6] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [7] __artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:583
+  [8] _artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:557
+  [9] macro expansion
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:732 [inlined]
+ [10] find_artifact_dir()
+    @ CUDA_Runtime_jll ~/.julia/packages/JLLWrappers/Kp7TC/src/wrapper_generators.jl:13
+ [11] __init__()
+    @ CUDA_Runtime_jll ~/.julia/packages/CUDA_Runtime_jll/IAakp/src/wrappers/x86_64-linux-gnu-cuda+13.3.jl:21
+ [12] run_module_init(mod::Module, i::Int64)
+    @ Base ./loading.jl:1443
+ [13] register_restored_modules(sv::Core.SimpleVector, pkg::Base.PkgId, path::String)
+    @ Base ./loading.jl:1431
+ [14] _include_from_serialized(pkg::Base.PkgId, path::String, ocachepath::String, depmods::Vector{Any}; register::Bool)
+    @ Base ./loading.jl:1319
+ [15] _include_from_serialized
+    @ ./loading.jl:1274 [inlined]
+ [16] _require_search_from_serialized(pkg::Base.PkgId, sourcepath::String, build_id::UInt128, stalecheck::Bool; reasons::Dict{String, Int64}, DEPOT_PATH::Vector{String})
+    @ Base ./loading.jl:2115
+ [17] _require_search_from_serialized
+    @ ./loading.jl:2009 [inlined]
+ [18] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2627
+ [19] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [20] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [21] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [22] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [23] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [24] top-level scope
+    @ ~/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:34
+ [25] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [26] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [27] top-level scope
+    @ stdin:5
+ [28] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [29] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [30] include_string
+    @ ./loading.jl:2880 [inlined]
+ [31] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [32] _start()
+    @ Base ./client.jl:550
+during initialization of module CUDA_Runtime_jll
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDACore [bd0ed864-bdfe-4181-a5ed-ce625a5fdea2] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDACore/jl_piPIBu".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [18] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+    @ Base ./loading.jl:3024
+ [19] top-level scope
+    @ stdin:5
+ [20] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [21] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [22] include_string
+    @ ./loading.jl:2880 [inlined]
+ [23] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [24] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDA/d59MT/src/CUDA.jl:1
+in expression starting at stdin:5[ Info: Oceananigans will use 4 threads
+Precompiling packages...
+              ✗ CUDA_Compiler_jll
+  23526.1 ms  ✓ PrettyTables
+              ✗ CUDACore
+              ✗ cuRAND
+              ✗ cuFFT
+              ✗ CUPTI
+              ✗ NVML
+              ✗ cuSPARSE
+              ✗ cuBLAS
+              ✗ CUDATools
+              ✗ cuSOLVER
+Info Given CUDA was explicitly requested, output will be shown live [0K
+[0K Downloading artifact: CUDA_Runtime
+[0K     Failure artifact: CUDA_Runtime
+[0K Downloading artifact: CUDA_Runtime
+[0K     Failure artifact: CUDA_Runtime
+[0KERROR: LoadError: InitError: Unable to automatically download/install artifact 'CUDA_Runtime' from sources listed in '/cephfs/home/tll46/.julia/packages/CUDA_Runtime_jll/IAakp/Artifacts.toml'.
+[0KSources attempted:
+[0K- https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+[0K    Error: RequestError: HTTP/2 404 while requesting https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+[0K- https://github.com/JuliaBinaryWrappers/CUDA_Runtime_jll.jl/releases/download/CUDA_Runtime-v0.23.0+1/CUDA_Runtime.v0.23.0.x86_64-linux-gnu-cuda+13.3.tar.gz
+[0K    Error: AssertionError: size == padded_size == 0
+[0KThis error may be a symptom of insufficient disk space on the device the tarball is being written to.
+[0K
+[0K
+[0KStacktrace:
+[0K  [1] error(s::String)
+[0K    @ Base ./error.jl:44
+[0K  [2] try_artifact_download_sources(name::String, hash::Base.SHA1, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, io::IOContext{IO}, progress::Nothing)
+[0K    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:532
+[0K  [3] try_artifact_download_sources
+[0K    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:471 [inlined]
+[0K  [4] ensure_artifact_installed(name::String, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, progress::Nothing, io::IOContext{IO})
+[0K    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:461
+[0K  [5] #invokelatest_gr#232
+[0K    @ ./reflection.jl:1297 [inlined]
+[0K  [6] invokelatest_gr
+[0K    @ ./reflection.jl:1289 [inlined]
+[0K  [7] __artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+[0K    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:583
+[0K  [8] _artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+[0K    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:557
+[0K  [9] macro expansion
+[0K    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:732 [inlined]
+[0K [10] find_artifact_dir()
+[0K    @ CUDA_Runtime_jll ~/.julia/packages/JLLWrappers/Kp7TC/src/wrapper_generators.jl:13
+[0K [11] __init__()
+[0K    @ CUDA_Runtime_jll ~/.julia/packages/CUDA_Runtime_jll/IAakp/src/wrappers/x86_64-linux-gnu-cuda+13.3.jl:21
+[0K [12] run_module_init(mod::Module, i::Int64)
+[0K    @ Base ./loading.jl:1443
+[0K [13] register_restored_modules(sv::Core.SimpleVector, pkg::Base.PkgId, path::String)
+[0K    @ Base ./loading.jl:1431
+[0K [14] _include_from_serialized(pkg::Base.PkgId, path::String, ocachepath::String, depmods::Vector{Any}; register::Bool)
+[0K    @ Base ./loading.jl:1319
+[0K [15] _include_from_serialized
+[0K    @ ./loading.jl:1274 [inlined]
+[0K [16] _require_search_from_serialized(pkg::Base.PkgId, sourcepath::String, build_id::UInt128, stalecheck::Bool; reasons::Dict{String, Int64}, DEPOT_PATH::Vector{String})
+[0K    @ Base ./loading.jl:2115
+[0K [17] _require_search_from_serialized
+[0K    @ ./loading.jl:2009 [inlined]
+[0K [18] __require_prelocked(pkg::Base.PkgId, env::String)
+[0K    @ Base ./loading.jl:2627
+[0K [19] _require_prelocked(uuidkey::Base.PkgId, env::String)
+[0K    @ Base ./loading.jl:2493
+[0K [20] macro expansion
+[0K    @ ./loading.jl:2421 [inlined]
+[0K [21] macro expansion
+[0K    @ ./lock.jl:376 [inlined]
+[0K [22] __require(into::Module, mod::Symbol)
+[0K    @ Base ./loading.jl:2386
+[0K [23] require(into::Module, mod::Symbol)
+[0K    @ Base ./loading.jl:2362
+[0K [24] top-level scope
+[0K    @ ~/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:34
+[0K [25] include(mod::Module, _path::String)
+[0K    @ Base ./Base.jl:306
+[0K [26] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+[0K    @ Base ./loading.jl:3024
+[0K [27] top-level scope
+[0K    @ stdin:5
+[0K [28] eval(m::Module, e::Any)
+[0K    @ Core ./boot.jl:489
+[0K [29] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+[0K    @ Base ./loading.jl:2870
+[0K [30] include_string
+[0K    @ ./loading.jl:2880 [inlined]
+[0K [31] exec_options(opts::Base.JLOptions)
+[0K    @ Base ./client.jl:315
+[0K [32] _start()
+[0K    @ Base ./client.jl:550
+[0Kduring initialization of module CUDA_Runtime_jll
+[0Kin expression starting at /cephfs/home/tll46/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:1
+[0Kin expression starting at stdin:5
+[0KERROR: LoadError: Failed to precompile CUDACore [bd0ed864-bdfe-4181-a5ed-ce625a5fdea2] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDACore/jl_tWczBE".
+[0KStacktrace:
+[0K  [1] error(s::String)
+[0K    @ Base ./error.jl:44
+[0K  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+[0K    @ Base ./loading.jl:3311
+[0K  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+[0K    @ Base ./loading.jl:2679
+[0K  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+[0K    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+[0K  [5] #mkpidlock#7
+[0K    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+[0K  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+[0K    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+[0K  [7] #invokelatest_gr#232
+[0K    @ ./reflection.jl:1297 [inlined]
+[0K  [8] invokelatest_gr
+[0K    @ ./reflection.jl:1289 [inlined]
+[0K  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+[0K    @ Base ./loading.jl:3882
+[0K [10] maybe_cachefile_lock
+[0K    @ ./loading.jl:3879 [inlined]
+[0K [11] __require_prelocked(pkg::Base.PkgId, env::String)
+[0K    @ Base ./loading.jl:2665
+[0K [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+[0K    @ Base ./loading.jl:2493
+[0K [13] macro expansion
+[0K    @ ./loading.jl:2421 [inlined]
+[0K [14] macro expansion
+[0K    @ ./lock.jl:376 [inlined]
+[0K [15] __require(into::Module, mod::Symbol)
+[0K    @ Base ./loading.jl:2386
+[0K [16] require(into::Module, mod::Symbol)
+[0K    @ Base ./loading.jl:2362
+[0K [17] include(mod::Module, _path::String)
+[0K    @ Base ./Base.jl:306
+[0K [18] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+[0K    @ Base ./loading.jl:3024
+[0K [19] top-level scope
+[0K    @ stdin:5
+[0K [20] eval(m::Module, e::Any)
+[0K    @ Core ./boot.jl:489
+[0K [21] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+[0K    @ Base ./loading.jl:2870
+[0K [22] include_string
+[0K    @ ./loading.jl:2880 [inlined]
+[0K [23] exec_options(opts::Base.JLOptions)
+[0K    @ Base ./client.jl:315
+[0K [24] _start()
+[0K    @ Base ./client.jl:550
+[0Kin expression starting at /cephfs/home/tll46/.julia/packages/CUDA/d59MT/src/CUDA.jl:1
+[0Kin expression starting at stdin:5
+              ✗ CUDA
+              ✗ Atomix → AtomixCUDAExt
+  1 dependency successfully precompiled in 148 seconds. 89 already precompiled.
+
+ERROR: LoadError: The following 1 direct dependency failed to precompile:
+
+CUDA 
+
+Failed to precompile CUDA [052768ef-5323-5732-b1bb-66c8b64840ba] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDA/jl_kTCi1c".
+Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ Downloading artifact: CUDA_Runtime
+     Failure artifact: CUDA_Runtime
+ERROR: LoadError: InitError: Unable to automatically download/install artifact 'CUDA_Runtime' from sources listed in '/cephfs/home/tll46/.julia/packages/CUDA_Runtime_jll/IAakp/Artifacts.toml'.
+Sources attempted:
+- https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+    Error: RequestError: HTTP/2 404 while requesting https://pkg.julialang.org/artifact/ea437dbac05948d008ae72aa8eb7e9c659edde18
+- https://github.com/JuliaBinaryWrappers/CUDA_Runtime_jll.jl/releases/download/CUDA_Runtime-v0.23.0+1/CUDA_Runtime.v0.23.0.x86_64-linux-gnu-cuda+13.3.tar.gz
+    Error: AssertionError: size == padded_size == 0
+This error may be a symptom of insufficient disk space on the device the tarball is being written to.
+
+
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] try_artifact_download_sources(name::String, hash::Base.SHA1, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, io::IOContext{IO}, progress::Nothing)
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:532
+  [3] try_artifact_download_sources
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:471 [inlined]
+  [4] ensure_artifact_installed(name::String, meta::Dict{String, Any}, artifacts_toml::String; platform::Base.BinaryPlatforms.Platform, verbose::Bool, quiet_download::Bool, progress::Nothing, io::IOContext{IO})
+    @ Pkg.Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Pkg/src/Artifacts.jl:461
+  [5] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [6] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [7] __artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:583
+  [8] _artifact_str(__module__::Module, artifacts_toml::String, name::SubString{String}, path_tail::String, artifact_dict::Dict{String, Any}, hash::Base.SHA1, platform::Base.BinaryPlatforms.Platform, ::Val{LazyArtifacts})
+    @ Artifacts /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:557
+  [9] macro expansion
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/Artifacts/src/Artifacts.jl:732 [inlined]
+ [10] find_artifact_dir()
+    @ CUDA_Runtime_jll ~/.julia/packages/JLLWrappers/Kp7TC/src/wrapper_generators.jl:13
+ [11] __init__()
+    @ CUDA_Runtime_jll ~/.julia/packages/CUDA_Runtime_jll/IAakp/src/wrappers/x86_64-linux-gnu-cuda+13.3.jl:21
+ [12] run_module_init(mod::Module, i::Int64)
+    @ Base ./loading.jl:1443
+ [13] register_restored_modules(sv::Core.SimpleVector, pkg::Base.PkgId, path::String)
+    @ Base ./loading.jl:1431
+ [14] _include_from_serialized(pkg::Base.PkgId, path::String, ocachepath::String, depmods::Vector{Any}; register::Bool)
+    @ Base ./loading.jl:1319
+ [15] _include_from_serialized
+    @ ./loading.jl:1274 [inlined]
+ [16] _require_search_from_serialized(pkg::Base.PkgId, sourcepath::String, build_id::UInt128, stalecheck::Bool; reasons::Dict{String, Int64}, DEPOT_PATH::Vector{String})
+    @ Base ./loading.jl:2115
+ [17] _require_search_from_serialized
+    @ ./loading.jl:2009 [inlined]
+ [18] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2627
+ [19] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [20] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [21] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [22] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [23] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [24] top-level scope
+    @ ~/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:34
+ [25] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [26] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+    @ Base ./loading.jl:3024
+ [27] top-level scope
+    @ stdin:5
+ [28] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [29] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [30] include_string
+    @ ./loading.jl:2880 [inlined]
+ [31] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [32] _start()
+    @ Base ./client.jl:550
+during initialization of module CUDA_Runtime_jll
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDACore/NlVPI/src/CUDACore.jl:1
+in expression starting at stdin:5
+ERROR: LoadError: Failed to precompile CUDACore [bd0ed864-bdfe-4181-a5ed-ce625a5fdea2] to "/cephfs/home/tll46/.julia/compiled/v1.12/CUDACore/jl_tWczBE".
+Stacktrace:
+  [1] error(s::String)
+    @ Base ./error.jl:44
+  [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool; flags::Cmd, cacheflags::Base.CacheFlags, reasons::Dict{String, Int64}, loadable_exts::Nothing)
+    @ Base ./loading.jl:3311
+  [3] (::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}})()
+    @ Base ./loading.jl:2679
+  [4] mkpidlock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:93
+  [5] #mkpidlock#7
+    @ /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:88 [inlined]
+  [6] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+    @ FileWatching.Pidfile /cephfs/software/julia/julia-1.12.4/share/julia/stdlib/v1.12/FileWatching/src/pidfile.jl:114
+  [7] #invokelatest_gr#232
+    @ ./reflection.jl:1297 [inlined]
+  [8] invokelatest_gr
+    @ ./reflection.jl:1289 [inlined]
+  [9] maybe_cachefile_lock(f::Base.var"#__require_prelocked##0#__require_prelocked##1"{Base.PkgId, String, Dict{String, Int64}}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+    @ Base ./loading.jl:3882
+ [10] maybe_cachefile_lock
+    @ ./loading.jl:3879 [inlined]
+ [11] __require_prelocked(pkg::Base.PkgId, env::String)
+    @ Base ./loading.jl:2665
+ [12] _require_prelocked(uuidkey::Base.PkgId, env::String)
+    @ Base ./loading.jl:2493
+ [13] macro expansion
+    @ ./loading.jl:2421 [inlined]
+ [14] macro expansion
+    @ ./lock.jl:376 [inlined]
+ [15] __require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2386
+ [16] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:2362
+ [17] include(mod::Module, _path::String)
+    @ Base ./Base.jl:306
+ [18] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::Nothing)
+    @ Base ./loading.jl:3024
+ [19] top-level scope
+    @ stdin:5
+ [20] eval(m::Module, e::Any)
+    @ Core ./boot.jl:489
+ [21] include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String)
+    @ Base ./loading.jl:2870
+ [22] include_string
+    @ ./loading.jl:2880 [inlined]
+ [23] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:315
+ [24] _start()
+    @ Base ./client.jl:550
+in expression starting at /cephfs/home/tll46/.julia/packages/CUDA/d59MT/src/CUDA.jl:1
+in expression starting at stdin:
+in expression starting at /cephfs/store/damtp/tll46/SRIM-2026/Stokes/3D/Tidal3D.jl:8
