@@ -7,7 +7,6 @@ const r   = 75                  # ratio N/f
 end
 const Re∞ = 4.55e7              # Reynolds number
 const Pr  = 10                  # Prandtl number
-const z₀  = 0.0016              # m (roughness length)
 
 # Dimensions
 const Lx, Ly, Lz = 75,75,60
@@ -22,15 +21,16 @@ const duration = 30e4           # non-dimensional duration of the simulation
 const S = 10
 
 # Other parameters
-const N²      = (r*f₀)^2        # buoyancy frequency
-const κ       = 0.41            # von Karman constant
-const ν₀      = 1e-6            # molecular kinematic viscosity
-const D       = U∞/f₀           # Rossby lengthscale
-const κ₀      = ν₀/Pr           # molecular diffusivity
-const u_star  = 0.049*U∞        # friction velocity
-const δ       = u_star/f₀       # boundary layer lengthscale
-const Re_star = u_star*δ/ν₀     # frictional Reynolds
-const Ri_star = N²/f₀^2         # frictional Richardson
+const N² = (r*f₀)^2             # buoyancy frequency
+const κ  = 0.41                 # von Karman constant
+const ν₀ = 1e-6                 # molecular kinematic viscosity
+const D  = U∞/f₀                # Rossby lengthscale
+const κ₀ = ν₀/Pr                # molecular diffusivity
+u_star   = 0.049*U∞             # friction velocity
+z₀       = 0.0016               # m (roughness length)
+δ        = u_star/f₀            # boundary layer lengthscale
+Re_star  = u_star*δ/ν₀          # frictional Reynolds
+Ri_star  = N²/f₀^2              # frictional Richardson
 
 # Coefficient of drag calculated later:
 # z₁ = abs(Array(znodes(grid, Center()))[1])
