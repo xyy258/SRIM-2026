@@ -6,6 +6,7 @@ Pkg.instantiate()
 
 using Oceananigans, Printf
 using CUDA
+using Statistics
 # using NCDatasets
 
 # Running on GPU or CPU
@@ -283,6 +284,95 @@ nothing # hide
 
 # Now, run the simulation
 run!(simulation)
+
+
+## Finding friction velocity, u*, and friction length, z₀
+
+vel_file_path = joinpath(filename, "Avg_vel.jld2")
+vel_file  = jldopen(vel_file_path, "r")
+time_keys = keys(vel_file["timeseries/t"])
+last_iter = parse(Int, time_keys[end])
+
+u_avg_data = vel_file["timeseries/u_avg/$last_iter"][1, 1, :]
+v_avg_data = vel_file["timeseries/v_avg/$last_iter"][1, 1, :]
+close(vel_file)
+
+# Fit logarithmic profile: U(z) = (u*/κ) * ln(d) - (u*/κ) * ln(z₀)
+function fit_log_layer(grid, u_avg, v_avg; n_points=8)
+    # Extract vertical center points near the wall
+    z = Array(znodes(grid, Center()))[1:n_points]
+
+    # Horizontal mean speed U = sqrt(u_avg² + v_avg²)
+    U = @. sqrt(u_avg[1:n_points]^2 + v_avg[1:n_points]^2)
+
+    # Design matrix: U = A * ln(z) + B
+    X = [log.(z) ones(n_points)]
+
+    # Least-squares regression
+    coeff = X \ U
+    A, B = coeff[1], coeff[2]
+
+    # Recover u* and z0
+    u_star_fit = A * κ
+    z0_fit     = exp(-B / A)
+
+    # R² score
+    U_pred = X * coeff
+    SS_res = sum((U .- U_pred).^2)
+    SS_tot = sum((U .- mean(U)).^2)
+    r2     = 1.0 - (SS_res / SS_tot)
+
+    return u_star_fit, z0_fit, r2
+end
+
+n_points_fit = 10               # number of points near the bottom to fit
+u_star_fit, z₀_fit, r2 = fit_log_layer(grid, u_avg_data, v_avg_data; n_points=n_points_fit)
+
+const u_star   = u_star_fit     # friction velocity
+const z₀       = z₀_fit         # m (roughness length)
+const δ        = u_star/f₀      # boundary layer lengthscale
+const Re_star  = u_star*δ/ν₀    # frictional Reynolds
+const Ri_star  = N²/f₀^2        # frictional Richardson
+
+@info "3D simulation parameters"
+
+@printf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %.1f × %.1f × %.1f
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f
+Molecular kinematic viscosity:  ν₀  = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr  = %.1f,
+Molecular diffusivity:          κ₀  = %.2e,
+Frictional velocity             u*  = %.2e
+Drag coefficient:               cᴰ  = %.4f,
+Layer lengthscale:              δ   = %.2f
+Frictional Reynolds             Re* = %.2e
+Frictional Richardson           Ri* = %.1f\n",
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
+
+open(@sprintf("Ekman/3D Simulation/Parameters/r=%.1f parameters.txt",r), "w") do file
+    write(file, @sprintf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %.1f × %.1f × %.1f
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f
+Molecular kinematic viscosity:  ν₀  = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr  = %.1f,
+Molecular diffusivity:          κ₀  = %.2e,
+Frictional velocity             u*  = %.2e
+Drag coefficient:               cᴰ  = %.4f,
+Layer lengthscale:              δ   = %.2f
+Frictional Reynolds             Re* = %.2e
+Frictional Richardson           Ri* = %.1f",
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
+end
 
 include("Ekman_anim.jl")
 include("Ekman_plot.jl")
