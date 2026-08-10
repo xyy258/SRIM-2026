@@ -3,10 +3,11 @@ const U∞ = 0.04                 # far stream velocity
 const f₀ = 1e-4                 # Coriolis parameter
 
 if !@isdefined(r) || isnothing(r)
-const r   = 75                  # ratio N/f
+    const r   = 75                  # ratio N/f
 end
 const Re∞ = 4.55e7              # Reynolds number
 const Pr  = 10                  # Prandtl number
+const z₀  = 0.0016              # m (roughness length)
 
 # Dimensions
 const Lx, Ly, Lz = 75,75,60
@@ -26,15 +27,15 @@ const κ  = 0.41                 # von Karman constant
 const ν₀ = 1e-6                 # molecular kinematic viscosity
 const D  = U∞/f₀                # Rossby lengthscale
 const κ₀ = ν₀/Pr                # molecular diffusivity
-u_star   = 0.049*U∞             # friction velocity
-z₀       = 0.0016               # m (roughness length)
-δ        = u_star/f₀            # boundary layer lengthscale
-Re_star  = u_star*δ/ν₀          # frictional Reynolds
-Ri_star  = N²/f₀^2              # frictional Richardson
+# u_star   = 0.049*U∞             # friction velocity
+# δ        = u_star/f₀            # boundary layer lengthscale
+# Re_star  = u_star*δ/ν₀          # frictional Reynolds
+# Ri_star  = N²/f₀^2              # frictional Richardson
 
 # Coefficient of drag calculated later:
 # z₁ = abs(Array(znodes(grid, Center()))[1])
 # cᴰ = (κ/log(z₁/z₀))^2
+
 
 if !@isdefined(profile) || isnothing(profile)
     const profile = 2           # type of initial buoyancy profile
