@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=ekman
+#SBATCH --job-name=stokestidal
 #SBATCH --partition=ampere
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
-#SBATCH --time=18:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out   # Standard output log
 #SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err    # Standard error log
 
