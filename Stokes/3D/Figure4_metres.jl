@@ -202,6 +202,15 @@ end
 # ---------------------------------------------------------------------------
 # Combined overview: all T stacked
 # ---------------------------------------------------------------------------
+# SKIP_SWEEP=1 leaves the existing overview alone. It is written unconditionally
+# from whatever T_VALUES holds, so a run over a SUBSET of the sweep (one column,
+# or the T = 5/10 pair) would otherwise replace the full four-T figure with a
+# partial one — the per-T figures above are unaffected either way.
+if get(ENV, "SKIP_SWEEP", "0") == "1"
+    @info "SKIP_SWEEP=1 — leaving figures/Figure4_softplus_sweep.png untouched"
+    exit(0)
+end
+
 nrow = length(T_values)
 panels = []
 for (ti, T) in enumerate(T_values), (si, s) in enumerate(n_over_ω)
