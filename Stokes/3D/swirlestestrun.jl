@@ -69,13 +69,82 @@ mkpath(joinpath(HERE, "logs"))
 # One child process. `dir = HERE` is what makes the relative outputs/ path in
 # case_params.jl resolve here; GKSwstype = 100 keeps GR headless on a node with
 # no display (the figure steps abort without it).
-function run_julia(script, args::Vector{String}, env::Dict{String,String}, logfile)
-    cmd = Cmd([joinpath(Sys.BINDIR, "julia"), "--project=$HERE", "-t", "auto",
-               joinpath(HERE, script), args...])
+function run_julia(payload::Vector{String}, env::Dict{String,String}, logfile;
+                   threads = "auto", label = first(payload))
+    cmd = Cmd([joinpath(Sys.BINDIR, "julia"), "--project=$HERE", "-t", threads,
+               payload...])
     full = merge(Dict{String,String}(ENV), Dict("GKSwstype" => "100"), env)
     path = joinpath(HERE, "logs", logfile)
+
+    # APPEND, never truncate — logs/ is committed (unlike outputs/), so these
+    # filenames already hold the previous sweep's runs, and a resumed job appends
+    # to its own earlier attempt. Nothing a child prints carries a wall-clock
+    # date, so without this banner two runs of one case are indistinguishable
+    # once they share a file. `grep -n '^==== ' logs/<file>` lists the runs a log
+    # contains and the line each starts at; the newest is the last.
+    open(path, "a") do io
+        println(io, "\n", "="^78)
+        println(io, "==== ", Dates.format(now(), "yyyy-mm-dd HH:MM:SS"), "  ", label)
+        println(io, "==== ", join(("$k=$v" for (k, v) in sort(collect(env))), "  "))
+        println(io, "="^78)
+        flush(io)
+    end
+
     return success(pipeline(setenv(cmd, full; dir = HERE),
                             stdout = path, stderr = path, append = true))
+end
+
+# A script child: the path is resolved against HERE so it does not depend on the
+# working directory, and the case name goes through as ARGS.
+run_script(script, args::Vector{String}, env::Dict{String,String}, logfile) =
+    run_julia([joinpath(HERE, script), args...], env, logfile;
+              label = script * " " * join(args, " "))
+
+# ---------------- 0. Preflight ----------------
+# Instantiate and precompile the environment ONCE, serially, before anything
+# expensive starts. Two reasons, both learned the hard way on this cluster:
+#
+#   * Tidal3D.jl calls Pkg.instantiate() itself, so with a cold cache the FIRST
+#     thing a 9 h GPU allocation does is a ~20 min CUDA/Oceananigans precompile —
+#     and if it fails, the spin-up simply exits non-zero and the failure surfaces
+#     later as "no spin-up snapshot", pointing at the wrong thing entirely.
+#   * That precompile writes .ji cache files onto cephfs and takes a
+#     FileWatching.Pidfile lock per package. Julia precompiles dependencies in
+#     parallel by default and those lock operations are unreliable on a shared
+#     filesystem; JULIA_NUM_PRECOMPILE_TASKS=1 with -t 1 serializes them, which
+#     is what makes this survive on a compute node.
+#
+# Still much better done once on a login node (internet, no wall clock):
+#     JULIA_NUM_PRECOMPILE_TASKS=1 julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+# after which this step is a fast no-op. SKIP_PREFLIGHT=1 bypasses it.
+const preflight_code = """
+using Pkg
+Pkg.instantiate()
+Pkg.precompile()
+using Oceananigans, CUDA, JLD2, Plots
+println("preflight: packages loaded")
+# arch = GPU() in Tidal3D.jl, so a node without a working CUDA driver can only
+# fail later and more confusingly. Report it here instead.
+if CUDA.functional()
+    println("preflight: CUDA functional — ", CUDA.name(CUDA.device()))
+else
+    println("preflight: CUDA NOT functional — GPU runs cannot proceed")
+    exit(1)
+end
+"""
+
+if get(ENV, "SKIP_PREFLIGHT", "0") == "1"
+    log("SKIP_PREFLIGHT=1 — not checking the environment")
+else
+    log("preflight: instantiate + precompile (serial), see logs/preflight.log")
+    ok = run_julia(["-e", preflight_code],
+                   Dict("JULIA_NUM_PRECOMPILE_TASKS" => "1"),
+                   "preflight.log"; threads = "1", label = "preflight")
+    ok || error("Preflight failed — the environment at $HERE is not usable on this node. " *
+                "See logs/preflight.log; the fix is usually to run " *
+                "`JULIA_NUM_PRECOMPILE_TASKS=1 julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'` " *
+                "once on a login node. Nothing has been run yet.")
+    log("preflight OK")
 end
 
 # ---------------- 1. Spin-up ----------------
@@ -87,7 +156,7 @@ if isfile(joinpath(HERE, spin_fields))
     log("spin-up snapshot already present — skipping ($spin_fields)")
 else
     log("T = $T_strat: spin-up (Ri0 from rest, $spin_periods periods)")
-    spin_ok = run_julia("Tidal3D.jl", ["Ri0"],
+    spin_ok = run_script("Tidal3D.jl", ["Ri0"],
                         Dict("PROFILE"   => "4",
                              "RUN_TAG"   => spin_tag,
                              "T_STRAT"   => T_strat,
@@ -136,7 +205,7 @@ for s in sqrt_Ri
     case_start = time()
     # LIGHT_OUTPUT drops the vorticity/x-y files and the 3D snapshots, i.e.
     # everything figures 4 and 5 never open, at no cost in runtime.
-    ok = run_julia("Tidal3D.jl", [ri_case(s)],
+    ok = run_script("Tidal3D.jl", [ri_case(s)],
                    Dict("PROFILE"      => "4",
                         "T_STRAT"      => T_strat,
                         "T_SWEEP"      => T_sweep,
@@ -185,11 +254,11 @@ else
                    "N_PERIODS_PLOT" => periods_plot)
 
     log("Figure 4 (T = $T_strat, N/ω ∈ {$ri_list})")
-    run_julia("Figure4_metres.jl", String[], fig_env, "post_figures.log") ||
+    run_script("Figure4_metres.jl", String[], fig_env, "post_figures.log") ||
         log("  Figure4_metres.jl FAILED — see logs/post_figures.log")
 
     log("Figure 5 (one per case, periods $periods_plot)")
-    run_julia("Figure5.jl", String[], fig_env, "post_figures.log") ||
+    run_script("Figure5.jl", String[], fig_env, "post_figures.log") ||
         log("  Figure5.jl FAILED — see logs/post_figures.log")
 end
 
