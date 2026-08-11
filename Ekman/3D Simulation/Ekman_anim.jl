@@ -38,7 +38,7 @@ Lzmask  = zb[findall(x -> x < Lz, zb)]
 NLzmask = length(Lzmask)
 
 # Masking for certain height from bottom of domain
-z_mask = findall(x -> x < 50,zb)
+z_mask = findall(x -> x < 60,zb)
 zbmask = zb[z_mask]
 Nzmask = length(zbmask)
 

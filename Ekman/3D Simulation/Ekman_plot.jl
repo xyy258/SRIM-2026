@@ -89,9 +89,15 @@ z_plot = zb[z_mask]
 
 @info "Plot of average buoyancy profile..."
 
+if (r==0 || isnothing(r)) == true
+    Xlabel = "b"
+else
+    Xlabel = "b/N²"
+end
+
 # Plot
-plot(b_plot_initial/N², z_plot,
-     xlabel     = "b/N²",
+plot(b_plot_initial/bscale, z_plot,
+     xlabel     = Xlabel,
      ylabel     = "Height z",
      title      = @sprintf("<b> profile for N/f = %.1f", r),
      linewidth  = 2,
@@ -101,7 +107,7 @@ plot(b_plot_initial/N², z_plot,
      size       = (800,400),
      margin     = 25px)
 
-plot!(b_plot_final/N², z_plot,
+plot!(b_plot_final/bscale, z_plot,
       linewidth = 2,
       label     = "Final")
 mkpath(save_folder*"Averaged buoyancy profile")
@@ -132,8 +138,14 @@ z_plot = zb[z_mask]
 
 @info "Plot of average buoyancy gradient profile..."
 
+if (r==0 || isnothing(r)) == true
+    Xlabel = "∂b/∂z"
+else
+    Xlabel = "(∂b/∂z)/N²"
+end
+
 # Plot
-plot(db_dz_plot_initial/N², z_plot,
+plot(db_dz_plot_initial/bscale, z_plot,
      xlabel    = "(∂b/∂z)/N²",
      ylabel    = "Height z",
      title     = @sprintf("∂<b>/∂z Profile for N/f = %.1f", r),
@@ -144,7 +156,7 @@ plot(db_dz_plot_initial/N², z_plot,
      size      = (800,600),
      margin    = 25px)
 
-plot!(db_dz_plot_final/N², z_plot,
+plot!(db_dz_plot_final/bscale, z_plot,
       linewidth = 2,
       label = "Final")
 

@@ -93,7 +93,7 @@ if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
     Mask = "piecewise linear"
 elseif mask == 1
-    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
+    sponge_mask = GaussianMask{:z}(center=H, width=0.85S)
     Mask = "Gaussian"
 end
 @info "Using $Mask mask for sponge layer..."
@@ -307,9 +307,9 @@ const u_star  = u_star_fit      # friction velocity
 Re_star = u_star*δ/ν₀           # frictional Reynolds
 Ri_star = N²/f₀^2               # frictional Richardson
 
-param_dir = "Ekman/3D Simulation/Parameters"
+param_dir = "Ekman/3D Simulation/Parameters/"
 mkpath(param_dir)
-open(param_dir*@sprintf("r=%.1f parameters.txt",r), "w") do file
+open(param_dir*@sprintf("%d r=%.1f parameters.txt",profile,r), "w") do file
     write(file, @sprintf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
 Grid size                       %d × %d × %d
@@ -324,8 +324,8 @@ Molecular diffusivity:          κ₀  = %.2e,
 Frictional velocity             u*  = %.2e
 Drag coefficient:               cᴰ  = %.4f,
 Layer lengthscale:              δ   = %.2f
-Frictional Reynolds             Re* = %.2e
-Frictional Richardson           Ri* = %.1f",
+Friction Reynolds               Re* = %.2e
+Friction Richardson             Ri* = %.1f",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
 end
 

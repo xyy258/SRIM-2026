@@ -1,0 +1,15 @@
+Dimensions                      75.0 m × 75.0 m × 100.0 m
+Grid size                       100 × 100 × 500
+Far stream velocity             U∞  = 0.0400
+Square buoyancy frequency:      N²  = 1.00e-08,
+Coriolis parameter:             f   = 1.00e-04,
+Ratio:                          r   = N/f = 1.0
+Molecular kinematic viscosity:  ν₀  = 1.00e-06,
+Reynolds number:                Re∞ = 1.60e+07,
+Prandtl number:                 Pr  = 10.0,
+Molecular diffusivity:          κ₀  = 1.00e-07,
+Frictional velocity             u*  = 6.08e-03
+Drag coefficient:               cᴰ  = 0.0127,
+Layer lengthscale:              δ   = 60.77
+Friction Reynolds               Re* = 3.69e+05
+Friction Richardson             Ri* = 1.0
