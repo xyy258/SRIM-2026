@@ -320,8 +320,8 @@ else
     @warn "No spin-up snapshot at $spinup_file — starting $case from rest with noise."
     # Near-wall random kick; perturbing v breaks spanwise symmetry so genuine
     # 3D turbulence develops.
-    kick = 0.1 * U₀
-    damped_noise(z) = kick * randn() * exp(-z / (4δ))
+    kick = 0.01 * U₀
+    damped_noise(z) = kick * randn() 
     uᵢ(x, y, z) = damped_noise(z)
     vᵢ(x, y, z) = damped_noise(z)
     wᵢ(x, y, z) = damped_noise(z)

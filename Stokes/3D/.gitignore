@@ -1,9 +1,24 @@
 # Simulation output: several GB of .jld2 per sweep, and fully regenerable from
 # the scripts + case tags. Keep it out of the repo so `git add -A` stays safe.
-outputs/
+#
+# `outputs/**` rather than `outputs/`, paired with the `!outputs/**/` below:
+# git does not descend into an EXCLUDED DIRECTORY, so with a plain `outputs/`
+# no rule further down can ever re-include a file inside it. Excluding the
+# contents while re-including the directories themselves lets git look inside,
+# which is what makes the animation exception at the bottom work.
+outputs/**
+!outputs/**/
 
-# Animations are large and regenerable from outputs/ via Tidal3Danimation.jl.
+# Animations are large, but they are a deliverable and the only way they reach a
+# workstation is through the repo (rsync from the cluster needs an inbound route
+# that is not there). They used to need `git add -f` case by case; the negation
+# below means `git add -A` picks up new ones on its own.
+#
+# ORDER MATTERS: the last matching rule wins, so this negation must stay AFTER
+# the blanket *.mp4. Everything else under outputs/ — .jld2 fields, slices,
+# checkpoints — stays ignored.
 *.mp4
+!outputs/**/animation_*.mp4
 
 # Machine-specific CUDA runtime selection (CUDA.set_runtime_version!). On the
 # cluster this pins CUDA.jl to the module-provided toolkit instead of pulling a
