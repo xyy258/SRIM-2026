@@ -25,5 +25,18 @@ module load cuda/12.6.3
 # Pass allocated Slurm CPUs to Julia multi-threading
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
+# Julia depot on the project store, NOT in $HOME. Precompiling CUDA and
+# Oceananigans writes several GB of cache files and artifacts, and the cephfs
+# home quota cannot hold it: it fails mid-precompile with
+#   LLVM ERROR: IO failure on output stream: Disk quota exceeded
+# which then surfaces as a broken environment (a zero-byte artifact download, or
+# a pidfile error) rather than as an out-of-space message.
+#
+# $HOME/.julia stays on the path as a SECOND entry: Julia writes only to the
+# first depot, but still reads from the rest, so the package sources already
+# downloaded under home are reused instead of fetched again.
+export JULIA_DEPOT_PATH="/cephfs/store/damtp/tll46/.julia:$HOME/.julia"
+mkdir -p /cephfs/store/damtp/tll46/.julia
+
 # Run the Julia script with project activation
 srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlestestrun.jl"

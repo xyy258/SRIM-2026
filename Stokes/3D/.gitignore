@@ -4,3 +4,9 @@ outputs/
 
 # Animations are large and regenerable from outputs/ via Tidal3Danimation.jl.
 *.mp4
+
+# Machine-specific CUDA runtime selection (CUDA.set_runtime_version!). On the
+# cluster this pins CUDA.jl to the module-provided toolkit instead of pulling a
+# ~1 GB artifact; on a workstation the artifact is the right choice and the same
+# file would break it. It must stay local to whichever machine wrote it.
+LocalPreferences.toml
