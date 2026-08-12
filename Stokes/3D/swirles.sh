@@ -8,7 +8,7 @@
 #SBATCH --time=12:00:00
 #SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out   # Standard output log
 #SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err    # Standard error log
-
+  
 # Exit immediately if any command fails
 set -eo pipefail
 
