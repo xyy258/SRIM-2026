@@ -4,8 +4,9 @@ Pkg.activate(".")   # Change to current folder
 Pkg.instantiate()
 ## Start code
 
-using Oceananigans, Printf
+using Oceananigans, Printf, JLD2
 using CUDA
+using Statistics
 # using NCDatasets
 
 # Running on GPU or CPU
@@ -61,21 +62,22 @@ uᵢ(x,y,z) = U∞ + kick * randn()
 vᵢ(x,y,z) = kick * randn()
 wᵢ(x,y,z) = kick * randn()
 
-if profile == 0         # linear
-    @inline bᵢ(x,y,z) = N² * z
+scale = (r==0 || isnothing(r)) ? 1 : N²
+bᵢ = if profile == 0
     Profile = "linear"
-elseif profile == 1     # nonlinear
-    @inline bᵢ(x,y,z) = N²*z*(1-exp(-0.2*(z/T)^5))
+    (x, y, z) -> scale * z
+elseif profile == 1
     Profile = "nonlinear"
-elseif profile == 2     # exponential with fixed buoyancy difference
-    @inline bᵢ(x,y,z) = N²*Lz*(Lᴰ*(exp(z/Lᴰ)-1)-z)/(Lᴰ*(exp(Lz/Lᴰ)-1)-Lz)
+    (x, y, z) -> scale * z * (1 - exp(-0.2 * (z / T)^5))
+elseif profile == 2
     Profile = "exponential"
-elseif profile == 3     # linear with exponential decay
-    @inline bᵢ(x,y,z) = N²*(z+Lᴰ*(exp(-z/Lᴰ)-1))
+    (x, y, z) -> scale * Lz * (Lᴰ * (exp(z / Lᴰ) - 1) - z) / (Lᴰ * (exp(Lz / Lᴰ) - 1) - Lz)
+elseif profile == 3
     Profile = "linear with exponential decay"
-elseif profile == 4     # softplus
-    @inline bᵢ(x,y,z) = N²/sharp*log(1+exp(sharp*(z-T)))
+    (x, y, z) -> scale * (z + Lᴰ * (exp(-z / Lᴰ) - 1))
+elseif profile == 4
     Profile = "softplus"
+    (x, y, z) -> (scale / sharp) * log(1 + exp(sharp * (z - T)))
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -91,7 +93,7 @@ if mask == 0
     sponge_mask = PiecewiseLinearMask{:z}(center=H, width=S)
     Mask = "piecewise linear"
 elseif mask == 1
-    sponge_mask = GaussianMask{:z}(center=H, width=0.8S)
+    sponge_mask = GaussianMask{:z}(center=H, width=0.85S)
     Mask = "Gaussian"
 end
 @info "Using $Mask mask for sponge layer..."
@@ -109,12 +111,14 @@ b_sponge = Relaxation(rate = sponge_rate, mask = sponge_mask,
                     #   target = LinearTarget{:z}(intercept = 0, gradient = N²))
                       target = b_target)
 
+buoyancy_model = !(r == 0 || isnothing(r)) ? BuoyancyTracer() : nothing
+
 # Define our model: specify grid, advection scheme, bcs, etc...
 model = NonhydrostaticModel(grid;
     advection   = Centered(order=4),
     timestepper = :RungeKutta3, # Timestepping scheme
     tracers     = :b,  # Set the name(s) of any tracers: b is buoyancy, c is a passive tracer (e.g. dye)
-    buoyancy    = BuoyancyTracer(),
+    buoyancy    = buoyancy_model,
 
     # Closures for LES
     closure = (ScalarDiffusivity(ν=ν₀,κ=κ₀),AnisotropicMinimumDissipation()),
@@ -130,48 +134,19 @@ model = NonhydrostaticModel(grid;
     b = b_sponge)
 )
 
+# Send the initial conditions to the model to initialize the variables
+set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
+
 @info "3D simulation parameters"
 
 @printf(
 "Dimensions                      %.1f m × %.1f m × %.1f m
-Grid size                       %.1f × %.1f × %.1f
+Grid size                       %d × %d × %d
 Far stream velocity             U∞  = %.4f
 Square buoyancy frequency:      N²  = %.2e,
 Coriolis parameter:             f   = %.2e,
-Ratio:                          r   = N/f = %.1f
-Molecular kinematic viscosity:  ν₀  = %.2e,
-Reynolds number:                Re∞ = %.2e,
-Prandtl number:                 Pr  = %.1f,
-Molecular diffusivity:          κ₀  = %.2e,
-Frictional velocity             u*  = %.2e
-Drag coefficient:               cᴰ  = %.4f,
-Layer lengthscale:              δ   = %.2f
-Frictional Reynolds             Re* = %.2e
-Frictional Richardson           Ri* = %.1f\n",
-Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star)
-
-open(@sprintf("Ekman/3D Simulation/Parameters/r=%.1f parameters.txt",r), "w") do file
-    write(file, @sprintf(
-"Dimensions                      %.1f m × %.1f m × %.1f m
-Grid size                       %.1f × %.1f × %.1f
-Far stream velocity             U∞  = %.4f
-Square buoyancy frequency:      N²  = %.2e,
-Coriolis parameter:             f   = %.2e,
-Ratio:                          r   = N/f = %.1f
-Molecular kinematic viscosity:  ν₀  = %.2e,
-Reynolds number:                Re∞ = %.2e,
-Prandtl number:                 Pr  = %.1f,
-Molecular diffusivity:          κ₀  = %.2e,
-Frictional velocity             u*  = %.2e
-Drag coefficient:               cᴰ  = %.4f,
-Layer lengthscale:              δ   = %.2f
-Frictional Reynolds             Re* = %.2e
-Frictional Richardson           Ri* = %.1f",
-Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
-end
-
-# Send the initial conditions to the model to initialize the variables
-set!(model, u = uᵢ, v = vᵢ, w = wᵢ, b = bᵢ)
+Ratio:                          r   = N/f = %.1f\n",
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r)
 
 # Now, we create a 'simulation' to run the model for a specified length of time
 simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
@@ -283,6 +258,76 @@ nothing # hide
 
 # Now, run the simulation
 run!(simulation)
+
+
+## Finding friction velocity, u*, and friction length, z₀
+
+vel_file_path = joinpath(filename, "Avg_vel.jld2")
+vel_file  = jldopen(vel_file_path, "r")
+time_keys = keys(vel_file["timeseries/t"])
+last_iter = parse(Int, time_keys[end])
+
+u_avg_data = vel_file["timeseries/u_avg/$last_iter"][1, 1, :]
+v_avg_data = vel_file["timeseries/v_avg/$last_iter"][1, 1, :]
+close(vel_file)
+
+# Fit logarithmic profile: U(z) = (u*/κ) * ln(d) - (u*/κ) * ln(z₀)
+function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=5)
+    # Extract vertical center points near the wall
+    z = Array(znodes(grid, Center()))[1:n_points]
+
+    # Horizontal mean speed U = sqrt(u_avg² + v_avg²)
+    U = @. sqrt(u_avg[1:n_points]^2 + v_avg[1:n_points]^2)
+
+    # Design matrix: U = A * ln(z) + B
+    X = [log.(z) ones(n_points)]
+
+    # Least-squares regression
+    coeff = X \ U
+    A, B = coeff[1], coeff[2]
+
+    # Recover u* and z0
+    u_star_fit = A * κ
+    z0_fit     = exp(-B / A)
+
+    # R² score
+    U_pred = X * coeff
+    SS_res = sum((U .- U_pred).^2)
+    SS_tot = sum((U .- mean(U)).^2)
+    r2     = 1.0 - (SS_res / SS_tot)
+
+    return u_star_fit, z0_fit, r2
+end
+
+const n_points_fit = 5         # number of points near the bottom to fit
+u_star_fit, z₀_fit, r2 = fit_log_layer(grid, u_avg_data, v_avg_data; κ=κ, n_points=n_points_fit)
+
+const u_star  = u_star_fit      # friction velocity
+δ       = u_star/f₀             # boundary layer lengthscale
+Re_star = u_star*δ/ν₀           # frictional Reynolds
+Ri_star = N²/f₀^2               # frictional Richardson
+
+param_dir = "Ekman/3D Simulation/Parameters/"
+mkpath(param_dir)
+open(param_dir*@sprintf("%d r=%.1f parameters.txt",profile,r), "w") do file
+    write(file, @sprintf(
+"Dimensions                      %.1f m × %.1f m × %.1f m
+Grid size                       %d × %d × %d
+Far stream velocity             U∞  = %.4f
+Square buoyancy frequency:      N²  = %.2e,
+Coriolis parameter:             f   = %.2e,
+Ratio:                          r   = N/f = %.1f
+Molecular kinematic viscosity:  ν₀  = %.2e,
+Reynolds number:                Re∞ = %.2e,
+Prandtl number:                 Pr  = %.1f,
+Molecular diffusivity:          κ₀  = %.2e,
+Frictional velocity             u*  = %.2e
+Drag coefficient:               cᴰ  = %.4f,
+Layer lengthscale:              δ   = %.2f
+Friction Reynolds               Re* = %.2e
+Friction Richardson             Ri* = %.1f",
+Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
+end
 
 include("Ekman_anim.jl")
 include("Ekman_plot.jl")

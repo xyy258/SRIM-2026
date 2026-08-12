@@ -38,16 +38,18 @@ Lzmask  = zb[findall(x -> x < Lz, zb)]
 NLzmask = length(Lzmask)
 
 # Masking for certain height from bottom of domain
-z_mask = findall(x -> x < 50,zb)
+z_mask = findall(x -> x < 60,zb)
 zbmask = zb[z_mask]
 Nzmask = length(zbmask)
+
+bscale = (r==0 || isnothing(r)) ? 1 : N²
 
 # Load initial buoyancy profile
 b_initial = file_b["timeseries/b/$(iterations[1])"][:, 1, 1:NLzmask]
 
 # Fixing colour limits for buoyancy difference plot
 clim_abs = maximum(
-    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial[:,1:Nzmask])' / N²)
+    maximum(abs, (file_b["timeseries/b/$iter"][:, 1, 1:Nzmask] .- b_initial[:,1:Nzmask])' / bscale)
     for iter in iterations
 )
 
@@ -61,20 +63,25 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t = file_vel["timeseries/t/$iter"];
     t_save[i] = t # save the time
 
-    b_xz_plot = heatmap(xb, Lzmask, b_xz'/N²;
+    b_xz_plot = heatmap(xb, Lzmask, b_xz'/bscale;
         color = :thermal,
-        clims = (0, 1.05.*maximum(b_xz'/N²)),
+        clims = (0, 1.05.*maximum(b_xz'/bscale)),
         xlabel = "x", ylabel = "z",
         xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
 
-    b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask] .- b_initial[:,1:Nzmask])'/N²;
+    b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask] .- b_initial[:,1:Nzmask])'/bscale;
         color = :coolwarm,
         clims = (-clim_abs,clim_abs).*1.05,
         xlabel = "x", ylabel = "z",
         xlims = (0, Lx), ylims = (0,zbmask[end]));
 
-    b_title = @sprintf("b/N² at t = %s, N/f = %.1f", round(t), r);
-    b_diff_title = @sprintf("(b-bᵢ)/N² at t = %s, N/f = %.1f", round(t), r);
+    if (r==0 || isnothing(r)) == true
+        b_title = @sprintf("b at t = %s, N/f = %.1f", round(t), r);
+        b_diff_title = @sprintf("(b-bᵢ) at t = %s, N/f = %.1f", round(t), r);
+    else
+        b_title = @sprintf("b/N² at t = %s, N/f = %.1f", round(t), r);
+        b_diff_title = @sprintf("(b-bᵢ)/N² at t = %s, N/f = %.1f", round(t), r);
+    end
 
 # Combine the sub-plots into a single figure
     plot(b_xz_plot, b_diff_xz_plot,

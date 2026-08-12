@@ -1,17 +1,21 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Figure 5 for the L sweep (deviates from Gayen et al.; see case_params.jl).
-# Exponential background N²_bg = N∞²[1−exp(−z/L)], L a fraction of Lz.
-# Per case (L, Ri): vertical profiles of the plane-averaged (a) buoyancy and
-# (b) buoyancy gradient at several whole tidal periods, so the mixed-layer growth
-# shows as a family of curves. One PNG per case: figures/Figure5_L<f>Lz_<Ri>.png.
+# Figure 5 for the SOFTPLUS sweep.
+# Background: b_bg(z) = (N∞²/s)·log(1+e^{s(z−T)}), N²_bg(z) = N∞²·sigmoid(s(z−T))
+# — unstratified below the pycnocline at z = T, N∞² above (case_params.jl).
 #
-# Depth axis is z/δ with δ = u*/f (f = ω = 1e-4), u* = peak wall-friction velocity
-# over the final period. Markers follow the paper: ∘ = mixed-layer height h_m
-# where the normalized gradient first reaches 0.1; △ = where Ri_g = N²/S² first
-# reaches 0.25.
+# Per case (T, √Ri): vertical profiles of the plane-averaged (a) buoyancy and
+# (b) buoyancy gradient at each whole tidal period, so mixed-layer growth shows
+# as a family of curves. One PNG per case: figures/Figure5_P4_T<T>_sqrtRi<s>.png.
 #
-# Reads only *_profiles.jld2 written by Tidal3D.jl.  Run:  julia --project=.. Figure5.jl
+# Markers follow the paper: ∘ = mixed-layer height h_m where the normalized
+# gradient first reaches 0.1; △ = where Ri_g = N²/S² first reaches 0.25.
+#
+# Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
+# Stratification is labelled by N/ω = √Ri; directory tags keep the sqrtRi
+# spelling because they name data already on disk.
+#   julia --project=. Figure5.jl
+# Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure5.jl
 
 const ω  = 1e-4
 const f  = ω
@@ -21,26 +25,38 @@ const δs = sqrt(2ν / ω)            # Stokes thickness — near-wall cutoff fo
 const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
 
-const Lz        = 90 * δs              # OLD domain height ≈ 12.73 m
-const Lz_new    = 150 * δs             # NEW taller domain ≈ 21.21 m
-const L_fracs   = [0.2, 0.5, 1.0, 1.5]   # L_strat as a fraction of Lz
-const Ri_values = [(500, "Ri500"), (2500, "Ri2500")]
-flbl(fr) = isinteger(fr) ? string(Int(fr)) : replace(string(fr), "." => "p")  # 0.5 → "0p5"
+# These must match case_params.jl — the t = 0 overlay is only the true initial
+# condition if the profile parameters agree with the run.
+const sharp = parse(Float64, get(ENV, "SHARP", "6"))
+const Lz    = 50.0
 
-# MIXED SWEEP: only L = 1·Lz was rerun on the new taller domain (150δ); the other
-# three L values are retained from the earlier 90δ run, so each case's t = 0
-# background overlay and label must use its own Lz.
-const new_domain_fracs = [1.0]
-Lz_of(fr) = fr in new_domain_fracs ? Lz_new : Lz
-# Depth axis in PHYSICAL METRES. The tidal boundary layer / pycnocline live in
-# the bottom several metres; 8 m shows them with headroom and excludes the sponge
-# (which begins at 70 δ_s ≈ 9.9 m). δ = u*/f is still reported in each title.
-const zmax_m    = 8.0             # metres shown on the depth axis
-const n_periods_plot = [1, 2, 4, 6, 8]
+parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))
+const T_values    = parse_list("T_VALUES", "5 10 20 30")
+# N/ω and √Ri are the same number; SQRT_RI is still honoured so the existing
+# sweep driver keeps working unchanged.
+const n_over_ω = parse_list("N_OVER_OMEGA", get(ENV, "SQRT_RI", "0 0.5 1 2 5 10"))
+const outroot  = get(ENV, "OUT_ROOT", "outputs")
+# Whole periods to draw, one curve each. Four at a time, which is what the colour
+# ramp below holds; a longer list reuses its last colour. Runs are n_periods = 8
+# now, so a driver plotting the END of a run passes N_PERIODS_PLOT="5 6 7 8" —
+# the default is kept at 1–4 so existing 4-period data plots unchanged. Periods
+# past the end of a run are dropped rather than erroring.
+const n_periods_plot = parse.(Int, split(get(ENV, "N_PERIODS_PLOT", "1 2 3 4")))
 
-ramp = ["#A8CBEC", "#6BA3DE", "#3C7CC4", "#1F559B", "#0B3164"]
+num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
+tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
 
-# Lowest height at which f crosses `level` from below, linearly interpolated.
+# Depth window per case, mirroring Lz_test in case_params.jl.
+zmax_of(T) = min(Lz, max(70δs, T + 10))
+
+# Softplus background, normalized by N∞² (so these are shape-only and independent
+# of Ri). Same expressions as case_params.jl profile 4.
+b_bg_over_N²(z, T)  = log(1 + exp(sharp * (z - T))) / sharp     # metres²·s⁻²/N∞² → metres
+N²_bg_over_N²(z, T) = 1 / (1 + exp(-sharp * (z - T)))           # dimensionless
+
+ramp = ["#A8CBEC", "#6BA3DE", "#3C7CC4", "#0B3164"]
+
+# Lowest height at which fv crosses `level` from below, linearly interpolated.
 function first_crossing(z, fv, level; zmin = -Inf)
     for i in 1:length(fv)-1
         z[i] < zmin && continue
@@ -65,9 +81,11 @@ default(fontfamily = "sans-serif", grid = true, gridalpha = 0.15,
 outdir = joinpath(@__DIR__, "figures")
 mkpath(outdir)
 
-for fr in L_fracs, (Ri, ricase) in Ri_values
-    tag   = "L$(flbl(fr))Lz_$(ricase)"
-    fname = joinpath(@__DIR__, "output_" * tag, "TidalBL3D_" * tag * "_profiles.jld2")
+nsaved = 0
+for T in T_values, s in n_over_ω
+    tag   = tag_of(T, s)
+    Ri    = s^2
+    fname = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_profiles.jld2")
     isfile(fname) || (@warn "Missing $fname — skipping $tag"; continue)
 
     B_ts = FieldTimeSeries(fname, "B")
@@ -76,20 +94,17 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
     times = B_ts.times
     zc = znodes(B_ts)
 
-    # Domain (hence stratification scale L) per CASE, read from the data: the new
-    # 150δ grid tops out at zc[end] ≈ 23.9 m, the old 90δ grid at ≈ 12.6 m. This is
-    # mixed within an L value — e.g. L=0.5 Ri500 was reran on 150δ (L=10.6 m) while
-    # its Ri2500 sibling is still 90δ (L=6.4 m) — so the t=0 background overlay and
-    # title must use each file's own domain, not a per-L lookup.
-    is_new = zc[end] > 15.0
-    L      = fr * (is_new ? Lz_new : Lz)   # this case's stratification scale (metres)
-
     zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])
     dz = diff(zc)
+    zmax_m = zmax_of(T)
 
-    N² = Ri * ω^2
-    bscale = a * N²
-    gscale = N²
+    # N² is the buoyancy actually felt (0 at √Ri = 0); N²_ref is what the tracer
+    # carries and what the profiles are normalized by, so the √Ri = 0 panels are
+    # a real passive-scalar figure instead of a divide-by-zero.
+    N²     = Ri * ω^2
+    N²_ref = Ri > 0 ? N² : ω^2
+    bscale = a * N²_ref
+    gscale = N²_ref
 
     # δ = u*/f (peak wall stress over the final period)
     z1 = zc[1]
@@ -109,16 +124,14 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
               legend = :topright,
               foreground_color_legend = nothing, background_color_legend = nothing)
 
-    # Initial/background profile at t = 0 (this case's L): the exponential
-    # background bᵢ = b_bg = N∞²[z + L(exp(−z/L)−1)] the time series evolve away
-    # from. Normalized like the data: buoyancy by a·N∞², gradient by N∞².
-    # Drawn first so the curves sit on top.
-    b_bg_norm(z) = (z + L * (exp(-z / L) - 1)) / a                    # b_bg / (a N∞²)
-    N²_bg_norm(z) = 1 - exp(-z / L)                                   # N²_bg / N∞²
-    plot!(pa, b_bg_norm.(zc[kc]), zc[kc]; color = :black, linestyle = :dash,
-          linewidth = 1.5, label = "background (t = 0)")
-    plot!(pb, N²_bg_norm.(zg[kg]), zg[kg]; color = :black, linestyle = :dash,
-          linewidth = 1.5, label = "background (t = 0)")
+    # Initial/background profile at t = 0, normalized like the data: buoyancy by
+    # a·N∞², gradient by N∞². Drawn first so the curves sit on top.
+    plot!(pa, b_bg_over_N².(zc[kc], T) ./ a, zc[kc]; color = :black,
+          linestyle = :dash, linewidth = 1.5, label = "background (t = 0)")
+    plot!(pb, N²_bg_over_N².(zg[kg], T), zg[kg]; color = :black,
+          linestyle = :dash, linewidth = 1.5, label = "background (t = 0)")
+    hline!(pb, [T]; color = RGB(0.55, 0.15, 0.15), linestyle = :dot,
+           linewidth = 1.5, label = "pycnocline z = T")
 
     scatter!(pb, [NaN], [NaN]; markershape = :circle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
@@ -147,7 +160,7 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
 
         h_m = first_crossing(zg, G, 0.1)
         Rig = (G .* N²) ./ max.(S², eps())
-        z_Rig = first_crossing(zg, Rig, 0.25; zmin = δs)   # skip near-wall noise (below one Stokes thickness)
+        z_Rig = first_crossing(zg, Rig, 0.25; zmin = δs)   # skip near-wall noise
 
         for (z₀, mk) in ((h_m, :circle), (z_Rig, :utriangle))
             isnan(z₀) && continue
@@ -164,9 +177,12 @@ for fr in L_fracs, (Ri, ricase) in Ri_values
 
     fig = plot(pa, pb; layout = (1, 2), size = (950, 620), leftmargin = 5Plots.mm,
                bottommargin = 5Plots.mm,
-               plot_title = @sprintf("L = %.1fLz = %.1f m%s, Ri = %d — thermal field (δ = u*/f = %.2f m)",
-                                     fr, L, (is_new ? " [150δ domain]" : " [90δ domain]"), Ri, δ),
+               plot_title = @sprintf("T = %d m, N/ω = %g (Ri = %g) — thermal field (δ = u*/f = %.2f m)",
+                                     Int(T), s, Ri, δ),
                plot_titlefontsize = 12)
     savefig(fig, joinpath(outdir, "Figure5_$tag.png"))
     @info "Saved figures/Figure5_$tag.png"
+    global nsaved += 1
 end
+
+@info "Figure 5: saved $nsaved of $(length(T_values)*length(n_over_ω)) cases"
