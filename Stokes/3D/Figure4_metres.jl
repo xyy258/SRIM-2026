@@ -165,9 +165,6 @@ function case_panels(T, s; first_col, show_xlabel)
                   leftmargin = first_col ? 13Plots.mm : 3Plots.mm,
                   rightmargin = 1Plots.mm,
                   title = ttl)
-    # Initial pycnocline height, the reference the mixed layer grows towards.
-    hline!(plt, [T]; color = RGB(0.15, 0.15, 0.15), linestyle = :dash,
-           linewidth = 1.2, label = "")
     return (plt, cbar_panel(c.gmin, c.gmax))
 end
 
