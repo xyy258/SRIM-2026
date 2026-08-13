@@ -56,7 +56,8 @@
 #   GRID_TAG=...        bump when Tidal3D.jl's grid changes, to retire old markers
 #   SPIN_W_FLOOR=0.003  turbulence threshold for the spin-up, in w_rms/U₀
 #   FIG4_ZMAX=30        top of the figure-4 depth axis, in metres (≤ 50)
-#   FIG4_HEIGHT=520     figure-4 canvas height in pixels, raised to match the window
+#   FIG4_WIDTH=640      figure-4 canvas width in pixels, PER case column
+#   FIG4_HEIGHT=390     figure-4 canvas height in pixels — with the width, the aspect
 #   FIGURES_ONLY=1      draw the figures from the existing profiles, run nothing
 #   SKIP_SPIN_CHECK=1   accept the spin-up without measuring it
 #   SKIP_FIGURES=1      simulations only
@@ -76,11 +77,14 @@ const n_periods    = get(ENV, "N_PERIODS", "8")
 const spin_periods = get(ENV, "SPIN_PERIODS", "5")
 const skip_figures = get(ENV, "SKIP_FIGURES", "0") == "1"
 
-# Figure 4's depth window, in metres, and the canvas height that keeps the near-bed
-# structure from being squashed by it. Passed to Figure4_metres.jl, which clamps the
-# window to the 50 m physical domain so the sponge is never drawn.
+# Figure 4's depth window, in metres, and the canvas it is drawn on. Passed to
+# Figure4_metres.jl, which clamps the window to the 50 m physical domain so the
+# sponge is never drawn. Doubling the window without widening the canvas turns each
+# panel into a portrait strip, so the width goes up and the height comes down with
+# it: 640 × 390 per case column keeps the landscape shape the 0–15 m figures had.
 const fig4_zmax   = get(ENV, "FIG4_ZMAX", "30")
-const fig4_height = get(ENV, "FIG4_HEIGHT", "520")
+const fig4_width  = get(ENV, "FIG4_WIDTH", "640")
+const fig4_height = get(ENV, "FIG4_HEIGHT", "390")
 
 # Redraw only. The cases are already on disk and marked complete, so this is the
 # submission to make when the change is to the figures rather than to the physics:
@@ -338,6 +342,7 @@ else
     # exactly as it was, so fig_env stays clean of these.
     fig4_env = merge(fig_env, Dict("SKIP_SWEEP"  => "1",
                                    "FIG4_ZMAX"   => fig4_zmax,
+                                   "FIG4_WIDTH"  => fig4_width,
                                    "FIG4_HEIGHT" => fig4_height))
 
     # SKIP_SWEEP is not optional here: without it Figure4_metres.jl rebuilds the

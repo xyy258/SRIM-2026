@@ -66,11 +66,27 @@ const zmax_override = let v = get(ENV, "FIG4_ZMAX", "")
 end
 zmax_of(T) = zmax_override === nothing ? min(Lz, max(70δs, T + 10)) : zmax_override
 
-# Figure height in pixels for the per-T figure. A taller window on an unchanged
-# canvas squeezes the near-bed structure — which is the point of the figure — into
-# proportionally fewer pixels, so raise this alongside FIG4_ZMAX.
+# Canvas size in pixels: FIG4_WIDTH is per case COLUMN (heatmap plus its colorbar
+# ribbon), FIG4_HEIGHT the whole per-T figure, FIG4_ROW_HEIGHT one row of the
+# overview. Together they set the panel ASPECT, which is worth choosing rather than
+# inheriting: raising FIG4_ZMAX on an unchanged canvas stretches each panel
+# vertically until it reads as a portrait strip, since the data fills whatever box
+# it is given. Roughly, panel width ≈ 0.82·FIG4_WIDTH − 75 px of guide and margin,
+# panel height ≈ FIG4_HEIGHT − 145 px of title, axis and margins. 640 × 390 at
+# FIG4_ZMAX = 30 lands at the same ~1.6:1 the 480 × 370 default did over 0–15 m.
+const fig_width   = parse(Int, get(ENV, "FIG4_WIDTH", "480"))
 const fig_height  = parse(Int, get(ENV, "FIG4_HEIGHT", "370"))
 const row_height  = parse(Int, get(ENV, "FIG4_ROW_HEIGHT", "275"))
+
+# MARGINS ARE SCALED WITH THE CANVAS, and every mm below is a multiple of this.
+# GR sizes its glyphs from the canvas as a whole, so a wider figure gets larger
+# text while a margin in mm stays the same number of pixels — at 6 × 620 px the
+# fixed 12 mm bottom margin no longer cleared the "ωt" label and it was rendered
+# off the bottom edge. The reference is the 6 × 480 px canvas the values were
+# tuned on. Only the width enters: the labels that overflowed are set in the
+# figure's font size, which does not track the height.
+const ncol = length(n_over_ω)
+const margin_scale = max(1.0, fig_width * ncol / 2880)
 
 const gradient_map = cgrad(["#7A3117", "#B4502C", "#D9855F", "#E9E7E4",
                             "#7FADE0", "#3C7CC4", "#1B4E8F"])
@@ -152,7 +168,7 @@ function cbar_panel(lo, hi)
             # Margins are set per subplot, not on the outer plot call: a global
             # left margin wide enough for the "z (m)" guide would also inset every
             # ribbon, stranding it half a cell from its own tick labels.
-            leftmargin = 0Plots.mm, rightmargin = 1Plots.mm)
+            leftmargin = 0Plots.mm, rightmargin = margin_scale * 1Plots.mm)
 end
 
 blank() = plot(framestyle = :none, grid = false, showaxis = false)
@@ -182,8 +198,8 @@ function case_panels(T, s; first_col, show_xlabel)
                   xlabel = show_xlabel ? "ωt" : "",
                   ylabel = first_col ? "z (m)" : "",
                   yformatter = first_col ? :auto : (_ -> ""),
-                  leftmargin = first_col ? 13Plots.mm : 3Plots.mm,
-                  rightmargin = 1Plots.mm,
+                  leftmargin = margin_scale * (first_col ? 18Plots.mm : 3Plots.mm),
+                  rightmargin = margin_scale * 1Plots.mm,
                   title = ttl)
 
     # The initial pycnocline, which the figure title has always announced as a
@@ -196,8 +212,8 @@ function case_panels(T, s; first_col, show_xlabel)
 end
 
 # Explicit column widths: heatmap gets ~3.5x the colorbar cell (which also has to
-# hold the ribbon's tick labels).
-const ncol = length(n_over_ω)
+# hold the ribbon's tick labels). ncol is defined with the canvas knobs above,
+# since the margin scale needs it.
 column_widths(n) = (w = repeat([0.82, 0.18], n); w ./ sum(w))
 
 # ---------------------------------------------------------------------------
@@ -214,8 +230,9 @@ for T in T_values
     # title takes a fixed FRACTION of the height, so on a short figure it has to
     # be given a bigger share explicitly or it collides with the panel titles.
     fig = plot(panels...; layout = grid(1, 2ncol, widths = column_widths(ncol)),
-               size = (480 * ncol, fig_height),
-               bottommargin = 12Plots.mm, topmargin = 4Plots.mm,
+               size = (fig_width * ncol, fig_height),
+               bottommargin = margin_scale * 14Plots.mm,
+               topmargin = margin_scale * 4Plots.mm,
                plot_title = @sprintf("Buoyancy gradient ∂⟨b⟩/∂z / N²  —  T = %d m  (dashed = initial pycnocline z = T)", Int(T)),
                # ~55 px of title, expressed as the fraction the argument wants: a
                # fixed 0.15 was tuned against the 370 px canvas and would eat a
@@ -245,8 +262,8 @@ for (ti, T) in enumerate(T_values), (si, s) in enumerate(n_over_ω)
     push!(panels, p, cb)
 end
 fig = plot(panels...; layout = grid(nrow, 2ncol, widths = column_widths(ncol)),
-           size = (480 * ncol, row_height * nrow),
-           bottommargin = 9Plots.mm, topmargin = 4Plots.mm,
+           size = (fig_width * ncol, row_height * nrow),
+           bottommargin = margin_scale * 9Plots.mm, topmargin = margin_scale * 4Plots.mm,
            plot_title = "Buoyancy gradient ∂⟨b⟩/∂z / N²  — softplus sweep (dashed = initial pycnocline z = T)",
            plot_titlefontsize = 14, plot_titlevspan = 0.045)
 savefig(fig, joinpath(outdir, "Figure4_softplus_sweep.png"))
