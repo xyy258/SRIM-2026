@@ -2620,3 +2620,10 @@ spin-up check: w_rms/U0 = 0.0142 at snapshot 11/11 (t = 5.00 periods)
 ==============================================================================
 spin-up check: w_rms/U0 = 0.0142 at snapshot 11/11 (t = 5.00 periods)
   turbulent reference 0.009-0.012, floor 0.0030 -> turbulent
+
+==============================================================================
+==== 2026-08-13 10:58:55  spin-up turbulence check
+==== 
+==============================================================================
+spin-up check: w_rms/U0 = 0.0142 at snapshot 11/11 (t = 5.00 periods)
+  turbulent reference 0.009-0.012, floor 0.0030 -> turbulent
