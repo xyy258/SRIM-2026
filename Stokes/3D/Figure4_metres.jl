@@ -22,6 +22,14 @@ using Oceananigans, JLD2, Plots, Printf
 # Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
 #   julia --project=. Figure4_metres.jl
 # Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure4_metres.jl
+# Taller:   FIG4_ZMAX=30 julia --project=. Figure4_metres.jl
+#
+# THE DEPTH WINDOW IS A PLOTTING CHOICE ONLY. The profiles files hold the plane
+# average over the WHOLE column — the 50 m physical domain plus the 10 m sponge —
+# so any window up to Lz can be drawn from data already on disk, without re-running
+# a single case. FIG4_ZMAX (metres) overrides the default window for every panel;
+# it is clamped to Lz, since the sponge damps the flow and its gradients describe
+# the boundary condition rather than the physics.
 
 const ω  = 1e-4
 const f  = ω
@@ -48,9 +56,21 @@ tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
 const outroot = get(ENV, "OUT_ROOT", "outputs")
 profiles_file(tag) = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_profiles.jld2")
 
-# Depth window per row, mirroring Lz_test in case_params.jl so the figure shows
-# the same section the animations do: the pycnocline at z = T plus headroom.
-zmax_of(T) = min(Lz, max(70δs, T + 10))
+# Depth window per row. Unset, it mirrors Lz_test in case_params.jl so the figure
+# shows the same section the animations do: the pycnocline at z = T plus headroom.
+# FIG4_ZMAX replaces that with one fixed height for every panel, which is also what
+# makes rows comparable when several T are drawn — the default window is T-dependent
+# and so gives each row its own vertical scale.
+const zmax_override = let v = get(ENV, "FIG4_ZMAX", "")
+    isempty(v) ? nothing : min(Lz, parse(Float64, v))
+end
+zmax_of(T) = zmax_override === nothing ? min(Lz, max(70δs, T + 10)) : zmax_override
+
+# Figure height in pixels for the per-T figure. A taller window on an unchanged
+# canvas squeezes the near-bed structure — which is the point of the figure — into
+# proportionally fewer pixels, so raise this alongside FIG4_ZMAX.
+const fig_height  = parse(Int, get(ENV, "FIG4_HEIGHT", "370"))
+const row_height  = parse(Int, get(ENV, "FIG4_ROW_HEIGHT", "275"))
 
 const gradient_map = cgrad(["#7A3117", "#B4502C", "#D9855F", "#E9E7E4",
                             "#7FADE0", "#3C7CC4", "#1B4E8F"])
@@ -165,6 +185,13 @@ function case_panels(T, s; first_col, show_xlabel)
                   leftmargin = first_col ? 13Plots.mm : 3Plots.mm,
                   rightmargin = 1Plots.mm,
                   title = ttl)
+
+    # The initial pycnocline, which the figure title has always announced as a
+    # dashed line. It matters more the taller the window is: with the panel top far
+    # above z = T there is no longer any reading off the axis where the initial
+    # interface sat relative to the mixed layer that grew from the bed.
+    T < c.zmax && hline!(plt, [T]; color = :black, linestyle = :dash,
+                         linewidth = 1, label = "", legend = false)
     return (plt, cbar_panel(c.gmin, c.gmax))
 end
 
@@ -187,10 +214,13 @@ for T in T_values
     # title takes a fixed FRACTION of the height, so on a short figure it has to
     # be given a bigger share explicitly or it collides with the panel titles.
     fig = plot(panels...; layout = grid(1, 2ncol, widths = column_widths(ncol)),
-               size = (480 * ncol, 370),
+               size = (480 * ncol, fig_height),
                bottommargin = 12Plots.mm, topmargin = 4Plots.mm,
                plot_title = @sprintf("Buoyancy gradient ∂⟨b⟩/∂z / N²  —  T = %d m  (dashed = initial pycnocline z = T)", Int(T)),
-               plot_titlefontsize = 14, plot_titlevspan = 0.15)
+               # ~55 px of title, expressed as the fraction the argument wants: a
+               # fixed 0.15 was tuned against the 370 px canvas and would eat a
+               # tenth of the panels once FIG4_HEIGHT is raised.
+               plot_titlefontsize = 14, plot_titlevspan = min(0.15, 55 / fig_height))
     fname = joinpath(outdir, "Figure4_softplus_T" * num_lbl(T) * ".png")
     savefig(fig, fname)
     @info "Saved figures/" * basename(fname)
@@ -215,7 +245,7 @@ for (ti, T) in enumerate(T_values), (si, s) in enumerate(n_over_ω)
     push!(panels, p, cb)
 end
 fig = plot(panels...; layout = grid(nrow, 2ncol, widths = column_widths(ncol)),
-           size = (480 * ncol, 275 * nrow),
+           size = (480 * ncol, row_height * nrow),
            bottommargin = 9Plots.mm, topmargin = 4Plots.mm,
            plot_title = "Buoyancy gradient ∂⟨b⟩/∂z / N²  — softplus sweep (dashed = initial pycnocline z = T)",
            plot_titlefontsize = 14, plot_titlevspan = 0.045)

@@ -38,6 +38,14 @@
 # afterwards:
 #     PROFILE=4 T_STRAT=5 julia --project=. Tidal3Danimation.jl sqrtRi2
 #
+# FIGURE 4 NOW SHOWS 0–30 m, not the 0–15 m the earlier submissions drew. That
+# window is a plotting choice and nothing more: the profiles files hold the plane
+# average over the whole 50 m physical column (plus a 10 m sponge, which is never
+# plotted), so the taller figure comes out of data already on disk. Every case of
+# the T = 5 column carries its marker, so re-submitting swirles.sh unchanged skips
+# straight past the spin-up and the six cases and redraws the figures — minutes,
+# not hours. FIGURES_ONLY=1 skips even the checks in between.
+#
 # Knobs (all optional):
 #   T_VALUES="5"        which columns to run (the grid is the same for any T)
 #   SQRT_RI="0 1 2"     subset of the N/ω cases — see the note on parallel jobs below
@@ -47,6 +55,9 @@
 #   CASE_HOURS=4.4      first-case time estimate, before the job measures its own
 #   GRID_TAG=...        bump when Tidal3D.jl's grid changes, to retire old markers
 #   SPIN_W_FLOOR=0.003  turbulence threshold for the spin-up, in w_rms/U₀
+#   FIG4_ZMAX=30        top of the figure-4 depth axis, in metres (≤ 50)
+#   FIG4_HEIGHT=520     figure-4 canvas height in pixels, raised to match the window
+#   FIGURES_ONLY=1      draw the figures from the existing profiles, run nothing
 #   SKIP_SPIN_CHECK=1   accept the spin-up without measuring it
 #   SKIP_FIGURES=1      simulations only
 #   SKIP_PREFLIGHT=1    skip the environment check
@@ -64,6 +75,17 @@ const sqrt_Ri      = split(get(ENV, "SQRT_RI", "0 0.5 1 2 5 10"))
 const n_periods    = get(ENV, "N_PERIODS", "8")
 const spin_periods = get(ENV, "SPIN_PERIODS", "5")
 const skip_figures = get(ENV, "SKIP_FIGURES", "0") == "1"
+
+# Figure 4's depth window, in metres, and the canvas height that keeps the near-bed
+# structure from being squashed by it. Passed to Figure4_metres.jl, which clamps the
+# window to the 50 m physical domain so the sponge is never drawn.
+const fig4_zmax   = get(ENV, "FIG4_ZMAX", "30")
+const fig4_height = get(ENV, "FIG4_HEIGHT", "520")
+
+# Redraw only. The cases are already on disk and marked complete, so this is the
+# submission to make when the change is to the figures rather than to the physics:
+# it skips the spin-up, the turbulence check and the case loop outright.
+const figures_only = get(ENV, "FIGURES_ONLY", "0") == "1"
 
 # Stamped into the completion markers and the spin-up tag so that work done on a
 # different grid is never mistaken for work done on this one. Bump it whenever
@@ -162,7 +184,9 @@ end
 const spin_tag    = "spinup_$grid_tag"
 const spin_fields = joinpath("outputs", spin_tag, "TidalBL3D_$(spin_tag)_fields.jld2")
 
-if isfile(joinpath(HERE, spin_fields))
+if figures_only
+    log("FIGURES_ONLY=1 — no spin-up, no cases; the figures are redrawn from the profiles on disk")
+elseif isfile(joinpath(HERE, spin_fields))
     log("spin-up snapshot already present ($spin_tag) — skipping")
 else
     log("spin-up: Ri0 from rest, $spin_periods periods (~2.6 h expected)")
@@ -184,7 +208,7 @@ end
 # Without the snapshot every case would start from rest with noise (Tidal3D.jl
 # warns and carries on), so most of each run would be spin-up rather than the
 # stratified evolution the figures are about. Stop instead.
-isfile(joinpath(HERE, spin_fields)) ||
+figures_only || isfile(joinpath(HERE, spin_fields)) ||
     error("No spin-up snapshot at $spin_fields — see logs/$spin_tag.log. Nothing else has run.")
 
 # ---------------- 1b. Spin-up turbulence check ----------------
@@ -221,7 +245,7 @@ r  = sqrt(mean(w .^ 2)) / U0
 exit(r < floor_ ? 1 : 0)
 """
 
-if get(ENV, "SKIP_SPIN_CHECK", "0") != "1" &&
+if !figures_only && get(ENV, "SKIP_SPIN_CHECK", "0") != "1" &&
    !run_julia(["-e", spin_check_code, joinpath(HERE, spin_fields), U0_ref, w_floor],
               Dict{String,String}(), "$spin_tag.log";
               threads = "1", label = "spin-up turbulence check")
@@ -238,6 +262,7 @@ done_cases, failed_cases, skipped_cases = String[], String[], String[]
 case_estimate_h = parse(Float64, get(ENV, "CASE_HOURS", string(0.55 * parse(Int, n_periods))))
 
 for Tv in T_values, s in sqrt_Ri
+    figures_only && break
     tag  = tag_of(Tv, s)
     dir  = joinpath(HERE, "outputs", tag)
     mark = marker_of(tag)
@@ -280,8 +305,9 @@ for Tv in T_values, s in sqrt_Ri
     end
 end
 
-log("simulations: $(length(done_cases)) complete, $(length(failed_cases)) failed, " *
-    "$(length(skipped_cases)) not started")
+figures_only ||
+    log("simulations: $(length(done_cases)) complete, $(length(failed_cases)) failed, " *
+        "$(length(skipped_cases)) not started")
 
 # ---------------- 3–4. Figures ----------------
 # Held back until EVERY case of the column carries this grid's marker. The figure
@@ -308,13 +334,18 @@ else
     fig_env = Dict("T_VALUES" => T_list, "SQRT_RI" => ri_list,
                    "N_PERIODS_PLOT" => periods_plot)
 
+    # Figure 4 only. Figure 5 plots profiles against z on its own axis and is left
+    # exactly as it was, so fig_env stays clean of these.
+    fig4_env = merge(fig_env, Dict("SKIP_SWEEP"  => "1",
+                                   "FIG4_ZMAX"   => fig4_zmax,
+                                   "FIG4_HEIGHT" => fig4_height))
+
     # SKIP_SWEEP is not optional here: without it Figure4_metres.jl rebuilds the
     # combined overview from T_VALUES alone, replacing the multi-T figure with a
     # single row — and see the header on why that figure should not be rebuilt at
     # all while the other columns are 48×48 data.
-    log("Figure 4 (T ∈ {$T_list}, N/ω ∈ {$ri_list})")
-    run_script("Figure4_metres.jl", String[],
-               merge(fig_env, Dict("SKIP_SWEEP" => "1")), "post_figures.log") ||
+    log("Figure 4 (T ∈ {$T_list}, N/ω ∈ {$ri_list}, depth axis 0–$fig4_zmax m)")
+    run_script("Figure4_metres.jl", String[], fig4_env, "post_figures.log") ||
         log("  Figure4_metres.jl FAILED — see logs/post_figures.log")
 
     log("Figure 5 (one per case, periods $periods_plot)")
