@@ -442,3 +442,53 @@ Precompiling packages...
 └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
 preflight: packages loaded
 preflight: CUDA functional — NVIDIA A100-SXM4-40GB
+
+==============================================================================
+==== 2026-08-12 13:47:42  preflight
+==== JULIA_NUM_PRECOMPILE_TASKS=1
+==============================================================================
+┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+preflight: packages loaded
+preflight: CUDA functional — NVIDIA A100-SXM4-40GB
+
+==============================================================================
+==== 2026-08-12 23:38:00  preflight
+==== JULIA_NUM_PRECOMPILE_TASKS=1
+==============================================================================
+┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+preflight: packages loaded
+preflight: CUDA functional — NVIDIA A100-SXM4-40GB
