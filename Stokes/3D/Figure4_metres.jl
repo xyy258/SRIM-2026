@@ -22,6 +22,14 @@ using Oceananigans, JLD2, Plots, Printf
 # Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
 #   julia --project=. Figure4_metres.jl
 # Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure4_metres.jl
+# Taller:   FIG4_ZMAX=30 julia --project=. Figure4_metres.jl
+#
+# THE DEPTH WINDOW IS A PLOTTING CHOICE ONLY. The profiles files hold the plane
+# average over the WHOLE column — the 50 m physical domain plus the 10 m sponge —
+# so any window up to Lz can be drawn from data already on disk, without re-running
+# a single case. FIG4_ZMAX (metres) overrides the default window for every panel;
+# it is clamped to Lz, since the sponge damps the flow and its gradients describe
+# the boundary condition rather than the physics.
 
 const ω  = 1e-4
 const f  = ω
@@ -48,9 +56,37 @@ tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
 const outroot = get(ENV, "OUT_ROOT", "outputs")
 profiles_file(tag) = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_profiles.jld2")
 
-# Depth window per row, mirroring Lz_test in case_params.jl so the figure shows
-# the same section the animations do: the pycnocline at z = T plus headroom.
-zmax_of(T) = min(Lz, max(70δs, T + 10))
+# Depth window per row. Unset, it mirrors Lz_test in case_params.jl so the figure
+# shows the same section the animations do: the pycnocline at z = T plus headroom.
+# FIG4_ZMAX replaces that with one fixed height for every panel, which is also what
+# makes rows comparable when several T are drawn — the default window is T-dependent
+# and so gives each row its own vertical scale.
+const zmax_override = let v = get(ENV, "FIG4_ZMAX", "")
+    isempty(v) ? nothing : min(Lz, parse(Float64, v))
+end
+zmax_of(T) = zmax_override === nothing ? min(Lz, max(70δs, T + 10)) : zmax_override
+
+# Canvas size in pixels: FIG4_WIDTH is per case COLUMN (heatmap plus its colorbar
+# ribbon), FIG4_HEIGHT the whole per-T figure, FIG4_ROW_HEIGHT one row of the
+# overview. Together they set the panel ASPECT, which is worth choosing rather than
+# inheriting: raising FIG4_ZMAX on an unchanged canvas stretches each panel
+# vertically until it reads as a portrait strip, since the data fills whatever box
+# it is given. Roughly, panel width ≈ 0.82·FIG4_WIDTH − 75 px of guide and margin,
+# panel height ≈ FIG4_HEIGHT − 145 px of title, axis and margins. 640 × 390 at
+# FIG4_ZMAX = 30 lands at the same ~1.6:1 the 480 × 370 default did over 0–15 m.
+const fig_width   = parse(Int, get(ENV, "FIG4_WIDTH", "480"))
+const fig_height  = parse(Int, get(ENV, "FIG4_HEIGHT", "370"))
+const row_height  = parse(Int, get(ENV, "FIG4_ROW_HEIGHT", "275"))
+
+# MARGINS ARE SCALED WITH THE CANVAS, and every mm below is a multiple of this.
+# GR sizes its glyphs from the canvas as a whole, so a wider figure gets larger
+# text while a margin in mm stays the same number of pixels — at 6 × 620 px the
+# fixed 12 mm bottom margin no longer cleared the "ωt" label and it was rendered
+# off the bottom edge. The reference is the 6 × 480 px canvas the values were
+# tuned on. Only the width enters: the labels that overflowed are set in the
+# figure's font size, which does not track the height.
+const ncol = length(n_over_ω)
+const margin_scale = max(1.0, fig_width * ncol / 2880)
 
 const gradient_map = cgrad(["#7A3117", "#B4502C", "#D9855F", "#E9E7E4",
                             "#7FADE0", "#3C7CC4", "#1B4E8F"])
@@ -132,7 +168,7 @@ function cbar_panel(lo, hi)
             # Margins are set per subplot, not on the outer plot call: a global
             # left margin wide enough for the "z (m)" guide would also inset every
             # ribbon, stranding it half a cell from its own tick labels.
-            leftmargin = 0Plots.mm, rightmargin = 1Plots.mm)
+            leftmargin = 0Plots.mm, rightmargin = margin_scale * 1Plots.mm)
 end
 
 blank() = plot(framestyle = :none, grid = false, showaxis = false)
@@ -162,18 +198,22 @@ function case_panels(T, s; first_col, show_xlabel)
                   xlabel = show_xlabel ? "ωt" : "",
                   ylabel = first_col ? "z (m)" : "",
                   yformatter = first_col ? :auto : (_ -> ""),
-                  leftmargin = first_col ? 13Plots.mm : 3Plots.mm,
-                  rightmargin = 1Plots.mm,
+                  leftmargin = margin_scale * (first_col ? 18Plots.mm : 3Plots.mm),
+                  rightmargin = margin_scale * 1Plots.mm,
                   title = ttl)
-    # Initial pycnocline height, the reference the mixed layer grows towards.
-    hline!(plt, [T]; color = RGB(0.15, 0.15, 0.15), linestyle = :dash,
-           linewidth = 1.2, label = "")
+
+    # The initial pycnocline, which the figure title has always announced as a
+    # dashed line. It matters more the taller the window is: with the panel top far
+    # above z = T there is no longer any reading off the axis where the initial
+    # interface sat relative to the mixed layer that grew from the bed.
+    T < c.zmax && hline!(plt, [T]; color = :black, linestyle = :dash,
+                         linewidth = 1, label = "", legend = false)
     return (plt, cbar_panel(c.gmin, c.gmax))
 end
 
 # Explicit column widths: heatmap gets ~3.5x the colorbar cell (which also has to
-# hold the ribbon's tick labels).
-const ncol = length(n_over_ω)
+# hold the ribbon's tick labels). ncol is defined with the canvas knobs above,
+# since the margin scale needs it.
 column_widths(n) = (w = repeat([0.82, 0.18], n); w ./ sum(w))
 
 # ---------------------------------------------------------------------------
@@ -190,10 +230,14 @@ for T in T_values
     # title takes a fixed FRACTION of the height, so on a short figure it has to
     # be given a bigger share explicitly or it collides with the panel titles.
     fig = plot(panels...; layout = grid(1, 2ncol, widths = column_widths(ncol)),
-               size = (480 * ncol, 370),
-               bottommargin = 12Plots.mm, topmargin = 4Plots.mm,
+               size = (fig_width * ncol, fig_height),
+               bottommargin = margin_scale * 14Plots.mm,
+               topmargin = margin_scale * 4Plots.mm,
                plot_title = @sprintf("Buoyancy gradient ∂⟨b⟩/∂z / N²  —  T = %d m  (dashed = initial pycnocline z = T)", Int(T)),
-               plot_titlefontsize = 14, plot_titlevspan = 0.15)
+               # ~55 px of title, expressed as the fraction the argument wants: a
+               # fixed 0.15 was tuned against the 370 px canvas and would eat a
+               # tenth of the panels once FIG4_HEIGHT is raised.
+               plot_titlefontsize = 14, plot_titlevspan = min(0.15, 55 / fig_height))
     fname = joinpath(outdir, "Figure4_softplus_T" * num_lbl(T) * ".png")
     savefig(fig, fname)
     @info "Saved figures/" * basename(fname)
@@ -218,8 +262,8 @@ for (ti, T) in enumerate(T_values), (si, s) in enumerate(n_over_ω)
     push!(panels, p, cb)
 end
 fig = plot(panels...; layout = grid(nrow, 2ncol, widths = column_widths(ncol)),
-           size = (480 * ncol, 275 * nrow),
-           bottommargin = 9Plots.mm, topmargin = 4Plots.mm,
+           size = (fig_width * ncol, row_height * nrow),
+           bottommargin = margin_scale * 9Plots.mm, topmargin = margin_scale * 4Plots.mm,
            plot_title = "Buoyancy gradient ∂⟨b⟩/∂z / N²  — softplus sweep (dashed = initial pycnocline z = T)",
            plot_titlefontsize = 14, plot_titlevspan = 0.045)
 savefig(fig, joinpath(outdir, "Figure4_softplus_sweep.png"))

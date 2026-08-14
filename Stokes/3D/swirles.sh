@@ -8,7 +8,7 @@
 #SBATCH --time=12:00:00
 #SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out   # Standard output log
 #SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err    # Standard error log
-
+  
 # Exit immediately if any command fails
 set -eo pipefail
 
@@ -39,4 +39,4 @@ export JULIA_DEPOT_PATH="/cephfs/store/damtp/tll46/.julia:$HOME/.julia"
 mkdir -p /cephfs/store/damtp/tll46/.julia
 
 # Run the Julia script with project activation
-srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlestestrun.jl"
+srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlesrun.jl"
