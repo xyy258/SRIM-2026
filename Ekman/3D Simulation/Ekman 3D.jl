@@ -7,7 +7,6 @@ Pkg.instantiate()
 using Oceananigans, Printf, JLD2
 using CUDA
 using Statistics
-# using NCDatasets
 
 # Running on GPU or CPU
 arch = GPU()
@@ -199,14 +198,14 @@ else
 end
 mkpath(filename)
 
-simulation.output_writers[:xz_velocity] =
+simulation.output_writers[:velocity] =
     JLD2Writer(model, (; u, v, w),
                filename = filename * "Velocity.jld2",
                indices = (:, 1, :),
                schedule = TimeInterval(200),
                overwrite_existing = true,
                with_halos = false)
-simulation.output_writers[:xz_b_c] =
+simulation.output_writers[:b] =
     JLD2Writer(model, (; b),
                filename = filename * "Buoyancy.jld2",
                indices = (:, 1, :),
@@ -247,12 +246,6 @@ simulation.output_writers[:avg_vorticity] =
                 filename = filename * "Avg_vort.jld2",
                 schedule = TimeInterval(200),
                 overwrite_existing = true)
-# NetCDF output file
-# simulation.output_writers[:avg_db_dz] =
-#     NetCDFWriter(model, (; db_dz=db_dz_avg),
-#                 filename = "Ekman/Data/Average buoyancy gradient.nc",
-#                 schedule = IterationInterval(2),
-#                 overwrite_existing = true)
 
 nothing # hide
 
@@ -261,7 +254,6 @@ run!(simulation)
 
 
 ## Finding friction velocity, u*, and friction length, z₀
-
 vel_file_path = joinpath(filename, "Avg_vel.jld2")
 vel_file  = jldopen(vel_file_path, "r")
 time_keys = keys(vel_file["timeseries/t"])

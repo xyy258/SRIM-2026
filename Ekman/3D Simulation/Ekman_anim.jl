@@ -1,8 +1,7 @@
 ENV["GKSwstype"] = "100"
 
 using Oceananigans, JLD2, Plots, Printf
-using Plots.PlotMeasures # using units for borders
-# using NCDatasets
+using Plots.PlotMeasures
 
 # Import parameters
 include("Parameters.jl")
@@ -10,6 +9,7 @@ include("Parameters.jl")
 # Root data file name:    "root"
 # Folder to be saved in:  "save_folder"
 include("Filename_anim.jl")
+
 
 # ===================  #
 ## Buoyancy animation ##
@@ -96,6 +96,7 @@ close(file_b)
 # Save the animation to a file
 mkpath(save_folder*"Buoyancy")
 mp4(anim, save_folder*@sprintf("Buoyancy/r = %.1f.mp4", r), fps = 30) # hide
+
 
 #  ==========================  #
 ## Average velocity animation ##

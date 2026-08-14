@@ -2,7 +2,6 @@ ENV["GKSwstype"] = "100"
 
 using Oceananigans, JLD2, Plots, Printf
 using Plots.PlotMeasures
-# using NCDatasets
 
 # Import parameters
 include("Parameters.jl")
@@ -10,6 +9,7 @@ include("Parameters.jl")
 # Root data file name:    "root"
 # Folder to be saved in:  "save_folder"
 include("Filename_plot.jl")
+
 
 #  ======================================================  #
 ## Plot of average buoyancy gradient with depth over time ##
@@ -63,6 +63,7 @@ heatmap(t_save*f₀, zbconcat, gradient_data[1:Nzconcat, :]/bscale,
         color  = :thermal) # :thermal is great for highlighting intensifying gradients
 mkpath(save_folder*"Buoyancy gradient plot")
 savefig(save_folder*@sprintf("Buoyancy gradient plot/r = %.1f.png",r))
+
 
 #  =======================================  #
 ##  Horizontally averaged buoyancy profile ##
@@ -163,6 +164,7 @@ plot!(db_dz_plot_final/bscale, z_plot,
 mkpath(save_folder*"Averaged buoyancy gradient profile")
 savefig(save_folder*@sprintf("Averaged buoyancy gradient profile/r = %.1f.png",r))
 
+
 #  ==================  #
 ##   Hodograph plot   ##
 #  ==================  #
@@ -182,9 +184,7 @@ t_indices = findall(t -> t >= t_end - n_periods*T_f, u_series.times)
 u_profile = vec(sum([interior(u_series[n], 1, 1, :) for n in t_indices])./length(t_indices))
 v_profile = vec(sum([interior(v_series[n], 1, 1, :) for n in t_indices])./length(t_indices))
 
-# u_profile = vec(interior(u_series[end], 1, 1, :))
-# v_profile = vec(interior(v_series[end], 1, 1, :))
-
+# Looking at a slice of domain
 slice = 1:length(zC)
 u_slice = u_profile[slice]
 v_slice = v_profile[slice]
