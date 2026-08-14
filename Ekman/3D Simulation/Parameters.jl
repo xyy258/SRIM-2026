@@ -27,10 +27,7 @@ const ν₀  = 1e-6                # molecular kinematic viscosity
 const D   = U∞/f₀               # Rossby lengthscale
 const κ₀  = ν₀/Pr               # molecular diffusivity
 const Re∞ = U∞*D/ν₀             # Reynolds number
-# u_star   = 0.049*U∞             # friction velocity
-# δ        = u_star/f₀            # boundary layer lengthscale
-# Re_star  = u_star*δ/ν₀          # frictional Reynolds
-# Ri_star  = N²/f₀^2              # frictional Richardson
+# u_star, δ, Re_star, Ri_star calculated later after fitting for u*
 
 # Coefficient of drag calculated later:
 # z₁ = abs(Array(znodes(grid, Center()))[1])

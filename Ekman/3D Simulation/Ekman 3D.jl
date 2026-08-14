@@ -216,7 +216,9 @@ simulation.output_writers[:b] =
 # Horizontally-averaged velocities & buoyancy
 u_avg = Field(Average(u, dims=(1, 2)))
 v_avg = Field(Average(v, dims=(1, 2)))
+w_avg = Field(Average(w, dims=(1, 2)))
 b_avg = Field(Average(b, dims=(1, 2)))
+
 
 # Horizontally-averaged buoyancy gradient ∂b/∂z
 db_dz_avg = Field(Average(∂z(b), dims=(1,2)))
@@ -237,7 +239,7 @@ simulation.output_writers[:avg_b] =
                 schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
-    JLD2Writer(model, (; u_avg, v_avg),
+    JLD2Writer(model, (; u_avg, v_avg, w_avg),
                 filename = filename * "Avg_vel.jld2",
                 schedule = TimeInterval(200),
                 overwrite_existing = true)
@@ -246,6 +248,14 @@ simulation.output_writers[:avg_vorticity] =
                 filename = filename * "Avg_vort.jld2",
                 schedule = TimeInterval(200),
                 overwrite_existing = true)
+
+# Diffusivity fields carried by the closure
+simulation.output_writers[:diffusivity_fields] =
+    JLD2Writer(model, model.diffusivity_fields,
+               filename = filename * "Diffusivity_fields.jld2",
+               schedule = TimeInterval(200),
+               overwrite_existing = true,
+               with_halos = false)
 
 nothing # hide
 
