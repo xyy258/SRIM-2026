@@ -1,0 +1,17 @@
+[2026-08-04 15:16:26] animation L1Lz_Ri500
+[2026-08-04 15:18:11]   animation OK
+[2026-08-04 15:18:11] vorticity-xz L1Lz_Ri500
+[2026-08-04 15:18:40]   vorticity-xz OK
+[2026-08-04 15:18:40] vorticity-profile-anim L1Lz_Ri500
+[2026-08-04 15:19:13]   vorticity-profile OK
+[2026-08-04 15:19:13] animation L1Lz_Ri2500
+[2026-08-04 15:20:58]   animation OK
+[2026-08-04 15:20:58] vorticity-xz L1Lz_Ri2500
+[2026-08-04 15:21:27]   vorticity-xz OK
+[2026-08-04 15:21:27] vorticity-profile-anim L1Lz_Ri2500
+[2026-08-04 15:22:01]   vorticity-profile OK
+[2026-08-04 15:22:01] Figure 4
+[2026-08-04 15:22:32]   Figure4 OK
+[2026-08-04 15:22:32] Figure 5
+[2026-08-04 15:23:03]   Figure5 OK
+[2026-08-04 15:23:03] === POST DONE ===

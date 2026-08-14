@@ -1,0 +1,22 @@
+[ Info: Case L2_Ri500 (L = 2 m): Ri = 500, N² = 5e-06 s⁻², δ_s = 0.1414 m, Re_s = 5657
+[ Info: Domain 7.071 × 3.536 × 12.728 m = 50 × 25 × 90 δ_s, 12 periods
+[ Info: Background: exponential, N²_bg = N∞²[1−exp(−z/L)], L = 2.000 m = 14 δ_s (N²_bg/N∞² = 0.068 at z = δ_s, 0.507 at z = 10 δ_s)
+[ Info: Making an animation from 1601 frames...
+[ Info: Frame 100 / 1601
+[ Info: Frame 200 / 1601
+[ Info: Frame 300 / 1601
+[ Info: Frame 400 / 1601
+[ Info: Frame 500 / 1601
+[ Info: Frame 600 / 1601
+[ Info: Frame 700 / 1601
+[ Info: Frame 800 / 1601
+[ Info: Frame 900 / 1601
+[ Info: Frame 1000 / 1601
+[ Info: Frame 1100 / 1601
+[ Info: Frame 1200 / 1601
+[ Info: Frame 1300 / 1601
+[ Info: Frame 1400 / 1601
+[ Info: Frame 1500 / 1601
+[ Info: Frame 1600 / 1601
+[ Info: Saved animation to /home/tll46/SRIM-2026/Stokes/3D/output_L2_Ri500/animation_L2_Ri500.mp4
+[ Info: Saved animation for Ri500 in output_L2_Ri500/
