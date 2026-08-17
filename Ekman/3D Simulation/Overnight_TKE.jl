@@ -31,7 +31,7 @@ global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=line
             end
 
         elseif profile == 4     # softplus
-            for value in [10,15,20,30]
+            for value in [40,50]
                 global T = value
                 include(file)
             end
