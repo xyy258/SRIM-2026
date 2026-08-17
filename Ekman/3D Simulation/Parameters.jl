@@ -21,13 +21,14 @@ const duration = 40e4           # non-dimensional duration of the simulation
 const S = 20
 
 # Other parameters
-const N²  = (r*f₀)^2            # buoyancy frequency
+const N   = r*f₀                # buoyancy frequency
+const N²  = (r*f₀)^2            # squared buoyancy frequency
 const κ   = 0.41                # von Karman constant
 const ν₀  = 1e-6                # molecular kinematic viscosity
 const D   = U∞/f₀               # Rossby lengthscale
 const κ₀  = ν₀/Pr               # molecular diffusivity
 const Re∞ = U∞*D/ν₀             # Reynolds number
-# u_star, δ, Re_star, Ri_star calculated later after fitting for u*
+# u_star, δ, Re_star, Ri_star calculated later after fitting for u* later
 
 # Coefficient of drag calculated later:
 # z₁ = abs(Array(znodes(grid, Center()))[1])
