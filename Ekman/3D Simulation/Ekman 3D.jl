@@ -249,13 +249,13 @@ simulation.output_writers[:avg_vorticity] =
                 schedule = TimeInterval(200),
                 overwrite_existing = true)
 
-# Diffusivity fields carried by the closure
-simulation.output_writers[:diffusivity_fields] =
-    JLD2Writer(model, model.diffusivity_fields,
-               filename = filename * "Diffusivity_fields.jld2",
-               schedule = TimeInterval(200),
-               overwrite_existing = true,
-               with_halos = false)
+# # Outputting diffusivity fields νₑ, κₑ [to be fixed]
+# simulation.output_writers[:diffusivity_fields] =
+#     JLD2Writer(model, model.diffusivity_fields,
+#                filename = filename * "Diffusivity_fields.jld2",
+#                schedule = TimeInterval(200),
+#                overwrite_existing = true,
+#                with_halos = false)
 
 nothing # hide
 
