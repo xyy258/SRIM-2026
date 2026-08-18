@@ -1,156 +1,56 @@
-ENV["GKSwstype"] = "100"        # headless GR — must precede `using Plots`
+ENV["GKSwstype"] = "100" # Headless GR backend
 
 using Oceananigans, JLD2, Plots, Printf, Statistics
 
-# Turbulent diffusivity of the stratified Ekman bottom boundary layer, from the
-# second moments Moments.jl writes to Moments.jld2.
+# Evaluates turbulent diffusivity (K_T) scaling (√(TKE)·l vs TKE/N) in the Ekman boundary layer.
+# Verification order:
+#   1. ⟨w⟩_xy ≈ 1e-18 (Zero vertical mean flow)
+#   2. K_T_bulk ≈ K_T_pe (SGS flux consistency between routes)
+#   3. K_sgs / K_T ≪ 1 (Numerical viscosity does not dominate)
+#   4. delta_eff is steady, tracking h
+#   5. Evaluate panel (d) scaling slope
 #
-# The question this answers: does K_T scale as √TKE · l, or as TKE / N? The two
-# differ by the slope of log K_T against log TKE at the mixed-layer top —
-# 1/2 for √TKE·l, 1 for TKE/N. That is panel (d).
-#
-#     julia --project=<repo root> "Ekman/TKE analysis/MixedLayerDiffusivity.jl"
-#
-# It writes
-#   Data/<case>/mixing_<case>.jld2   TKE(z,t), K_T(z,t), K_T_bulk, K_T_pe,
-#                                    delta_eff, K_sgs/K_T, h, PE, u*
-#   Plots/K_T_<case>.png             4 panels (see below)
-# and prints a VERIFICATION block. READ THE PANELS IN THIS ORDER — an earlier
-# failure invalidates everything after it:
-#   1. ⟨w⟩_xy ≈ 1e-18.        If not, stop: every flux below is wrong.
-#   2. K_T_bulk ≈ K_T_pe (c). They share no code path — one uses wb and F_sgs,
-#      the other only B. Disagreement means the SGS flux is wrong, usually
-#      under-counted, which shows as the flux route reading low.
-#   3. K_sgs/K_T ≪ 1.         Above ~0.5 the number characterises AMD, not the flow.
-#   4. delta_eff steady, ideally tracking h.
-#   5. only THEN the panel (d) slope.
-#
-# ---------------------------------------------------------------------------
-# THIS IS A COPY OF Stokes/3D/MixedLayerDiffusivity.jl
-# ---------------------------------------------------------------------------
-# Everything from the helpers down — the decomposition, the smoothing, the two
-# K_T routes, the boundary-term correction, the checks and the figure — is
-# UNCHANGED, so the tidal and Ekman answers are produced by the same code and can
-# be compared without arguing about method. What differs is confined to the block
-# immediately below and to three lines inside `analyse`:
-#
-#     Stokes                        here
-#     ------                        ----
-#     ω = 1e-4 (tidal)              f₀ = 1e-4 (Coriolis) — NUMERICALLY IDENTICAL,
-#                                   which is why the two studies share windows
-#     T_tide = 2π/ω                 T_f = 2π/f₀, the inertial period
-#     U₀ = 0.04                     U∞ = 0.04
-#     κ = ν/Pr                      κ₀ = ν₀/Pr   (`κ` is 0.41 here — see Moments.jl)
-#     Lz = 50                       Lz = 100
-#     N²_ref = Ri·ω², ω² at Ri=0    N²_ref = (r f₀)², 1 at r = 0 (matches `scale`
-#                                   in Ekman3D.jl, which is 1 not f₀² there)
-#     cᴰ from a reference height    cᴰ from the log law at the first cell centre,
-#                                   which on THIS grid is genuinely valid
-#     a grid of (T, N/ω) cases      one case
-#
-# The aliases `ω`, `T_tide` and `U₀` are kept as names so the body needs no edit;
-# they are bound to the Ekman quantities. Do not "fix" them into f₀/T_f/U∞ — the
-# point is that this file and its Stokes twin stay diffable.
-#
-# ---------------------------------------------------------------------------
-# ORDER OF OPERATIONS — this is where the physics is won or lost
-# ---------------------------------------------------------------------------
-#   (1) DECOMPOSE PER SAMPLE. The plane average IS the Reynolds average here
-#       (Periodic×Periodic, horizontally uniform forcing), so u′ = u − ⟨u⟩_xy
-#       exactly, and the mean flow — free stream, geostrophic balance and the
-#       inertial oscillation — is removed instantaneously with it. Every mean is
-#       subtracted at its OWN sample time.
-#   (2) SMOOTH IN TIME AFTERWARDS, for noise reduction only. Doing it the other
-#       way round gives  time_avg(⟨uu⟩) − time_avg(U)² = time_avg(TKE) + Var_t(U):
-#       the variance of the mean flow over the window leaks in as "TKE". Here that
-#       mean flow is an inertial oscillation of amplitude comparable to U∞, so the
-#       leak is if anything worse than in the tidal case.
-#   (3) FORM RATIOS LAST. K_T = −F_b/(dB/dz) is built from the already-smoothed
-#       F_b and dBdz, never from smoothed ratios: a ratio of two noisy profiles is
-#       badly behaved wherever the denominator is small, which is most of the
-#       mixed layer.
-# Moments.jl guarantees step (1) by writing raw instantaneous moments on a plain
-# TimeInterval; see its header for why AveragedTimeInterval would break it.
+# Order of operations:
+#   1. Instantaneous spatial decomposition: u′ = u - ⟨u⟩_xy (removes mean flow at each sample).
+#   2. Time-smoothing post-decomposition (prevents mean flow variance leaking into TKE).
+#   3. Calculate ratios last: K_T = -F_b / (dB/dz) using smoothed profiles.
 
-# ---------------------------------------------------------------------------
-# The case. Must agree with Parameters.jl — read from the environment with the
-# same defaults, rather than including it, because Parameters.jl declares consts
-# that clash with the aliases below.
-# ---------------------------------------------------------------------------
-const r  = parse(Float64, get(ENV, "R",       "1"))       # N/f
-const Tc = parse(Float64, get(ENV, "T_STRAT", "20"))      # pycnocline height (m)
+# Case parameters
+const r  = parse(Float64, get(ENV, "R",       "1"))   # Stratification ratio N/f
+const Tc = parse(Float64, get(ENV, "T_STRAT", "20"))  # Pycnocline height (m)
 
 const f₀ = 1e-4
-const ω  = f₀                          # alias: the inertial frequency plays the
-                                       # tidal frequency's role in the body below
+const ω  = f₀                                          # Inertial frequency alias
 const ν  = 1.0e-6
 const Pr = 10
-const κ_mol = ν / Pr                   # = κ₀ in Parameters.jl. `κ` there is 0.41.
+const κ_mol = ν / Pr                                   # Molecular diffusivity
 const U∞ = 0.04
-const U₀ = U∞                          # alias
-const T_f = 2π / f₀                    # inertial period, 62832 s = 17.45 h
-const T_tide = T_f                     # alias
-const Lz = 100.0                       # PHYSICAL domain height; sponge sits above
-const z₀_rough = 0.0016                # roughness length (m)
-const κ_vk = 0.41                      # von Kármán constant
+const U₀ = U∞                                          # Free-stream speed alias
+const T_f = 2π / f₀                                    # Inertial period (~17.45 h)
+const T_tide = T_f                                     # Tidal alias for code compatibility
+const Lz = 100.0                                       # Physical domain height (m)
+const z₀_rough = 0.0016                                # Roughness length (m)
+const κ_vk = 0.41                                      # von Kármán constant
 
 const casename = get(ENV, "CASE_NAME", @sprintf("r=%.1f, T=%.1f", r, Tc))
 const dataroot = get(ENV, "DATA_ROOT", joinpath(@__DIR__, "Data"))
 moments_file(name) = joinpath(dataroot, name, "Moments.jld2")
 
-# ---------------------------------------------------------------------------
-# GRAD_FLOOR — the dominant term in the error bar on K_T
-# ---------------------------------------------------------------------------
-# K_T = −F_b/(dB/dz) is 0/0 inside the mixed layer, where dB/dz → 0 by definition.
-# Cells with |dB/dz| < GRAD_FLOOR · N_ref² are masked out.
-#
-# THIS THRESHOLD DOMINATES THE ERROR BAR ON EVERY K_T REPORTED HERE. It decides
-# how far down into the weakly stratified layer the ratio is trusted, and K_T
-# grows without bound as the denominator is allowed to shrink. Sweep it and quote
-# the spread rather than a single number:
-#     for g in 0.02 0.05 0.10; do
-#         GRAD_FLOOR=$g RESULT_SUFFIX=_g$g julia --project=. MixedLayerDiffusivity.jl
-#     done
-# RESULT_SUFFIX is what keeps such a sweep from writing every pass to the same
-# mixing_<tag>.jld2 and leaving only the last one.
+# Gradient threshold to mask undefined K_T where |dB/dz| → 0 inside mixed layer
 const GRAD_FLOOR = parse(Float64, get(ENV, "GRAD_FLOOR", "0.05"))
 const RESULT_SUFFIX = get(ENV, "RESULT_SUFFIX", "")
 
-# ---------------------------------------------------------------------------
-# Time reduction. Applied only AFTER the per-sample decomposition (step 2 above).
-# ---------------------------------------------------------------------------
-#   tide20 (default)  boxcar of T_f/20 ≈ 52 min — kills plane-average noise while
-#                     keeping the turbulence burst within an inertial cycle.
-#                     Spelled "inertial20" too; the tidal names are kept so this
-#                     file stays diffable against its Stokes twin.
-#   tide              boxcar of the full inertial period — the slowly evolving
-#                     envelope, which is what boundary-layer growth should be read
-#                     from, and the mode to use for the panel (d) slope here
-#   phase             bin by mod(f₀t, 2π), ensembled over periods. Meaningful
-#                     because the spin-up rings at f, but with only ~4 usable
-#                     periods the ensemble is thin — treat it as a cross-check.
+# Time reduction: "tide20" (T_f/20 boxcar), "tide" (full period), or "phase"
 const SMOOTH = replace(get(ENV, "SMOOTH", "tide20"), "inertial" => "tide")
 const N_PHASE = parse(Int, get(ENV, "N_PHASE", "40"))
-# Inertial periods to discard before ensembling / fitting. THIS RUN STARTS FROM
-# REST-RELATIVE IMBALANCE, not from a turbulent snapshot the way the Stokes cases
-# do: u = U∞ + noise everywhere at t = 0, and the boundary layer has to trip,
-# become turbulent and grow. That transient is not the physics being measured, so
-# the default here is 2 periods rather than the Stokes 1 — out of the 6.37 the
-# run lasts, leaving ~4.4 usable.
-const SKIP_PERIODS = parse(Float64, get(ENV, "SKIP_PERIODS", "2.0"))
+const SKIP_PERIODS = parse(Float64, get(ENV, "SKIP_PERIODS", "2.0")) # Initial spin-up periods to discard
 
 const smooth_window = SMOOTH == "tide20" ? T_tide / 20 :
-                      SMOOTH == "tide"   ? T_tide      :
-                      SMOOTH == "phase"  ? 0.0         :
+                      SMOOTH == "tide"   ? T_tide     :
+                      SMOOTH == "phase"  ? 0.0        :
                       error("SMOOTH must be tide20, tide or phase — got \"$SMOOTH\"")
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-# Lowest height at which fv crosses `level` from below, linearly interpolated.
-# COPIED VERBATIM from Figure5.jl so the mixed-layer height h is defined
-# identically across the project — do not "improve" one copy alone.
+# Linear interpolation of the lowest height where fv crosses level from below
 function first_crossing(z, fv, level; zmin = -Inf)
     for i in 1:length(fv)-1
         z[i] < zmin && continue

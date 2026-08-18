@@ -1,9 +1,7 @@
 # Ekman 3D with second-moment output — the TKE / K_T analysis run.
 #
-# A COPY of "Ekman/3D Simulation/Ekman 3D.jl". Nothing physical is changed: same
-# grid (100 x 100 x 500 over 75 x 75 x 120 m), same stretching, same drag bottom,
-# same closure, same advection scheme, same forcing and sponges, same max_Δt = 7.5
-# and same duration = 4e5 s. Four things differ, all of them bookkeeping:
+# A COPY of "Ekman/3D Simulation/Ekman 3D.jl". Nothing physical is changed.
+# Four things differ, all of them bookkeeping:
 #
 #   1. Moments.jl is included immediately before run!(simulation), adding ONE
 #      output writer that produces the plane-averaged second moments the K_T

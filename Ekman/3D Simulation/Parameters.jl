@@ -11,7 +11,7 @@ const z₀ = 0.0016               # m (roughness length)
 # Dimensions
 const Lx, Ly, Lz = 75,75,100
 # Grid size
-const Nx, Ny, Nz = 100,100,500
+const Nx, Ny, Nz = 100,100,375
 
 # Duration and timestep
 const max_Δt   = 7.5            # maximum allowable timestep

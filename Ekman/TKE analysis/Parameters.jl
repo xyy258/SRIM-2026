@@ -1,86 +1,77 @@
-# Parameters for the TKE / K_T analysis run.
+# ==============================================================================
+# Simulation Parameters: Ekman TKE / K_T Analysis
 #
-# COPIED FROM "Ekman/3D Simulation/Parameters.jl" and changed in exactly three
-# ways, all of them about WHICH CASE runs — no physical parameter, grid size,
-# duration or timestep differs from the original:
-#
-#   1. r, T and profile are pinned here (r = 1, T = 20, softplus) instead of being
-#      set by an outer driver via `global`. The original is driven by Overnight.jl,
-#      which assigns them before `include`ing the simulation; this folder runs one
-#      case, so they are plain values with environment overrides.
-#   2. `sharp` is `const`. It has to be: the softplus background is evaluated
-#      inside GPU kernels, and a non-const global there compiles to a slow,
-#      type-unstable kernel. Its VALUE is unchanged at 6.
-#   3. An inertial period T_f = 2π/f₀ is defined, since every schedule and
-#      smoothing window in the TKE analysis is expressed in it.
-#
-# Everything below the "unchanged" line is the original file, value for value.
+# Defines physical constants, domain dimensions, grid resolution, and time-stepping.
+# Environment variables can override default parameters:
+#   R=1 T_STRAT=20 PROFILE=4 SHARP=6 julia --project=... Ekman3D.jl
+# ==============================================================================
 
 using Printf
 
-# ---------------- The case ----------------
-# r = N/f = 1, softplus background with the step at T = 20 m, sharpness 6.
-# Override from the shell if a second case is ever wanted:
-#     R=2 T_STRAT=30 julia --project=... Ekman3D.jl
-const r       = parse(Float64, get(ENV, "R",       "1"))
-const T       = parse(Float64, get(ENV, "T_STRAT", "20"))
-const profile = parse(Int,     get(ENV, "PROFILE", "4"))
-const sharp   = parse(Float64, get(ENV, "SHARP",   "6"))
+# ------------------------------------------------------------------------------
+# Case Configuration Parameters
+# ------------------------------------------------------------------------------
 
-# SHARP = 6 IS FINE ON THIS GRID, unlike on the Stokes one. The 10–90 % width of
-# the db/dz transition is 2ln9/sharp = 0.73 m, and this grid is almost uniform at
-# Δz = 0.135 m from the wall up past z = 30 m, so the pycnocline at z = 20 m spans
-# 5.4 cells. The Stokes study had to drop its default from 6 to 2 because its grid
-# coarsens to Δz ≈ 0.34 m above 10 m, where 0.73 m is only ~2 cells and the
-# pycnocline begins life as a numerical step. That does not happen here — the
-# comparison is worth making explicitly, since the two studies otherwise use the
-# same background profile and the same analysis.
+# Stratification and background profile settings
+const r       = parse(Float64, get(ENV, "R",       "1"))    # N/f ratio
+const T       = parse(Float64, get(ENV, "T_STRAT", "20"))   # Pycnocline depth (m)
+const profile = parse(Int,     get(ENV, "PROFILE", "4"))    # Background profile index (4 = softplus)
 
-# ---------------- Unchanged from Ekman/3D Simulation/Parameters.jl ----------
-const U∞ = 0.04                 # far stream velocity
-const f₀ = 1e-4                 # Coriolis parameter
+# Declared `const` for GPU kernel performance/type stability.
+# At sharp=6, the 10–90% transition is ~0.73 m (~5.4 grid cells at Δz ≈ 0.135 m near z = 20 m).
+const sharp   = parse(Float64, get(ENV, "SHARP",   "6"))    # Pycnocline sharpness parameter
 
-const Pr = 10                   # Prandtl number
-const z₀ = 0.0016               # m (roughness length)
+# ------------------------------------------------------------------------------
+# Physical Parameters & Fluid Properties
+# ------------------------------------------------------------------------------
 
-# Dimensions
-const Lx, Ly, Lz = 75,75,100
-# Grid size
-const Nx, Ny, Nz = 100,100,500
+const U∞ = 0.04                # Far-stream boundary velocity (m/s)
+const f₀ = 1e-4                # Coriolis parameter (s⁻¹)
+const Pr = 10                  # Prandtl number
+const z₀ = 0.0016              # Surface roughness length (m)
+const κ  = 0.41                # von Kármán constant
+const ν₀ = 1e-6                # Molecular kinematic viscosity (m²/s)
+const κ₀ = ν₀ / Pr             # Molecular diffusivity (m²/s)
 
-# Duration and timestep
-const max_Δt   = 7.5            # maximum allowable timestep
-const duration = 40e4           # duration of the simulation (s)
+# Derived physical quantities
+const N  = r * f₀              # Buoyancy frequency (s⁻¹)
+const N² = (r * f₀)^2          # Squared buoyancy frequency (s⁻²)
+const D  = U∞ / f₀             # Rossby length scale (m)
+const Re∞ = U∞ * D / ν₀        # Reynolds number based on Rossby scale
 
-# Sponge layer thickness
-const S = 20
+# ------------------------------------------------------------------------------
+# Domain & Grid Setup
+# ------------------------------------------------------------------------------
 
-# Other parameters
-const N   = r*f₀                # buoyancy frequency
-const N²  = (r*f₀)^2            # squared buoyancy frequency
-const κ   = 0.41                # von Karman constant
-const ν₀  = 1e-6                # molecular kinematic viscosity
-const D   = U∞/f₀               # Rossby lengthscale
-const κ₀  = ν₀/Pr               # molecular diffusivity
-const Re∞ = U∞*D/ν₀             # Reynolds number
+# Domain dimensions (m)
+const Lx, Ly, Lz = 75, 75, 100
 
-const mask = 1                  # type of masking in sponge layer (0=piecewise, 1=Gaussian)
-const H = Lz + S                # domain height, with sponge layer
+# Grid dimensions (100 × 100 × 500)
+const Nx, Ny, Nz = 100, 100, 500
 
-const kick = 0.01*U∞            # amplitude of random perturbation
+# Sponge layer configuration
+const S    = 20                # Sponge layer thickness (m)
+const H    = Lz + S            # Total domain height including sponge (m)
+const mask = 1                 # Sponge layer damping profile (0 = piecewise, 1 = Gaussian)
 
-# ---------------- Added for the TKE analysis ----------------
-# THE INERTIAL PERIOD IS THIS RUN'S CLOCK. The Ekman flow has no tide, but it is
-# not steady either: it starts from rest-relative geostrophic imbalance and rings
-# at f while the boundary layer grows. 2π/f₀ = 62832 s is therefore the natural
-# unit for the output cadence, for the smoothing window, and for how much of the
-# start to discard as transient.
-#
-# It is also NUMERICALLY THE SAME as the Stokes tidal period, because ω there was
-# set to 1e-4 to match this f₀ — so the two analyses use identical windows and
-# their K_T results are directly comparable.
-const T_f = 2π / f₀             # inertial period, 62832 s = 17.45 h
-const n_periods_total = duration / T_f      # 6.37
+# Perturbation parameters
+const kick = 0.01 * U∞         # Amplitude of initial random velocity perturbation (m/s)
+
+# ------------------------------------------------------------------------------
+# Time Discretization & Time-Scales
+# ------------------------------------------------------------------------------
+
+const max_Δt   = 7.5           # Maximum allowable timestep (s)
+const duration = 40e4          # Total simulation duration (s)
+
+# Inertial period T_f = 2π/f₀ serves as the reference clock for output cadences,
+# smoothing windows, and transient filtering (matches the Stokes tidal period).
+const T_f             = 2π / f₀           # Inertial period (~62,832 s = 17.45 h)
+const n_periods_total = duration / T_f    # Total runtime in inertial periods (~6.37)
+
+# ------------------------------------------------------------------------------
+# Diagnostic Output
+# ------------------------------------------------------------------------------
 
 @info @sprintf("Ekman TKE case: r = N/f = %.1f, N² = %.3g s⁻², profile %d (softplus), T = %.1f m, sharp = %.1f",
                r, N², profile, T, sharp)
