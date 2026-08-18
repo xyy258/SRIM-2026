@@ -582,18 +582,45 @@ function make_figure(c)
     plot!(pb, c.xs, c.h; color = :black, lw = 2, label = "h")
 
     # (c) THE cross-check. Same axes, deliberately: they share no code path.
-    pc = plot(c.xs, c.K_T_bulk; color = "#1B4E8F", lw = 2,
+    #
+    # LOG y AXIS, as in (b) and (d): K_T_bulk swings over more than a decade
+    # within a tidal cycle and again between stratifications. On a linear axis
+    # everything outside the peak is pressed onto zero, so the agreement this
+    # panel exists to show is legible only where it matters least.
+    #
+    # A log axis cannot render a sign change, and the brief's uncorrected
+    # K_T_pe is the one series that goes negative — it is no longer drawn.
+    # Nothing is lost: check 2 reports its error as a number for every case, and
+    # K_T_pe is still computed and still saved to mixing_<tag>.jld2. Its message
+    # is quantitative ("dropping the boundary term costs 107 %"), which the
+    # verification block states far more precisely than a curve ever did.
+    #
+    # Non-positive samples cannot be drawn on a log axis. They are dropped, and
+    # the count goes in the title rather than being left to infer from a gap.
+    onlypos(v) = (isfinite(v) && v > 0) ? v : NaN
+    cb, cpe = onlypos.(c.K_T_bulk), onlypos.(c.K_T_pe_full)
+    ndrop = count(v -> isfinite(v) && v <= 0, c.K_T_bulk) +
+            count(v -> isfinite(v) && v <= 0, c.K_T_pe_full)
+    ctitle = "(c) two independent routes to K_T"
+    ndrop > 0 && (ctitle *= @sprintf("\n%d of %d samples ≤ 0, not drawable on a log axis",
+                                     ndrop, 2 * length(cb)))
+
+    pc = plot(c.xs, cb; yscale = :log10, color = "#1B4E8F", lw = 2,
               label = "K_T_bulk = −∫F_b dz / Δb", xlabel = c.xlab,
-              ylabel = "K_T (m² s⁻¹)", title = "(c) two independent routes to K_T")
-    plot!(pc, c.xs, c.K_T_pe_full; color = "#B4502C", lw = 2, ls = :dash,
+              ylabel = "K_T (m² s⁻¹)", title = ctitle,
+              titlefontsize = ndrop > 0 ? 8 : 10, legend = :topright)
+    plot!(pc, c.xs, cpe; color = "#B4502C", lw = 2, ls = :dash,
           label = "K_T_pe (+ boundary term)")
-    # The brief's uncorrected version, kept visible: the gap between the two dashed
-    # curves IS the zref·F_b(zref) term it drops.
-    plot!(pc, c.xs, c.K_T_pe; color = "#D9855F", lw = 1.2, ls = :dashdot,
-          label = "K_T_pe = Lz·(dPE/dt)/Δb (uncorrected)")
-    hline!(pc, [0.0]; color = :grey60, lw = 0.7, label = "")
-    # A second y-axis would hide a disagreement, which is the whole point of the
+    # A shared y-axis would hide a disagreement, which is the whole point of the
     # panel; instead the shape factor rides along on a twin axis.
+    #
+    # Plots.jl draws no legend for a twinx series, so an all-NaN proxy on the main
+    # axis carries the label into the main legend — an unlabelled dotted line was
+    # unreadable, and a second legend box would land on top of the first. The
+    # "(right axis)" is load-bearing: δ_eff is in metres, not m² s⁻¹, and shares
+    # none of the left axis's scale.
+    plot!(pc, c.xs, fill(NaN, length(c.xs)); color = "#7FADE0", lw = 1.2, ls = :dot,
+          label = "δ_eff = ∫F_b dz / F_b|peak  (right axis, m)")
     plot!(twinx(pc), c.xs, c.δ_eff; color = "#7FADE0", lw = 1.2, ls = :dot,
           ylabel = "δ_eff (m)", label = "", legend = false)
 
