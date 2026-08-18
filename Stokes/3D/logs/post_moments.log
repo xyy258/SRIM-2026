@@ -1,0 +1,26 @@
+
+==============================================================================
+==== 2026-08-18 13:52:48  MixedLayerDiffusivity.jl 
+==== N_OVER_OMEGA=0  T_VALUES=10
+==============================================================================
+[ Info: Oceananigans will use 4 threads
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi0   (T = 10 m, N/ω = 0, Ri = 0, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.987e-19 m/s  (= 7.47e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.3 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 107.3 %; flux leaking past zref = 0.23 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.03 (90th pct 0.06)              PASS
+  4. delta_eff = 9.96 ± 2.43 m (CV 0.24); mean h = 7.19 m          PASS
+     delta_eff/Lz = 0.199 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.17  (r = +0.23, n = 1334)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: √TKE·l
+  → all checks pass; the slope above can be read as physics.
+  wrote outputs/P4_T10_sqrtRi0/mixing_P4_T10_sqrtRi0.jld2
+         figures/K_T_P4_T10_sqrtRi0.png
+
+==============================================================================
+1 case(s) analysed; ALL VERIFICATION CHECKS PASS.
+==============================================================================
