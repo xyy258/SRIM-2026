@@ -67,19 +67,24 @@ EKMAN_SMOKE=1 SMOKE_ITERS=20 julia --project=. "Ekman/TKE analysis/Ekman3D.jl"
 
 ## Cost
 
-Roughly **1 hour** against the 12 h wall, and it is worth seeing why this case is
-so much cheaper than a tidal one. Scaling from the Stokes study's measured
-17.5 ms/iteration at 100 × 100 × 300 gives ~29 ms here for 5.0 M cells — but the
-Stokes runs needed 434,800 iterations because a 0.0086 m wall cell held the CFL
-timestep near 3 s, whereas this grid's first cell is 0.133 m and `max_Δt = 7.5 s`
-binds instead:
+**~0.3–0.5 h on the cluster** against the 12 h wall. Measured, not assumed: an
+800-iteration run of this exact configuration on the workstation GPU gave
+0.205 s/iteration with
 
 ```
-4e5 s / 7.5 s = 53,300 iterations × 29 ms ≈ 0.43 h,  call it ~1 h with output
+Δt pinned at max_Δt = 7.5 s,  CFL ≈ 0.70  throughout
 ```
 
-That is an estimate transplanted from a different case. The job prints its own
-wall time; the first submission is what turns it into a measurement.
+so the timestep is capped by `max_Δt`, **not** by CFL, and the iteration count is
+just `duration/max_Δt = 4e5/7.5 = 53,300`. That is ~3.0 h on the workstation; the
+cluster runs this kind of kernel roughly 9× faster (the Stokes study measured
+17.5 ms/iteration there against 0.164 s here on its own grid).
+
+This is why an Ekman case is so much cheaper than a tidal one despite having 5.0 M
+cells against 3.0 M: the Stokes runs needed 434,800 iterations because a 0.0086 m
+wall cell held the CFL timestep near 3 s. This grid's first cell is 0.133 m and
+CFL never binds. Treat the cluster figure as an extrapolation until the first
+submission confirms it — the job prints its own wall time.
 
 ## Reading the result
 
@@ -126,6 +131,15 @@ everything after it:
   not the physics being measured. 2 of the 6.37 periods are discarded, leaving
   ~4.4 usable. For the panel (d) slope prefer `SMOOTH=tide` (the full-period
   envelope) over the default `tide20`.
+- **The pycnocline moves a long way, and `zref` is set for that.** Your existing
+  run of this exact case (`Ekman/3D Simulation/Softplus/Plots/T=20.0/Averaged
+  buoyancy gradient profile/r = 1.0.png`) shows the mixed layer eroding the
+  interface from `z = 20 m` up to **31–36 m**, overshooting to `1.75 N²` there,
+  and recovering to the background only above ~45 m. The Stokes `zref = T + 15`
+  rule would put the reference height at 35 m — inside the interface — so `Δb`
+  would span only part of the mixed layer and `K_T_bulk` would drift as the
+  interface climbed past it. `zref = T + 30 = 50 m` here instead: above the
+  recovered profile, far below the sponge at 100 m.
 - **`sharp = 6` is fine on this grid.** The Stokes study had to drop its default
   from 6 to 2, because its grid coarsens to `Δz ≈ 0.34 m` above 10 m and a 0.73 m
   transition is only ~2 cells there — the pycnocline starts life as a numerical

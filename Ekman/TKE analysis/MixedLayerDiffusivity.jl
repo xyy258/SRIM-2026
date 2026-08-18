@@ -259,10 +259,20 @@ function analyse(T, s)
     Ri = s^2                                  # s = N/f, so Ri = N²/f² as before
     N²_ref = Ri > 0 ? Ri * f₀^2 : 1.0
 
-    # zref must sit well above the interface but well below the sponge at z = Lz.
-    # The Ekman domain is 100 m deep against the Stokes 50, so the T + 15 rule has
-    # far more headroom here; the cap is raised in proportion.
-    zref = min(T + 15, 80.0)
+    # zref must sit well ABOVE the entrained interface and well below the sponge at
+    # z = Lz. The Stokes rule was T + 15; that is TOO LOW HERE, and the existing
+    # data says so. "Ekman/3D Simulation/Softplus/Plots/T=20.0/Averaged buoyancy
+    # gradient profile/r = 1.0.png" is this exact case, already run: by the end,
+    # the mixed layer has eroded the pycnocline from z = 20 m up to z ≈ 31–36 m,
+    # with ∂b/∂z overshooting to 1.75 N² at the entrained interface, and the
+    # profile only returns to the background above z ≈ 45 m.
+    #
+    # T + 15 = 35 m would therefore cut straight THROUGH the interface. Δb =
+    # B(zref) − B(0) would then span only part of the mixed layer, the flux
+    # integral would stop mid-interface, and K_T_bulk would be biased — with the
+    # bias growing over the run as the interface climbs past zref. T + 30 = 50 m
+    # sits above the recovered profile and far below the sponge.
+    zref = min(T + 30, 80.0)
 
     # --- load ---------------------------------------------------------------
     ts = Dict(v => FieldTimeSeries(fname, v) for v in
@@ -619,7 +629,7 @@ function make_figure(c)
 
     fig = plot(pa, pb, pc, pd; layout = (2, 2), size = (1250, 850),
                leftmargin = 6Plots.mm, bottommargin = 6Plots.mm,
-               plot_title = @sprintf("%s — T = %g m, N/ω = %g (Ri = %g), zref = %.1f m, GRAD_FLOOR = %.2f, %s smoothing",
+               plot_title = @sprintf("%s — T = %g m, N/f = %g (Ri = %g), zref = %.1f m, GRAD_FLOOR = %.2f, %s smoothing",
                                      c.tag, c.T, c.s, c.Ri, c.zref, GRAD_FLOOR, SMOOTH),
                plot_titlefontsize = 11)
     out = joinpath(figdir, "K_T_$(c.tag)$(RESULT_SUFFIX).png")

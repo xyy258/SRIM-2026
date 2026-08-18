@@ -21,21 +21,28 @@
 # ---------------------------------------------------------------------------
 # THE 12 h BUDGET
 # ---------------------------------------------------------------------------
-# Measured throughput for the Stokes study on the same partition:
-# 434,800 iterations of a 100 × 100 × 300 grid in 2.111 h, i.e. 17.5 ms per
-# iteration (logs/P4_T5_sqrtRi2.log of the archived sweep).
+# MEASURED, not assumed. An 800-iteration run of this exact configuration on the
+# workstation GPU (RTX 4000 Ada, shared) gave 0.205 s/iteration, with
 #
-# This grid is 100 × 100 × 500 = 5.0 M cells against 3.0 M, so ~29 ms/iteration.
-# The iteration COUNT is the reason this case is cheap: the Stokes runs were
-# CFL-limited to Δt ≈ 3 s by a 0.0086 m wall cell, whereas this grid's first cell
-# is 0.133 m and max_Δt = 7.5 s binds instead. So
+#     Δt pinned at max_Δt = 7.5 s and CFL ≈ 0.70
 #
-#     4e5 s / 7.5 s  =  53,300 iterations  ×  29 ms  ≈  0.43 h
+# throughout — so the timestep is capped by max_Δt, NOT by the CFL condition, and
+# the iteration count is simply duration/max_Δt:
 #
-# Call it ~1 h with the output writers, the u* fit and GPU contention — against a
-# 12 h wall. The figures add a few minutes. THIS IS AN ESTIMATE FROM A DIFFERENT
-# CASE'S TIMINGS: the job prints its own wall time, and the first submission is
-# what turns the estimate into a measurement.
+#     4e5 s / 7.5 s  =  53,300 iterations
+#
+# That is ~3.0 h on the workstation. The cluster is roughly 9× faster on this kind
+# of kernel (the Stokes study measured 17.5 ms/iteration there against 0.164 s
+# here for its 100 × 100 × 300 grid), which puts this case at
+#
+#     ~0.3-0.5 h on the ampere partition
+#
+# against a 12 h wall. This is why an Ekman case is so much cheaper than a tidal
+# one despite having 5.0 M cells against 3.0 M: the Stokes runs needed 434,800
+# iterations because a 0.0086 m wall cell held the CFL timestep near 3 s, whereas
+# this grid's first cell is 0.133 m and never binds. The figures add a few minutes.
+# The job prints its own wall time; treat the cluster figure as an extrapolation
+# until the first submission confirms it.
 #
 # Because it is one short case there is no wall-clock guard and no staging. If it
 # does not finish, raise --time or run the steps separately with EKMAN_STAGE.
