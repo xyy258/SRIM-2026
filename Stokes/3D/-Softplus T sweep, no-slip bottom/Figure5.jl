@@ -26,15 +26,8 @@ const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy
 const T_tide = 2π / ω
 
 # These must match case_params.jl — the t = 0 overlay is only the true initial
-# condition if the profile parameters agree with the run. The default tracks
-# case_params.jl, which changed from 6 to 2 for the K_T / TKE study: at sharp = 6
-# the transition width 2ln9/sharp = 0.73 m is thinner than the grid above z ≈ 10 m,
-# so the pycnocline began life as a numerical step at large T.
-#
-# EVERY RUN ARCHIVED UNDER "-Softplus T sweep, no-slip bottom/" WAS MADE AT
-# SHARP = 6. Redrawing those figures needs SHARP=6 set explicitly, or the overlay
-# will not be the initial condition they actually started from.
-const sharp = parse(Float64, get(ENV, "SHARP", "2"))
+# condition if the profile parameters agree with the run.
+const sharp = parse(Float64, get(ENV, "SHARP", "6"))
 const Lz    = 50.0
 
 parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))

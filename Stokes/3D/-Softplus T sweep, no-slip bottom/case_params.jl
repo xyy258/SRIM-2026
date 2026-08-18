@@ -59,47 +59,6 @@ const δ      = sqrt(2ν / ω)    # laminar Stokes layer thickness ≈ 0.14142
 const Re_s   = U₀ * δ / ν      # ≈ 1788
 const T_tide = 2π / ω
 
-# ---------------- Bottom drag ----------------
-# The bottom BC is quadratic bulk drag, matching Ekman/3D Simulation/Ekman 3D.jl,
-# which forms cᴰ = (κ/log(z₁/z₀))² with κ = 0.41 and z₀ = 0.0016 m (Parameters.jl).
-#
-# NOTE the name: `κ` above is the MOLECULAR DIFFUSIVITY ν/Pr = 1e-7. The von
-# Kármán constant needs its own name or the drag coefficient comes out ~1e-16.
-const κ_vk = 0.41              # von Kármán constant
-const z₀   = 0.0016            # roughness length (m), from the Ekman case
-
-# THE REFERENCE HEIGHT, and why it is not the first cell centre.
-#
-# A rough-wall log law is only a law where a logarithmic layer exists, i.e. above
-# the roughness sublayer, z ≫ z₀. The Ekman grid satisfies that comfortably: its
-# first cell centre is z₁ = 0.0667 m = 41.7 z₀, giving cᴰ = 0.0121.
-#
-# This grid does not. It deliberately RESOLVES the wall (Δz = 0.0086 m, Δz⁺ ≈ 6)
-# because a near-uniform column lets the Stokes layer relaminarize each half
-# cycle, so its first cell centre is z₁ = 0.0043 m = 2.7 z₀ — inside the
-# roughness elements, where the log law is not merely inaccurate but undefined.
-# Evaluated there it returns cᴰ = 0.172, fourteen times the Ekman value, and the
-# wall stress would be set by a formula extrapolated outside its own domain.
-#
-# The two cases share a physical bottom, so they must share a physical drag
-# coefficient. The law is therefore evaluated at a fixed REFERENCE HEIGHT inside
-# the log layer rather than at whatever height this grid happens to put its first
-# cell, and that height is Ekman's own first cell centre:
-const z_drag_ref = parse(Float64, get(ENV, "Z_DRAG_REF", "0.0667"))
-const cᴰ_ref = (κ_vk / log(max(z_drag_ref, 2z₀) / z₀))^2   # ≈ 0.0121
-
-# Applying cᴰ_ref to u at z₁ rather than at z_drag_ref does under-read the stress
-# — u(z₁) < u(z_drag_ref) — but on this grid that hardly matters: at z₁⁺ ≈ 8 the
-# first cell is inside the viscous sublayer, so the MOLECULAR stress ν·u(z₁)/z₁
-# is the larger term and the drag law is a roughness correction on top of it
-# rather than the wall model. That is the correct physics for a wall-resolving
-# LES; it is cᴰ = 0.17, which would swamp the viscous stress by an order of
-# magnitude, that would not be. Override either number from the shell:
-#     CD=0.0121  julia --project=. Tidal3D.jl sqrtRi2     # pin cᴰ directly
-#     Z_DRAG_REF=0.0667 ...                               # move the reference height
-# Tidal3D.jl logs cᴰ, z₁, z_drag_ref and the ratio it used, and warns if this
-# grid's z₁ ever rises above z_drag_ref (at which point evaluate at z₁ instead).
-
 # Active background stratification. For Ri = 0 the paper still carries a
 # temperature field — it is simply passive (no buoyancy feedback) and keeps the
 # same background gradient. We reproduce that by giving the b tracer a
@@ -114,22 +73,13 @@ const passive_scalar = Ri == 0
 # Tidal3Dprofiles.jl; do not delete without updating both.
 const N²_ref = Ri > 0 ? N² : ω^2
 
-# Softplus sharpness (m⁻¹), profile 4 only. The 10–90 % width of the transition
-# in db/dz is 2ln9/sharp.
-#
-# DEFAULT CHANGED 6 → 2 for the K_T / TKE study. At sharp = 6 the transition is
-# 0.73 m wide, against a grid that coarsens to Δz ≈ 0.34 m above z ≈ 10 m: the
-# pycnocline spanned ~6.9 cells at T = 5 but only ~2.1 cells at T = 10, 20, 30,
-# so it started life as a numerical step at the large-T end and the T-sweep
-# confounded stratification height with initial pycnocline resolution.
-#
-# At sharp = 2 the transition is 2ln9/2 = ln9 = 2.20 m (NOT the 1.10 m quoted in
-# the K_T brief — 2ln9/sharp at sharp = 2 is ln 9, not half of it). That is the
-# SAME PHYSICAL WIDTH at every T, and ≥ 6 cells everywhere up to T = 10
-# (Tidal3D.jl logs 20.8 cells at T = 5, ~6.5 at T = 10), so T is the only variable
-# in the T-sweep. Do NOT vary sharp per case to equalise the cell count: that
-# would make the initial pycnocline width T-dependent and re-confound the two.
-const sharp = parse(Float64, get(ENV, "SHARP", "2"))
+# Softplus sharpness (m⁻¹), profile 4 only. WARNING: the 10–90 % width of the
+# transition in db/dz is 2ln9/sharp = 0.73 m at sharp = 6, while the vertical
+# grid coarsens to Δz ≈ 0.43 m above z ≈ 10 m — so for T = 10, 20, 30 the initial
+# pycnocline spans under 2 cells and starts life as a numerical step. Only T = 5
+# (Δz ≈ 0.13 m, ~5.6 cells) is properly resolved. Lower `sharp` to ~1 for a 4.4 m
+# transition (~10 cells) if the T-dependence is meant to be the signal.
+const sharp = parse(Float64, get(ENV, "SHARP", "6"))
 
 # Which background buoyancy profile the run uses (the if-chain below). Set from
 # the shell alongside the other run knobs, e.g.

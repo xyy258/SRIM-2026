@@ -146,40 +146,9 @@ if profile in (1, 4)
 end
 
 # ---------------- Boundary conditions ----------------
-# Quadratic bulk drag at the bottom, free-slip top (default), matching the Ekman
-# 3D case. NOTE this replaces the no-slip bottom every run in outputs/ was made
-# with, so a drag run is not directly comparable with them and needs its own
-# spin-up (the no-slip snapshot is still a legal restart, but its wall layer is
-# not the one drag sustains).
-
-# Drag coefficient from the log law, evaluated at the REFERENCE HEIGHT rather
-# than at this grid's first cell centre — see the long note in case_params.jl.
-# κ_vk, z₀, z_drag_ref and cᴰ_ref come from there; NOT `κ`, which there is the
-# molecular diffusivity ν/Pr.
-z₁ = abs(Array(znodes(grid, Center()))[1])      # first cell centre above the wall
-cᴰ = parse(Float64, get(ENV, "CD", string(cᴰ_ref)))
-
-@info @sprintf("Bottom drag: cᴰ = %.4g from the log law at z_ref = %.4f m = %.1f z₀ (Ekman 3D: cᴰ = 0.0121 at z₁ = 0.0667 m); this grid's first cell is z₁ = %.5f m = %.2f z₀%s",
-               cᴰ, z_drag_ref, z_drag_ref / z₀, z₁, z₁ / z₀,
-               haskey(ENV, "CD") ? " [cᴰ OVERRIDDEN by CD]" : "")
-
-# The reference height must stay AT OR ABOVE the first cell centre: below it the
-# drag law would be reading a velocity from a height the grid never resolves.
-z₁ > z_drag_ref &&
-    @warn @sprintf("z_drag_ref = %.4f m is BELOW the first cell centre z₁ = %.4f m. The grid has coarsened past the reference height, so evaluate the law at z₁ instead: Z_DRAG_REF=%.4f.",
-                   z_drag_ref, z₁, z₁)
-
-# Quadratic drag. BulkDrag infers its direction from the field location, so the
-# same constructor serves u and v.
-drag_bc_u = BulkDrag(coefficient = cᴰ)
-drag_bc_v = BulkDrag(coefficient = cᴰ)
-
-# No-slip bottom, for reference — what every run currently in outputs/ used:
-# drag_bc_u = ValueBoundaryCondition(0)
-# drag_bc_v = ValueBoundaryCondition(0)
-
-u_bcs = FieldBoundaryConditions(bottom = drag_bc_u)
-v_bcs = FieldBoundaryConditions(bottom = drag_bc_v)
+# No-slip bottom, free-slip top (default).
+u_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
+v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 
 # Adiabatic bottom (paper); fixed gradient at top to maintain the background
 # stratification there. The gradient is N²_bg at the lid — Lz_total, not Lz — and
@@ -364,16 +333,6 @@ simulation.output_writers[:checkpoint] =
                  dir = outdir,
                  prefix = "TidalBL3D_" * casetag * "_checkpoint",
                  cleanup = true)
-
-# (5) Second moments — TKE, ⟨w′b′⟩, ⟨u′w′⟩ and the SGS buoyancy flux, written to
-# *_moments.jld2 for MixedLayerDiffusivity.jl. Registers one extra writer and
-# changes no existing filename or schedule, so every reader above is unaffected.
-# MOMENTS=0 turns it off (the spin-up has no use for it).
-if get(ENV, "MOMENTS", "1") == "1"
-    include(joinpath(@__DIR__, "Moments.jl"))
-else
-    @info "MOMENTS=0 — no second-moment output; K_T cannot be measured from this run"
-end
 
 run!(simulation)
 # To resume: run!(simulation, pickup = true), with overwrite_existing = false in
