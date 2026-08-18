@@ -37,6 +37,22 @@ periods. On the cluster `swirles.sh` is unchanged and takes no arguments:
 sbatch swirles.sh          # spin-up → stage 0 (+h0, +the T check) → the rest of the column
 ```
 
+**To see one result quickly**, run only the unstratified control — spin-up plus
+the `N/ω = 0` case, ~3.9 h:
+
+```bash
+MOMENTS_STAGE=stage0 sbatch swirles.sh
+```
+
+That case is kept and marked, so a later bare `sbatch swirles.sh` skips it and
+runs only the three stratified cases (~7.4 h). Nothing is paid twice. Note what
+the control can and cannot tell you: at `N/ω = 0` the `b` field is a passive
+scalar, so `K_T` is a genuine tracer diffusivity and checks 1–4 all apply — but
+`K_T ~ TKE/N` is undefined at `N = 0`, so the panel (d) slope there tests the
+measurement chain against the `√TKE·l` branch rather than discriminating between
+the two hypotheses. Add `FIELDS3D_CASE=P4_T10_sqrtRi0` if you want its 3D fields
+kept for animation.
+
 If the wall-clock guard defers the last case, re-submitting the same line
 finishes it — every case carries its own marker.
 

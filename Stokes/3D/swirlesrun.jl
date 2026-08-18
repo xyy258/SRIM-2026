@@ -506,7 +506,13 @@ else
         h0 = report_h0()
 
         if stage == "stage0"
-            log("stage0 only — stopping. The case is kept and marked, so the column will skip it.")
+            t_vs_h0(h0)
+            log("stage0 only — stopping. The case is kept and marked, so the column skips it.")
+            log("  This is the UNSTRATIFIED CONTROL: at N/ω = 0 the b field is a passive")
+            log("  scalar, so K_T is a genuine tracer diffusivity and checks 1-4 all apply,")
+            log("  but K_T ~ TKE/N is undefined at N = 0 — the panel (d) slope here tests the")
+            log("  machinery against the √TKE·l branch rather than discriminating between the")
+            log("  two. Add the stratified cases with:  sbatch swirles.sh   (no arguments)")
         elseif !t_vs_h0(h0)
             log("auto: STOPPING. h0 says this T is the wrong height — see the lines above.")
             log("  The probe case is kept and marked; nothing else has run.")
