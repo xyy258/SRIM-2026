@@ -1,0 +1,36 @@
+
+==============================================================================
+==== 2026-08-18 15:53:20  Tidal3D.jl sqrtRi2
+==== FIELDS3D=1  LIGHT_OUTPUT=1  MOMENTS=1  N_PERIODS=8  PROFILE=4  SPINUP_FILE=outputs/spinup_100x100x300_drag/TidalBL3D_spinup_100x100x300_drag_fields.jld2  T_STRAT=10
+==============================================================================
+i:      0, t:       0.0 s, ωt:   0.00 (0.00 periods), wall: 40.073 seconds, Δt:   1.20, CFL: 8.33e-02
+i:    100, t:     311.5 s, ωt:   0.03 (0.00 periods), wall: 1.572 minutes, Δt:   7.43, CFL: 3.30e-01
+i:    200, t:    1564.6 s, ωt:   0.16 (0.02 periods), wall: 1.605 minutes, Δt:  12.19, CFL: 9.00e-01
+i:    300, t:    2556.7 s, ωt:   0.26 (0.04 periods), wall: 1.639 minutes, Δt:   8.41, CFL: 9.00e-01
+i:    400, t:    3294.6 s, ωt:   0.33 (0.05 periods), wall: 1.669 minutes, Δt:   6.75, CFL: 9.00e-01
+i:    500, t:    3911.8 s, ωt:   0.39 (0.06 periods), wall: 1.699 minutes, Δt:   5.77, CFL: 9.00e-01
+i:    600, t:    4450.2 s, ωt:   0.45 (0.07 periods), wall: 1.729 minutes, Δt:   5.14, CFL: 9.00e-01
+i:    700, t:    4937.7 s, ωt:   0.49 (0.08 periods), wall: 1.758 minutes, Δt:   4.68, CFL: 9.00e-01
+i:    800, t:    5384.3 s, ωt:   0.54 (0.09 periods), wall: 1.788 minutes, Δt:   4.32, CFL: 9.00e-01
+i:    900, t:    5802.8 s, ωt:   0.58 (0.09 periods), wall: 1.816 minutes, Δt:   4.05, CFL: 9.00e-01
+i:   1000, t:    6195.4 s, ωt:   0.62 (0.10 periods), wall: 1.845 minutes, Δt:   3.83, CFL: 9.00e-01
+i:   1100, t:    6566.4 s, ωt:   0.66 (0.10 periods), wall: 1.874 minutes, Δt:   3.65, CFL: 9.00e-01
+i:   1200, t:    6922.0 s, ωt:   0.69 (0.11 periods), wall: 1.911 minutes, Δt:   3.49, CFL: 9.00e-01
+i:   1300, t:    7262.8 s, ωt:   0.73 (0.12 periods), wall: 1.940 minutes, Δt:   3.36, CFL: 9.00e-01
+i:   1400, t:    7591.9 s, ωt:   0.76 (0.12 periods), wall: 1.970 minutes, Δt:   3.24, CFL: 9.00e-01
+i:   1500, t:    7910.8 s, ωt:   0.79 (0.13 periods), wall: 1.999 minutes, Δt:   3.14, CFL: 9.00e-01
+i:   1600, t:    8220.2 s, ωt:   0.82 (0.13 periods), wall: 2.028 minutes, Δt:   3.05, CFL: 9.00e-01
+i:   1700, t:    8521.0 s, ωt:   0.85 (0.14 periods), wall: 2.058 minutes, Δt:   2.97, CFL: 9.00e-01
+i:   1800, t:    8813.9 s, ωt:   0.88 (0.14 periods), wall: 2.087 minutes, Δt:   2.90, CFL: 9.00e-01
+i:   1900, t:    9100.7 s, ωt:   0.91 (0.14 periods), wall: 2.115 minutes, Δt:   2.83, CFL: 9.00e-01
+i:   2000, t:    9379.9 s, ωt:   0.94 (0.15 periods), wall: 2.144 minutes, Δt:   2.77, CFL: 9.00e-01
+i:   2100, t:    9650.0 s, ωt:   0.97 (0.15 periods), wall: 2.174 minutes, Δt:   2.72, CFL: 9.00e-01
+i:   2200, t:    9919.3 s, ωt:   0.99 (0.16 periods), wall: 2.203 minutes, Δt:   2.67, CFL: 9.00e-01
+i:   2300, t:   10182.6 s, ωt:   1.02 (0.16 periods), wall: 2.232 minutes, Δt:   2.63, CFL: 9.00e-01
+i:   2400, t:   10442.6 s, ωt:   1.04 (0.17 periods), wall: 2.261 minutes, Δt:   2.59, CFL: 9.00e-01
+i:   2500, t:   10699.3 s, ωt:   1.07 (0.17 periods), wall: 2.290 minutes, Δt:   2.55, CFL: 9.00e-01
+i:   2600, t:   10953.0 s, ωt:   1.10 (0.17 periods), wall: 2.319 minutes, Δt:   2.52, CFL: 9.00e-01
+i:   2700, t:   11203.3 s, ωt:   1.12 (0.18 periods), wall: 2.348 minutes, Δt:   2.49, CFL: 9.00e-01
+i:   2800, t:   11450.5 s, ωt:   1.15 (0.18 periods), wall: 2.376 minutes, Δt:   2.46, CFL: 9.00e-01
+i:   2900, t:   11694.6 s, ωt:   1.17 (0.19 periods), wall: 2.405 minutes, Δt:   2.43, CFL: 9.00e-01
+i:   3000, t:   11936.9 s, ωt:   1.19 (0.19 periods), wall: 2.433 minutes, Δt:   2.41, CFL: 9.00e-01
