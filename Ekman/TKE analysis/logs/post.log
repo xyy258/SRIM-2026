@@ -1,0 +1,31 @@
+
+==============================================================================
+==== 2026-08-18 14:39:07  MixedLayerDiffusivity.jl
+==== R=1  SHARP=6  T_STRAT=20
+==============================================================================
+[ Info: Oceananigans will use 12 threads
+
+==============================================================================
+VERIFICATION  r=1.0, T=20.0   (T = 20 m, N/f = 1, Ri = 1, zref = 50.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 7.909e-19 m/s  (= 1.98e-17 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.1 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 7.0 %; flux leaking past zref = 0.04 × ∫F_b
+      — small, so the boundary term may be dropped)
+  3. K_sgs/K_T at z = h: median 0.02 (90th pct 0.03)              PASS
+  4. delta_eff = 15.39 ± 9.12 m (CV 0.59); mean h = 19.58 m          FAIL
+     delta_eff/Lz = 0.154 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.58  (r = +0.75, n = 874)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: √TKE·l
+  → FAILED CHECKS (read no further down the list than the first):
+      • delta_eff wanders (CV 0.59) — use the integral, not the peak
+  wrote Data/r=1.0, T=20.0/mixing_r=1.0, T=20.0.jld2
+         Plots/K_T_r=1.0, T=20.0.png
+
+==============================================================================
+1 case(s) analysed; 1 with failing checks:
+  r=1.0, T=20.0
+      • delta_eff wanders (CV 0.59) — use the integral, not the peak
+
+Do not read the panel (d) slope for a case whose check 1, 2 or 3 failed.
+==============================================================================

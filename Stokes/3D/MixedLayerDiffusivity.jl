@@ -84,6 +84,13 @@ moments_file(tag) = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_mome
 const GRAD_FLOOR = parse(Float64, get(ENV, "GRAD_FLOOR", "0.05"))
 const RESULT_SUFFIX = get(ENV, "RESULT_SUFFIX", "")
 
+# Minimum |r| for the panel (d) slope to be quotable as an exponent. A
+# least-squares slope through a round cloud is still a number, and with n in the
+# thousands its formal error bar is small — which is exactly how a null result
+# gets written up as a finding. 0.5 (r² = 0.25) is a low bar deliberately: below
+# it the power law is not describing the data at all.
+const R_MIN = parse(Float64, get(ENV, "R_MIN", "0.5"))
+
 # ---------------------------------------------------------------------------
 # Time reduction. Applied only AFTER the per-sample decomposition (step 2 above).
 # ---------------------------------------------------------------------------
@@ -416,7 +423,8 @@ function verify(c)
     met = Dict{String,Float64}("w_over_U0" => NaN, "pe_rel_diff" => NaN,
                                "pe_rel_diff_uncorrected" => NaN, "zref_leakage" => NaN,
                                "K_sgs_over_K_T" => NaN, "delta_eff" => NaN,
-                               "delta_eff_cv" => NaN, "slope" => NaN)
+                               "delta_eff_cv" => NaN, "slope" => NaN,
+                               "slope_r" => NaN, "slope_n" => NaN)
     println("\n", "="^78)
     @printf("VERIFICATION  %s   (T = %g m, N/ω = %g, Ri = %g, zref = %.1f m, GRAD_FLOOR = %.3f, SMOOTH = %s)\n",
             c.tag, c.T, c.s, c.Ri, c.zref, GRAD_FLOOR, SMOOTH)
@@ -492,20 +500,58 @@ function verify(c)
         println("  4. delta_eff: too few finite samples                            FAIL")
     end
 
-    # 5. the answer
+    # 5. the answer — with the two things that make a slope UNREADABLE stated
+    #    before the number, not after it.
     @printf("  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = %+.2f  (r = %+.2f, n = %d)\n",
             c.slope, c.rcorr, c.nfit)
-    @printf("     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: %s\n",
-            isnan(c.slope) ? "—" :
-            abs(c.slope - 0.5) < abs(c.slope - 1.0) ? "√TKE·l" : "TKE/N")
 
-    if isempty(fails)
-        println("  → all checks pass; the slope above can be read as physics.")
+    # (a) AT N = 0 THE TEST DOES NOT EXIST. K_T ~ TKE/N is undefined there, so the
+    #     unstratified case cannot discriminate between the two scalings no matter
+    #     how clean the fit is. It is a control — it says the machinery works and
+    #     gives the √TKE·l branch with nothing suppressing it — and that is all.
+    #     Saying "nearest: √TKE·l" here would be comparing against a hypothesis
+    #     that has no value to compare with.
+    unstratified = c.Ri == 0
+    weak_fit = isfinite(c.rcorr) && abs(c.rcorr) < R_MIN
+
+    if unstratified
+        println("     N/ω = 0: K_T ~ TKE/N is UNDEFINED (N = 0), so this case CANNOT")
+        println("     discriminate between the two scalings. It is the unstratified control:")
+        println("     it shows the machinery works and the √TKE·l branch unsuppressed.")
+        println("     The exponent needs the stratified cases.")
     else
+        @printf("     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: %s\n",
+                isnan(c.slope) ? "—" :
+                abs(c.slope - 0.5) < abs(c.slope - 1.0) ? "√TKE·l" : "TKE/N")
+    end
+
+    # (b) A SLOPE WITHOUT A CORRELATION IS NOT A MEASUREMENT. A least-squares slope
+    #     through a round cloud is still a number, and with n in the thousands its
+    #     formal error bar is tiny — which is exactly how a null result gets
+    #     reported as a finding. r² is the honest summary of how much of the
+    #     scatter the power law actually accounts for.
+    if weak_fit
+        @printf("     WEAK FIT: r = %.2f means the power law explains only %.0f %% of the\n",
+                c.rcorr, 100 * c.rcorr^2)
+        @printf("     scatter. Do not quote this slope as an exponent. Usual causes: too few\n")
+        println("     independent samples (SMOOTH=tide gives the envelope, tide20 does not),")
+        println("     or h jittering between samples, so 'at z = h' is a moving target.")
+    end
+
+    if !isempty(fails)
         println("  → FAILED CHECKS (read no further down the list than the first):")
         for f in fails; println("      • ", f); end
+    elseif unstratified
+        println("  → checks 1-4 pass: the measurement chain is sound. Check 5 is not")
+        println("    applicable at N = 0 — run the stratified cases for the exponent.")
+    elseif weak_fit
+        println("  → checks 1-4 pass, but the check-5 fit is too weak to quote a slope.")
+    else
+        println("  → all checks pass; the slope above can be read as physics.")
     end
-    met["slope"] = c.slope
+    met["slope"]   = c.slope
+    met["slope_r"] = c.rcorr
+    met["slope_n"] = float(c.nfit)
     return fails, met
 end
 
@@ -554,19 +600,32 @@ function make_figure(c)
     # (d) the answer
     x, y = c.TKE_at_h[c.fit_keep], c.K_at_h[c.fit_keep]
     m = @. isfinite(x) && isfinite(y) && x > 0 && y > 0
+    # THE TITLE CARRIES THE CAVEAT, not just the number. A slope through a round
+    # cloud is still a slope, and a reader who sees only "slope = 0.17" on a plot
+    # will quote it. r² says how much of the scatter the power law accounts for,
+    # and at N = 0 the TKE/N hypothesis does not exist to be compared against.
+    unstrat = c.Ri == 0
+    weak = isfinite(c.rcorr) && abs(c.rcorr) < R_MIN
+    ttl = @sprintf("(d) slope = %.2f (r = %.2f, r² = %.2f, n = %d)",
+                   c.slope, c.rcorr, c.rcorr^2, c.nfit)
+    unstrat && (ttl *= "\nN = 0: CONTROL ONLY — TKE/N undefined, cannot discriminate")
+    weak && !unstrat && (ttl *= "\nWEAK FIT — not quotable as an exponent")
     pd = plot(xscale = :log10, yscale = :log10, xlabel = "TKE at z = h (m² s⁻²)",
-              ylabel = "K_T at z = h (m² s⁻¹)",
-              title = @sprintf("(d) slope = %.2f (r = %.2f, n = %d)", c.slope, c.rcorr, c.nfit))
+              ylabel = "K_T at z = h (m² s⁻¹)", title = ttl,
+              titlefontsize = unstrat || weak ? 8 : 10)
     if count(m) >= 8
         scatter!(pd, x[m], y[m]; ms = 2.5, mc = "#3C7CC4", msw = 0, label = "", alpha = 0.5)
         xr = [minimum(x[m]), maximum(x[m])]
         x0, y0 = exp10(mean(log10.(x[m]))), exp10(mean(log10.(y[m])))
         plot!(pd, xr, y0 .* (xr ./ x0) .^ c.slope; color = :black, lw = 2,
-              label = @sprintf("fit %.2f", c.slope))
+              label = @sprintf("fit %.2f%s", c.slope, weak ? " (weak)" : ""))
         plot!(pd, xr, y0 .* (xr ./ x0) .^ 0.5; color = "#B4502C", ls = :dash, lw = 1.5,
               label = "½ → √TKE·l")
-        plot!(pd, xr, y0 .* (xr ./ x0) .^ 1.0; color = "#7A3117", ls = :dot, lw = 1.5,
-              label = "1 → TKE/N")
+        # The TKE/N line is omitted at N = 0 rather than drawn and ignored: it is
+        # a reference to a hypothesis with no value at this N, and drawing it
+        # invites exactly the comparison the case cannot support.
+        unstrat || plot!(pd, xr, y0 .* (xr ./ x0) .^ 1.0; color = "#7A3117", ls = :dot,
+                         lw = 1.5, label = "1 → TKE/N")
     else
         # No annotate! here: on empty log-scaled axes there is no data range to
         # place it in. The title already carries n.
