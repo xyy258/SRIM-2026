@@ -19,7 +19,7 @@ global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=line
             end
 
         elseif profile == 2     # exponential with fixed buoyancy difference of N
-            for value in [10, 20, 40, 60]
+            for value in [5, 10, 20, 30, 40, 60]
                 global Lᴰ = value
                 include(file)
             end
