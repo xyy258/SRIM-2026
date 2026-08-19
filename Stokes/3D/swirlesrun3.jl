@@ -17,13 +17,13 @@
 #   exponents near 1 can each be explained away, but sixteen cases landing on one
 #   value of Γ cannot.
 #
-#   Panel (a) is the sharp version. Since log Γ = log K_T + log N − log TKE,
+#   The figure shows the per-case distribution of Γ; the table adds the sharper
+#   scalar. Since log Γ = log K_T + log N − log TKE,
 #
 #       d(log Γ)/d(log TKE)  =  (panel-d slope) − 1
 #
-#   exactly. So a FLAT cloud in (a) is the exponent being 1, shown as a residual
-#   rather than as a fitted line — a tilt you would have to squint at in panel (d)
-#   is immediately visible here as a sloping cloud.
+#   exactly, so the dlnΓ/dlnE column IS the deviation of the exponent from 1,
+#   read as a residual rather than off a fitted line.
 #
 # TWO DATA FORMATS, AND WHY THE DISTINCTION MATTERS
 #   new     outputs/*/mixing_*.jld2 from MixedLayerDiffusivity.jl. FULL flux,
@@ -178,92 +178,38 @@ pooled = reduce(vcat, (G[c.label].Γ for c in cases))
 Γmed = median(pooled)
 
 mk(c) = c.legacy ? :circle : :diamond
-al(c) = c.legacy ? 0.20 : 0.45
 const PAL = cgrad(:viridis)
 col(i) = PAL[(i - 1) / max(length(cases) - 1, 1)]
 
-# (a) THE test: Γ against TKE. Flat ⇒ K_T ∝ TKE/N exactly.
-pa = plot(xscale = :log10, yscale = :log10, legend = false,
-          xlabel = "TKE at z = h (m² s⁻²)", ylabel = "Γ = K_T·N/TKE",
-          title = "(a) Γ vs TKE — flat ⇒ exponent exactly 1")
-for (i, c) in enumerate(cases)
-    g = G[c.label]
-    scatter!(pa, g.TKE, g.Γ; ms = 1.3, msw = 0, alpha = al(c), color = col(i))
-end
-hline!(pa, [Γmed]; color = :black, lw = 2, ls = :dash)
-annotate!(pa, xlims(pa)[1] * 1.6, Γmed * 1.9,
-          text(@sprintf("pooled median Γ = %.3f", Γmed), 7, :left))
-
-# (b) per-case spread: median dot, IQR bar, 10-90 whisker. Overlap ⇒ collapse.
-pb = plot(legend = false, yscale = :log10, ylabel = "Γ = K_T·N/TKE",
+# The collapse, as one figure: median dot, IQR bar, 10-90 whisker, one column per
+# case, ordered by N/ω. If K_T = Γ·TKE/N with Γ a pure number, every column sits
+# at the same height whatever N, whatever the background scale. A column that
+# steps away from the dashed pooled median is a case the closure does not cover.
+#
+# The within-case whisker is turbulent intermittency, NOT uncertainty on Γ: the
+# median of ~800 samples is far better determined than the IQR suggests. What is
+# being read here is the alignment of the DOTS.
+pb = plot(legend = :topright, yscale = :log10, ylabel = "Γ = K_T·N/TKE",
           xlabel = "case (ordered by N/ω)", xrotation = 60,
-          title = "(b) per-case distribution — overlap ⇒ one constant")
+          size = (max(760, 62 * length(cases)), 620),
+          left_margin = 8Plots.mm, bottom_margin = 16Plots.mm,
+          title = @sprintf("Γ = K_T·N/TKE across %d cases — level dots ⇒ one constant (skip %g periods)",
+                           length(cases), SKIP))
 for (i, c) in enumerate(cases)
     q = quantile(G[c.label].Γ, [0.10, 0.25, 0.50, 0.75, 0.90])
-    plot!(pb, [i, i], [q[1], q[5]]; color = col(i), lw = 1.2)
-    plot!(pb, [i, i], [q[2], q[4]]; color = col(i), lw = 5)
-    scatter!(pb, [i], [q[3]]; color = :white, ms = 4, msw = 1.6,
-             markerstrokecolor = col(i), marker = mk(c))
+    plot!(pb, [i, i], [q[1], q[5]]; color = col(i), lw = 1.2, label = "")
+    plot!(pb, [i, i], [q[2], q[4]]; color = col(i), lw = 5, label = "")
+    scatter!(pb, [i], [q[3]]; color = :white, ms = 5, msw = 1.8,
+             markerstrokecolor = col(i), marker = mk(c), label = "")
 end
-hline!(pb, [Γmed]; color = :black, lw = 2, ls = :dash)
+# Labelled on the legend rather than annotated in place: an annotation near the
+# line lands on top of the first case's marker.
+hline!(pb, [Γmed]; color = :black, lw = 2, ls = :dash,
+       label = @sprintf("pooled median Γ = %.3f", Γmed))
 xticks!(pb, 1:length(cases), [c.label for c in cases])
 
-# (c) residual dependence on N. Case medians only — the within-case spread is
-# panel (b)'s job, and drawing it here buries the very thing being tested.
-# Jittered in x because there are only two distinct N in this dataset.
-pc = plot(xscale = :log10, yscale = :log10, legend = :bottomleft,
-          xlabel = "N/ω", ylabel = "median Γ per case",
-          title = "(c) is Γ independent of N and of the background scale?")
-for (i, c) in enumerate(cases)
-    jit = c.s * (1 + 0.05 * (2 * ((i - 1) % 8) / 7 - 1))
-    scatter!(pc, [jit], [median(G[c.label].Γ)]; color = col(i), ms = 6,
-             marker = mk(c), msw = 0.8, label = "")
-end
-for sv in sort(unique(c.s for c in cases))
-    sub = [c for c in cases if c.s == sv]
-    mm  = median([median(G[c.label].Γ) for c in sub])
-    plot!(pc, [sv * 0.93, sv * 1.07], [mm, mm]; color = :black, lw = 3, label = "")
-    annotate!(pc, sv * 1.10, mm, text(@sprintf("%.3f", mm), 7, :left))
-end
-hline!(pc, [Γmed]; color = :black, lw = 1.5, ls = :dash, label = "pooled median")
-scatter!(pc, [NaN], [NaN]; marker = :circle, color = :grey, label = "resolved only (legacy)")
-any(!c.legacy for c in cases) &&
-    scatter!(pc, [NaN], [NaN]; marker = :diamond, color = :grey, label = "full flux (new)")
-
-# (d) stationarity: Γ must not drift through the run.
-pd = plot(yscale = :log10, legend = false, xlabel = "t / T_tide",
-          ylabel = "Γ", title = "(d) Γ vs time — drift ⇒ not yet equilibrated")
-for (i, c) in enumerate(cases)
-    g = G[c.label]
-    isempty(g.t) && continue
-    nb = 8                                    # bin, else the clouds are unreadable
-    edges = range(minimum(g.t), maximum(g.t); length = nb + 1)
-    xs, ys = Float64[], Float64[]
-    for j in 1:nb
-        sel = (g.t .>= edges[j]) .& (g.t .< edges[j+1])
-        count(sel) >= 5 || continue
-        push!(xs, 0.5 * (edges[j] + edges[j+1])); push!(ys, median(g.Γ[sel]))
-    end
-    plot!(pd, xs, ys; color = col(i), lw = 1.0, alpha = 0.55, marker = mk(c), ms = 2)
-end
-# The pooled median per time bin: the individual traces are intermittent, and
-# what matters is whether their CENTRE moves.
-let alt = reduce(vcat, (G[c.label].t for c in cases)),
-    alg = reduce(vcat, (G[c.label].Γ for c in cases)),
-    edges = range(minimum(alt), maximum(alt); length = 9)
-    xs, ys = Float64[], Float64[]
-    for j in 1:8
-        sel = (alt .>= edges[j]) .& (alt .< edges[j+1])
-        count(sel) >= 5 || continue
-        push!(xs, 0.5 * (edges[j] + edges[j+1])); push!(ys, median(alg[sel]))
-    end
-    plot!(pd, xs, ys; color = :black, lw = 3, marker = :square, ms = 4)
-end
-hline!(pd, [Γmed]; color = :black, lw = 1.5, ls = :dash)
-
 f1 = joinpath(figdir, "gamma_collapse$SUFFIX.png")
-savefig(plot(pa, pb, pc, pd; layout = (2, 2), size = (1250, 950),
-             left_margin = 8Plots.mm, bottom_margin = 12Plots.mm), f1)
+savefig(pb, f1)
 
 # --- table -------------------------------------------------------------------
 open(joinpath(logdir, "gamma_collapse$SUFFIX.log"), "a") do io
