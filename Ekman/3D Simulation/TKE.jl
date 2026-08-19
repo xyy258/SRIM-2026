@@ -22,6 +22,8 @@ w_avg_series = FieldTimeSeries(root * "Avg_vel.jld2", "w_avg")
 
 # Get vertical center grid points
 zC = znodes(u_series.grid, Center())
+center_w = a -> 0.5 .* (a[:, :, 1:end-1] .+ a[:, :, 2:end])
+center_w_profile = a -> 0.5 .* (a[1:end-1] .+ a[2:end])
 
 # Identify time indices over the last 2 inertial periods
 T_f = 2π / f₀
@@ -36,11 +38,11 @@ for n in t_indices
     # Fetch interior data (Array(...) ensures GPU->CPU safety)
     u = Array(interior(u_series[n], :, :, :))
     v = Array(interior(v_series[n], :, :, :))
-    w = Array(interior(w_series[n], :, :, :))
+    w = center_w(Array(interior(w_series[n], :, :, :)))
 
     u_mean = Array(interior(u_avg_series[n], 1, 1, :))
     v_mean = Array(interior(v_avg_series[n], 1, 1, :))
-    w_mean = Array(interior(w_avg_series[n], 1, 1, :))
+    w_mean = center_w_profile(Array(interior(w_avg_series[n], 1, 1, :)))
 
     # Calculate velocity fluctuations
     u_prime = u .- reshape(u_mean, (1, 1, :))
@@ -108,11 +110,11 @@ for n in t_indices
     global tke_max
     u = Array(interior(u_series[n], :, :, :))
     v = Array(interior(v_series[n], :, :, :))
-    w = Array(interior(w_series[n], :, :, :))
+    w = center_w(Array(interior(w_series[n], :, :, :)))
 
     u_mean = Array(interior(u_avg_series[n], 1, 1, :))
     v_mean = Array(interior(v_avg_series[n], 1, 1, :))
-    w_mean = Array(interior(w_avg_series[n], 1, 1, :))
+    w_mean = center_w_profile(Array(interior(w_avg_series[n], 1, 1, :)))
 
     tke = 0.5 .* ((u .- reshape(u_mean, (1, 1, :))).^2
         .+ (v .- reshape(v_mean, (1, 1, :))).^2
@@ -127,11 +129,11 @@ anim = @animate for n in t_indices
     # Fetch interior data (Array(...) ensures GPU->CPU safety)
     u = Array(interior(u_series[n], :, :, :))
     v = Array(interior(v_series[n], :, :, :))
-    w = Array(interior(w_series[n], :, :, :))
+    w = center_w(Array(interior(w_series[n], :, :, :)))
 
     u_mean = Array(interior(u_avg_series[n], 1, 1, :))
     v_mean = Array(interior(v_avg_series[n], 1, 1, :))
-    w_mean = Array(interior(w_avg_series[n], 1, 1, :))
+    w_mean = center_w_profile(Array(interior(w_avg_series[n], 1, 1, :)))
 
     # Calculate velocity fluctuations
     u_prime = u .- reshape(u_mean, (1, 1, :))
