@@ -72,3 +72,10 @@ i:   6100, t:   15662.3 s, ωt:   1.57 (0.25 periods), wall: 2.466 minutes, Δt:
 ==============================================================================
 spin-up check: w_rms/U0 = 0.0081 at snapshot 1/1 (t = 0.00 periods)
   turbulent reference 0.009-0.012, floor 0.0030 -> turbulent
+
+==============================================================================
+==== 2026-08-19 00:54:13  spin-up turbulence check
+==== 
+==============================================================================
+spin-up check: w_rms/U0 = 0.0081 at snapshot 1/1 (t = 0.00 periods)
+  turbulent reference 0.009-0.012, floor 0.0030 -> turbulent
