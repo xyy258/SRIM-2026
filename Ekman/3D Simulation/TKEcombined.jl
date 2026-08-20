@@ -5,8 +5,8 @@ using Plots.PlotMeasures
 using Statistics
 using CUDA
 
-ratios = [0.5, 1, 2, 5]
-values = [10,15,20,30]
+ratios = [0, 0.5, 1, 2, 5]
+values = [5,10,15,20,30,40,50]
 profiles = [4]
 
 # ======================================= #
@@ -16,8 +16,7 @@ profiles = [4]
 for p in profiles
     global profile = p
     for value in values
-        plt = plot(size  = (800, 500),
-            margin = 25px
+        plt = plot(size  = (800, 500)
         )
 
         global T = value
@@ -41,7 +40,7 @@ for p in profiles
             center_w_profile = a -> 0.5 .* (a[1:end-1] .+ a[2:end])
 
             T_f = 2π / f₀
-            n_periods = 2
+            n_periods = 5
             t_end = u_series.times[end]
             t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
 
@@ -106,7 +105,9 @@ for p in profiles
             ylabel    = "TKE/U∞^2",
             xlims     = (0, Lz),
             minorgrid = true,
-            legend    = :bottomleft
+            legend    = :bottomleft,
+            title     = "TKE (averaged over 5 periods) log plot against depth for T=$T",
+            margin    = 25px
         )
 
         mkpath(save_folder)
