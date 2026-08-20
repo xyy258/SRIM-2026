@@ -39,4 +39,4 @@ export JULIA_DEPOT_PATH="/cephfs/store/damtp/tll46/.julia:$HOME/.julia"
 mkdir -p /cephfs/store/damtp/tll46/.julia
 
 # Run the Julia script with project activation
-srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlesrun.jl"
+srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlesrun5.jl"
