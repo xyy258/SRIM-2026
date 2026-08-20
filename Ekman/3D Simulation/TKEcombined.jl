@@ -70,15 +70,15 @@ for p in profiles
 
             @info "Making time-averaged TKE plot for r = $r..."
 
-            # Plot raw TKE profile using palette index `idx`
-            plot!(plt, tke_norm, zC,
-                xaxis     = :log,
+            # Swapped zC and tke_norm, moved log scale to yaxis
+            plot!(plt, zC, tke_norm,
+                yaxis     = :log,
                 linewidth = 2,
                 color     = idx,
                 label     = @sprintf("r = %.1f", r)
             )
 
-            # Fit points where z <= 0.5*Lz, then extrapolate full line across all zC
+            # Fit points where z <= 0.25*Lz, then extrapolate full line across all zC
             mask = zC .<= 0.25 * Lz
             if count(mask) >= 2
                 x_sub = tke_norm[mask]
@@ -91,8 +91,8 @@ for p in profiles
                 # Evaluate over full domain zC
                 x_full = 10 .^ (m .* zC .+ c)
 
-                # Plot fitted line matching palette index `idx`
-                plot!(plt, x_full, zC,
+                # Swapped zC and x_full
+                plot!(plt, zC, x_full,
                     linestyle = :dash,
                     linewidth = 1.5,
                     color     = idx,
@@ -102,11 +102,11 @@ for p in profiles
         end
 
         plot!(plt,
-            xlabel    = "TKE/U∞^2",
-            ylabel    = "Depth z [m]",
-            ylims     = (0, Lz),
+            xlabel    = "Depth z [m]",
+            ylabel    = "TKE/U∞^2",
+            xlims     = (0, Lz),
             minorgrid = true,
-            legend    = true
+            legend    = :bottomleft
         )
 
         mkpath(save_folder)
