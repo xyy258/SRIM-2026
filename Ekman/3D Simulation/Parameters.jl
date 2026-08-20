@@ -3,7 +3,7 @@ const U∞ = 0.04                 # far stream velocity
 const f₀ = 1e-4                 # Coriolis parameter
 
 if !@isdefined(r) || isnothing(r)
-    const r   = 75              # ratio N/f
+    const r = 75              # ratio N/f
 end
 const Pr = 10                   # Prandtl number
 const z₀ = 0.0016               # m (roughness length)
