@@ -38,8 +38,15 @@ const T_tide = 2π / ω
 const δs = sqrt(2ν / ω)           # Stokes thickness ≈ 0.1414 m
 
 # These must match case_params.jl — the panel titles and the pycnocline marker
-# are only meaningful if they describe the profile the run actually used.
-const sharp = parse(Float64, get(ENV, "SHARP", "6"))
+# are only meaningful if they describe the profile the run actually used. The default tracks
+# case_params.jl, which changed from 6 to 2 for the K_T / TKE study: at sharp = 6
+# the transition width 2ln9/sharp = 0.73 m is thinner than the grid above z ≈ 10 m,
+# so the pycnocline began life as a numerical step at large T.
+#
+# EVERY RUN ARCHIVED UNDER "-Softplus T sweep, no-slip bottom/" WAS MADE AT
+# SHARP = 6. Redrawing those figures needs SHARP=6 set explicitly, or the overlay
+# will not be the initial condition they actually started from.
+const sharp = parse(Float64, get(ENV, "SHARP", "2"))
 const Lz    = 50.0
 
 parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))
