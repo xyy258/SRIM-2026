@@ -1,112 +1,60 @@
 using Oceananigans, Plots, Printf, JLD2, Statistics
-using Plots.PlotMeasures
 
 include("Parameters.jl")
 include("Filename_plot.jl")
 
-# Load data
 w_series = FieldTimeSeries(root * "Velocity.jld2", "w")
 b_series = FieldTimeSeries(root * "Buoyancy.jld2", "b")
-
 w_avg_series = FieldTimeSeries(root * "Avg_vel.jld2", "w_avg")
-
 db_dz_series = FieldTimeSeries(root * "Avg_grad_b.jld2", "db_dz")
 
-zC = znodes(u_series.grid, Center())
-zF = znodes(u_series.grid, Face())
+zC = znodes(w_series.grid, Center())
+t_end = w_series.times[end]
+t_indices = findall(t -> t >= t_end - 2π/f₀ * 2, w_series.times)
 
-# Time indices over last 2 inertial periods
-T_f = 2π / f₀
-n_periods = 5
-t_end = u_series.times[end]
-t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
+local wb = zeros(length(zC))
+local db_dz = zeros(length(zC))
+local tke = zeros(length(zC))
 
-# Initialize
-wb_profile = zeros(length(zC))
-db_dz_profile = zeros(length(zC))
-
-# Calculate w'b' and ∂b/∂z profiles
 for n in t_indices
     w = Array(interior(w_series[n], :, :, :))
     b = Array(interior(b_series[n], :, :, :))
-
     w_mean = Array(interior(w_avg_series[n], 1, 1, :))
 
-    # Get matching z dimension
     nz = min(size(w, 3), size(b, 3), length(w_mean))
 
-    # Fluctuations
     w_prime = w[:, :, 1:nz] .- reshape(w_mean[1:nz], (1, 1, nz))
     b_prime = b[:, :, 1:nz] .- reshape(mean(b[:, :, 1:nz], dims=(1,2)), (1, 1, nz))
 
-    # Buoyancy flux
-    wb_inst = w_prime .* b_prime
-    wb_profile[1:nz] .+= vec(mean(wb_inst, dims=(1, 2)))
-
-    # Buoyancy gradient
-    db_dz_data = Array(interior(db_dz_series[n], 1, 1, :))[1:nz]
-    db_dz_profile[1:nz] .+= db_dz_data
+    wb[1:nz] .+= vec(mean(w_prime .* b_prime, dims=(1, 2)))
+    tke[1:nz] .+= vec(mean(0.5 .* w_prime.^2, dims=(1, 2)))
+    db_dz[1:nz] .+= Array(interior(db_dz_series[n], 1, 1, :))[1:nz]
 end
 
-# Average over time
-wb_profile ./= length(t_indices)
-db_dz_profile ./= length(t_indices)
+wb ./= length(t_indices)
+db_dz ./= length(t_indices)
+tke ./= length(t_indices)
 
-# Find interface: maximum ∂b/∂z
-idx_interface = argmax(db_dz_profile)
-z_interface = zC[idx_interface]
+# Smooth gradient and find interface (max ∂b/∂z)
+db_dz_smooth = [mean(db_dz[max(1,i-3):min(length(zC),i+3)]) for i in eachindex(zC)]
+idx = argmax(db_dz_smooth)
+z = zC[idx]
 
-# Average w'b' over small region around interface (±2 grid points)
-dz_avg = 2  # number of grid points to average
-idx_range = max(1, idx_interface - dz_avg):min(length(zC), idx_interface + dz_avg)
-wb_interface = mean(wb_profile[idx_range])
-db_dz_interface = mean(db_dz_profile[idx_range])
+# Average ±2 points around interface
+r_idx = max(1, idx-2):min(length(zC), idx+2)
+wb_int = mean(wb[r_idx])
+db_dz_int = mean(db_dz[r_idx])
+K_t = -wb_int / db_dz_int
 
-# Turbulent diffusivity: K_t = -w'b' / (∂b/∂z)
-K_t_interface = -wb_interface / db_dz_interface
+@printf("z = %.4f m, ∂b/∂z = %.2e, w'b' = %.2e, K_t = %.2e\n", z, db_dz_int, wb_int, K_t)
 
-@info "Turbulent Diffusivity at Interface"
-@printf("Interface location: z = %.4f m\n", z_interface)
-@printf("∂b/∂z at interface: %.6e s⁻²\n", db_dz_interface)
-@printf("w'b' at interface: %.6e m/s²\n", wb_interface)
-@printf("K_t at interface:  %.6e m²/s\n\n", K_t_interface)
-
-# Plot profiles
-p1 = plot(db_dz_profile, zC,
-    linewidth = 2,
-    xlabel    = "∂b/∂z [s⁻²]",
-    ylabel    = "z [m]",
-    label     = "",
-    margin    = 10px)
-vline!([db_dz_interface], color=:red, linestyle=:dash, label="interface")
-
-p2 = plot(wb_profile, zC,
-    linewidth = 2,
-    xlabel    = "w'b' [m/s²]",
-    ylabel    = "z [m]",
-    label     = "",
-    margin    = 10px)
-vline!([wb_interface], color=:red, linestyle=:dash, label="interface")
-
-p3 = plot(-wb_profile ./ (db_dz_profile .+ 1e-10), zC,
-    linewidth = 2,
-    xlabel    = "K_t [m²/s]",
-    ylabel    = "z [m]",
-    label     = "",
-    margin    = 10px)
-vline!([K_t_interface], color=:red, linestyle=:dash, label="interface")
-
-plot_all = plot(p1, p2, p3, layout=(1,3), size=(1000, 400), margin=10Plots.px)
+p1 = plot(db_dz_smooth, zC, linewidth=2, xlabel="∂b/∂z", ylabel="z")
+hline!([z], color=:red, linestyle=:dash)
+p2 = plot(wb, zC, linewidth=2, xlabel="w'b'", ylabel="z")
+hline!([z], color=:red, linestyle=:dash)
+p3 = plot(tke, zC, linewidth=2, xlabel="TKE", ylabel="z")
+hline!([z], color=:red, linestyle=:dash)
 
 mkpath(save_folder * "Diffusivity")
-savefig(plot_all, save_folder * @sprintf("Diffusivity/r=%.1f_interface.png", r))
-
-# Save summary
-open(save_folder * @sprintf("Diffusivity/r=%.1f_summary.txt", r), "w") do f
-    write(f, @sprintf("K_t at interface (z=%.4f m): %.6e m²/s\n", z_interface, K_t_interface))
-    write(f, @sprintf("∂b/∂z at interface: %.6e s⁻²\n", db_dz_interface))
-    write(f, @sprintf("w'b' at interface: %.6e m/s²\n", wb_interface))
-    write(f, @sprintf("r = N/f: %.1f\n", r))
-end
-
-@info "Results saved to $save_folder/Diffusivity/"
+savefig(plot(p1, p2, p3, layout=(1,3), size=(1000,400)),
+    save_folder * @sprintf("Diffusivity/r=%.1f_interface.png", r))
