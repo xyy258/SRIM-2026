@@ -1,24 +1,22 @@
 #!/usr/bin/env julia
-# =============================================================================
-# compare_h_definitions.jl — one table, the three definitions of h side by side.
+# One table with the three definitions of h side by side.
 #
-# Reads the mixing_<tag>_{hcross,hgrad,hflux}.jld2 written by
-# run_h_definitions.sh and prints, per case and per definition:
+# Reads the mixing_<tag>_{hcross,hgrad,hflux}.jld2 files written by
+# run_h_definitions.sh and prints, for each case and each definition:
 #
 #   h            where the definition puts the mixed-layer top
-#   sd           how much it moves between samples (h is used as a LENGTH, so a
+#   sd           how much it moves between samples (h is used as a length, so a
 #                jittery h is a jittery length, not just a noisy plot)
 #   amb          % of samples where that peak is the tallest of several bumps
 #   TKE, K_T     what is being sampled there
-#   K_sgs/K_T    how much of that K_T is the AMD closure rather than the flow
+#   K_sgs/K_T    how much of that K_T comes from the closure rather than the flow
 #   slope, r     the panel (d) exponent and how well the power law holds
 #
-# The exponent is the point of the whole study: 1/2 ⇒ K_T = c√TKE·l, 1 ⇒ Γ·TKE/N.
-# A definition that puts h where there is no turbulence cannot measure it, and
-# the r column is what says so.
+# The exponent is what the study is after: 1/2 means K_T = c√TKE·l, 1 means
+# Γ·TKE/N. A definition that puts h where there is no turbulence cannot measure
+# it, which is what the r column shows.
 #
 #   julia --project=. compare_h_definitions.jl        → h_defs/comparison.txt
-# =============================================================================
 
 using JLD2, Printf, Statistics
 
@@ -38,7 +36,7 @@ function read_case(tag, sfx)
         nup  = haskey(io, "h_nup") ? io["h_nup"][keep] : Int[]
         rat  = io["K_sgs_over_K_T"]
         zf   = io["z_face"]
-        # K_sgs/K_T interpolated to z = h, the same sample the K_T column is from
+        # K_sgs/K_T interpolated to z = h, from the same sample as the K_T column
         ksg = Float64[]
         for (i, n) in enumerate(findall(keep))
             isfinite(h[i]) || continue

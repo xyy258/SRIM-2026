@@ -1,13 +1,13 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Analysis of horizontally averaged profiles saved by TidalBoundaryLayer.jl
+# Analysis of the horizontally averaged profiles saved by Tidal2D.jl.
 # Produces:
-#   1. Heatmap of ∂b/∂z normalized by N² (bottom few metres, fixed color scale)
-#   2. Mixed-layer depth vs time, compared with the pure-diffusion prediction
+#   1. Heatmap of ∂b/∂z normalized by N², over the bottom few metres
+#   2. Mixed-layer depth against time, next to the pure-diffusion prediction
 #   3. Stratification profiles at the end of each tidal period
-#   4. Mean velocity profiles vs the laminar Stokes solution
+#   4. Mean velocity profiles against the laminar Stokes solution
 
-# ---- parameters (must match the simulation) ----
+# ---- parameters, which must match the simulation ----
 ω  = 1.4075235e-4
 N² = 1e-7
 ν  = 1.109e-5
@@ -18,7 +18,7 @@ T_tide = 2π / ω
 
 fname = "TidalBoundaryLayer2D_profiles.jld2"
 
-B_ts = FieldTimeSeries(fname, "B")     # mean buoyancy on cell CENTERS
+B_ts = FieldTimeSeries(fname, "B")     # mean buoyancy on cell centers
 U_ts = FieldTimeSeries(fname, "U")     # mean velocity on cell centers
 
 times = B_ts.times
@@ -26,13 +26,11 @@ Nt    = length(times)
 
 zc = znodes(B_ts)      # centers, length Nz
 
-# IMPORTANT: we do NOT use the saved `dbdz` field here.
-# `dbdz = ∂z(B)` evaluates its bottom/top *boundary faces* using the halo of the
-# averaged field, which is NOT set by the buoyancy no-flux BC — that produced the
-# spurious bright line at z = 0 (where the physical no-flux value is exactly 0).
-# Instead we reconstruct the gradient by finite-differencing the mean buoyancy B
-# between adjacent centers. This uses only interior data: no halos, no BC, no
-# boundary faces, so the artifact cannot appear.
+# The saved `dbdz` field is deliberately not used here. ∂z(B) evaluates its top
+# and bottom boundary faces from the halo of the averaged field, which the
+# no-flux boundary condition on buoyancy does not set, and that produced a
+# spurious bright line at z = 0. The gradient is instead reconstructed by
+# differencing B between adjacent centers, which uses interior data only.
 Bmean = zeros(length(zc), Nt)
 Umean = zeros(length(zc), Nt)
 for n in 1:Nt
@@ -44,7 +42,7 @@ zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])         # midpoints, length Nz-1
 G  = diff(Bmean, dims = 1) ./ diff(zc)         # ∂b/∂z at midpoints, Nz-1 × Nt
 
 # ---- 1. Normalized gradient heatmap, zoomed to the bottom ----
-zmax = 3.0                       # the action is within a few Stokes layers
+zmax = 3.0                       # everything happens within a few Stokes layers
 ks   = findall(z -> z <= zmax, zg)
 
 heatmap(times ./ T_tide, zg[ks], G[ks, :] ./ N²;
@@ -56,16 +54,16 @@ heatmap(times ./ T_tide, zg[ks], G[ks, :] ./ N²;
         colorbar_title = "∂b/∂z / N²")
 savefig("buoyancy_gradient_normalized.png")
 
-# ---- 2. Mixed-layer depth vs time ----
-# Two metrics:
-#  (a) THRESHOLD depth: highest contiguous height from the wall where the
-#      stratification is below half background. Intuitive, but spikes when a
-#      low-gradient column momentarily connects the wall to a burst/overturn
-#      high up — those spikes are a metric artifact, not real deepening.
-#  (b) INTEGRAL "mixing thickness": ∫ (1 − ∂b/∂z / N²)₊ dz, i.e. the height-
-#      integrated fraction of stratification that has been removed (clamped to
-#      [0,1] so restratified pixels with ∂b/∂z > N² don't contribute negatively).
-#      Being an integral, it is smooth and is the more trustworthy measure.
+# ---- 2. Mixed-layer depth against time ----
+# Two measures:
+#  (a) Threshold depth: the highest continuous height from the wall at which the
+#      stratification is below half the background. It is easy to interpret but
+#      spikes when a weakly stratified column momentarily joins the wall to an
+#      overturn higher up, which is an artefact rather than real deepening.
+#  (b) Integral mixing thickness, ∫ (1 − ∂b/∂z / N²)₊ dz, the height-integrated
+#      fraction of the stratification that has been removed, clamped to [0,1] so
+#      that restratified points do not contribute negatively. Being an integral
+#      it is smooth, and it is the more trustworthy of the two.
 function threshold_depth(g, z; threshold = 0.5N²)
     k = 1
     while k <= length(z) && g[k] < threshold
@@ -98,7 +96,7 @@ savefig("mixed_layer_depth.png")
 
 # ---- 3. Stratification profiles at the end of each tidal period ----
 plt = plot(xlabel = "∂b/∂z / N²", ylabel = "z (m)", ylims = (0, zmax),
-           xlims = (0, 1.5),   # 1 = unmixed background; <1 mixed; cap so it stays readable
+           xlims = (0, 1.5),   # 1 = unmixed background, below 1 mixed; capped to stay readable
            title = "Stratification profiles", legend = :bottomright)
 for p in 0:floor(Int, times[end] / T_tide)
     n = argmin(abs.(times .- p * T_tide))
@@ -107,11 +105,11 @@ for p in 0:floor(Int, times[end] / T_tide)
 end
 savefig("stratification_profiles.png")
 
-# ---- 4. Mean velocity vs laminar Stokes solution ----
+# ---- 4. Mean velocity against the laminar Stokes solution ----
 # Laminar solution for an oscillating free stream U₀ sin(ωt) over a wall:
 #   u(z, t) = U₀ [ sin(ωt) − e^(−z/δ) sin(ωt − z/δ) ]
-# If the simulated profile matches this, the flow is laminar; a fuller,
-# more slab-like profile with a thin sharp wall layer indicates turbulence.
+# If the simulated profile matches this the flow is laminar; a fuller, more
+# slab-like profile with a thin sharp wall layer means it is turbulent.
 u_laminar(z, t) = U₀ * (sin(ω * t) - exp(-z / δ) * sin(ω * t - z / δ))
 
 phases = (0.25, 0.5, 0.75, 1.0)  # fractions of the final tidal period

@@ -1,67 +1,34 @@
-# =============================================================================
-# mixed_layer_height.jl — ONE definition of the mixed-layer height h.
+# One definition of the mixed-layer height h, included by every script that
+# needs it, so that the definition can be changed in one place.
 #
-# Every script that needs h includes THIS file. It replaces the three verbatim
-# copies of `first_crossing` that used to live in MixedLayerDiffusivity.jl,
-# swirlesrun3.jl and Figure5.jl, each carrying a comment telling the reader not
-# to improve one copy alone. That warning was the right instinct and the wrong
-# mechanism: the definition has now changed, and a single file is the only way
-# to change it once.
+# ---------------- The three definitions ----------------
+#   peak (default)  h is the height at which the plane-averaged buoyancy
+#                   gradient ∂⟨b⟩/∂z is largest, i.e. the middle of the
+#                   pycnocline rather than its base.
+#   crossing        h is the lowest height at which ∂⟨b⟩/∂z / N²_ref recovers
+#                   to H_LEVEL (0.1) of the background value — the foot of the
+#                   interface, 2–4 m below the peak in these runs.
+#   flux            h is the height at which the downgradient buoyancy flux
+#                   −F_b is largest, i.e. where the mixing is happening. This
+#                   sits between the other two, inside the turbulent layer.
 #
-# ---------------------------------------------------------------------------
-# THE DEFINITION (H_DEF = peak, the default)
-# ---------------------------------------------------------------------------
-#     h = the height at which the plane-averaged buoyancy gradient ∂⟨b⟩/∂z
-#         is LARGEST.
+# These are not small variations on each other: anything read "at z = h", such
+# as K_T, TKE or the mixing length l = K_T/√TKE, is being taken at a genuinely
+# different place.
 #
-# That is the middle of the pycnocline — the sharpened interface the mixed layer
-# has pushed ahead of itself — rather than its base.
+# The peak is the default because it needs no threshold and no reference
+# gradient, and because it puts h where ∂b/∂z is largest, which is where
+# K_T = −F_b/(∂b/∂z) is best conditioned.
 #
-# PREVIOUSLY (H_DEF = crossing, still available):
-#     h = the lowest height, searching upward, at which ∂⟨b⟩/∂z / N²_ref first
-#         recovers to H_LEVEL = 0.1 of the background value.
-#
-# The two are NOT small variations on each other. The crossing sits at the FOOT
-# of the interface, where the gradient is only just measurable; the peak sits
-# 2–4 m higher in these runs, at the top of the eroded layer. Anything computed
-# "at z = h" — K_T, TKE, the mixing length l = K_T/√TKE — is being read at a
-# genuinely different place, and the numbers move accordingly.
-#
-# WHY THE PEAK IS THE BETTER CHOICE HERE
-#   · It needs no threshold and no N²_ref. The crossing has two arbitrary
-#     constants (0.1, and what to normalise by); the peak has none, and is
-#     invariant under any rescaling of b, which matters because the N/ω = 0 case
-#     has no physical N²_ref at all and had to be given ω² by hand.
-#   · It is where the gradient is LARGEST, so K_T = −F_b/(∂b/∂z) is evaluated
-#     where its denominator is best conditioned. The crossing put h at
-#     ∂b/∂z = 0.1 N², barely above the GRAD_FLOOR mask (0.05 N²) that K_T is
-#     already censored by — the old h sat right on the edge of the masked region.
-#
-# WHERE IT FAILS, AND IT DOES FAIL
-#   A peak is only meaningful if there IS one. In the N/ω = 0 cases the buoyancy
-#   is a PASSIVE scalar: nothing restores the profile, turbulence and internal
-#   motions stir the whole column, and ∂⟨b⟩/∂z above the layer is noise
-#   fluctuating between ~0.4 and ~3 N²_ref with no single interface. The global
-#   maximum then picks whichever noise spike is tallest — it wanders over
-#   18–31 m between samples, far above the height the turbulence reaches
-#   (h₀ ≈ 7 m). `peak_upcrossings` below measures this: a clean interface gives
-#   ONE upcrossing of half the peak value, noise gives several. Callers should
-#   report it, and h from an ambiguous peak should not be used as a length scale.
-#
-# A THIRD OPTION, H_DEF = flux: the height where the DOWNGRADIENT buoyancy flux
-# −F_b is largest, F_b = ⟨w′b′⟩ + F_sgs. Also threshold-free, and it answers a
-# different question again: not "where is the interface" but "where is the
-# mixing actually happening". It sits between the other two — inside the
-# turbulent layer, below the gradient peak — which matters because everything
-# sampled "at z = h" (K_T, TKE, l = K_T/√TKE) is a statement about mixing.
-# It is the noisiest of the three: F_b is a small difference of fluctuating
-# quantities, and above the layer the internal-wave flux can rival the
-# interfacial one, so `peak_upcrossings` matters most here.
+# A peak is only meaningful if there is one. At N/ω = 0 the buoyancy is passive,
+# nothing restores the profile, and the gradient above the layer is noise with no
+# single interface, so the largest value is whichever noise spike happens to win.
+# `peak_upcrossings` below measures this — one upcrossing means a clean
+# interface — and h from an ambiguous peak should not be used as a length scale.
 #
 # ENV
 #   H_DEF     peak | crossing | flux   (default peak)
 #   H_LEVEL   0.1               crossing only: the fraction of N²_ref
-# =============================================================================
 
 const H_DEF   = get(ENV, "H_DEF", "peak")
 const H_LEVEL = parse(Float64, get(ENV, "H_LEVEL", "0.1"))
@@ -69,8 +36,8 @@ H_DEF in ("peak", "crossing", "flux") ||
     error("H_DEF must be peak, crossing or flux — got \"$H_DEF\"")
 
 # Lowest height at which fv crosses `level` from below, linearly interpolated.
-# The old h, kept because Figure5.jl also uses it for the Ri_g = 0.25 crossing,
-# which is a different quantity and is NOT affected by the change above.
+# Also used by Figure5.jl for the Ri_g = 0.25 crossing, which is a different
+# quantity and is unaffected by the choice of h above.
 function first_crossing(z, fv, level; zmin = -Inf)
     for i in 1:length(fv)-1
         z[i] < zmin && continue
@@ -81,15 +48,14 @@ function first_crossing(z, fv, level; zmin = -Inf)
     return NaN
 end
 
-# Height of the largest value of G, refined to sub-grid resolution by fitting a
+# Height of the largest value of G, refined below the grid spacing by fitting a
 # parabola through the peak node and its two neighbours.
 #
-# THE REFINEMENT IS NOT COSMETIC. Without it h can only take the ~300 values of
-# the grid, and the grid is stretched to Δz = 0.34 m up there, so h would jump in
-# 0.34 m steps — a 3% quantisation on a 10 m layer, aliasing into every time
-# series that h feeds. The parabola is exact for a quadratic peak and costs three
-# points. Written for a NON-UNIFORM grid via divided differences: the equal-Δz
-# formula is wrong here and would bias h downward, toward the finer spacing.
+# Without the refinement h could only take the values of the grid, which is
+# stretched to Δz = 0.34 m at these heights, so h would jump in 0.34 m steps and
+# that step would alias into every time series built from it. The parabola is
+# written with divided differences because the grid is non-uniform; the
+# equal-spacing formula would bias h downward.
 function peak_height(z, G; zmax = Inf)
     kmax, gmax = 0, -Inf
     for k in eachindex(G)
@@ -108,9 +74,9 @@ function peak_height(z, G; zmax = Inf)
     return clamp((z1 + z2) / 2 - d1 / (2d2), z1, z3)
 end
 
-# How many times G rises through `frac` of its maximum, below zmax. ONE means a
+# How many times G rises through `frac` of its maximum below zmax. One means a
 # single coherent interface and a trustworthy peak; more means the profile has
-# several comparable bumps and the global maximum is a lottery between them.
+# several comparable bumps and the largest of them is arbitrary.
 function peak_upcrossings(z, G; zmax = Inf, frac = 0.5)
     gmax = -Inf
     for k in eachindex(G)
@@ -132,22 +98,22 @@ function peak_upcrossings(z, G; zmax = Inf, frac = 0.5)
 end
 
 # Which profile the peak is taken of: the gradient, or minus the flux so that
-# DOWNGRADIENT mixing is a maximum. Taking |F_b| instead would let a
-# counter-gradient noise spike win, which is not what "peak flux" means.
+# downgradient mixing is a maximum. Using |F_b| instead would let a
+# counter-gradient noise spike win.
 function h_profile(G, F)
     H_DEF == "flux" || return G
     F === nothing && error("H_DEF=flux needs the buoyancy flux — pass F = F_b")
     return .-F
 end
 
-# The one entry point. G is the gradient on its own grid z; N²_ref is used only
-# by the crossing definition; F is the buoyancy flux on the same grid and is
-# used only by H_DEF = flux. Both are accepted always so that a call site does
-# not have to know which definition is in force.
+# The entry point. G is the gradient on its own grid z, N²_ref is used only by
+# the crossing definition, and F is the buoyancy flux on the same grid, used only
+# by H_DEF = flux. Both are always accepted, so a caller does not need to know
+# which definition is in use.
 mixed_layer_height(z, G, N²_ref; zmax = Inf, F = nothing) =
     H_DEF == "crossing" ? first_crossing(z, G ./ N²_ref, H_LEVEL) :
                           peak_height(z, h_profile(G, F); zmax = zmax)
 
-# The ambiguity check on whichever profile the definition actually peaks.
+# The ambiguity check, on whichever profile the definition takes its peak of.
 h_upcrossings(z, G; zmax = Inf, F = nothing) =
     H_DEF == "crossing" ? 1 : peak_upcrossings(z, h_profile(G, F); zmax = zmax)

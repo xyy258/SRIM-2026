@@ -3,22 +3,20 @@ using Oceananigans, JLD2, Plots, Printf
 # Animation of the x-z slices saved by Tidal3D.jl for one case:
 #   PROFILE=4 T_STRAT=10 julia --project=. Tidal3Danimation.jl sqrtRi2
 #
-# PROFILE and T_STRAT MUST match the run being animated: they select the output
-# directory through `casetag`, and b_background(z) — the profile subtracted below
-# — is rebuilt from them. Getting them wrong reads the wrong case or subtracts
-# the wrong background.
+# PROFILE and T_STRAT must match the run being animated: they choose the output
+# folder and rebuild the background profile subtracted below.
 #
-# Panels: u (oscillating shear + bursts), then the thermal perturbation
-# b' = b − b_bg(z). Ri0 carries b as a passive scalar with the same background
-# gradient, so all cases show the same two panels.
+# Two panels: u, showing the oscillating shear and the turbulent bursts, and the
+# thermal perturbation b' = b − b_bg(z). At Ri = 0 the buoyancy is a passive
+# scalar with the same background gradient, so every case shows both panels.
 #
-# The plotted depth range is 0 – Lz_test, which tracks the pycnocline height T
-# (case_params.jl); override with LZ_TEST=<metres>.
+# The plotted depth range is 0 to Lz_test, which follows the pycnocline height T
+# (case_params.jl). Override it with LZ_TEST=<metres>.
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
-# Tidal3D.jl writes 200 frames per tidal period, so a 4-period run is 800 frames.
-# STRIDE thins that for a quicker/lighter animation.
+# Tidal3D.jl writes 200 frames per tidal period, so a 4-period run gives 800.
+# STRIDE thins them out for a quicker animation.
 stride = parse(Int, get(ENV, "STRIDE", "1"))
 
 # Load one snapshot just to get the grid/coordinates
@@ -36,13 +34,12 @@ iterations = iterations[1:stride:end]
 ulim  = 1.2 * U₀
 
 # b' is normalized by N²_ref·δ, so the colorbar reads as a vertical displacement
-# of the background measured in Stokes thicknesses (b' = N² ζ ⇒ b'/(N²δ) = ζ/δ),
-# rather than a raw value like 1e-6 that Plots renders as 0.00000.
+# of the background in Stokes thicknesses rather than as a raw value like 1e-6,
+# which Plots would render as 0.00000.
 bp_scale = N²_ref * δ
 
-# The old limit of 2 (a 2 δ_s = 0.28 m displacement) was set for the shallow
-# exponential runs and saturates immediately here: these boundary layers mix over
-# metres, i.e. tens of δ_s. 20 ≈ a 2.8 m displacement. Override with BPLIM.
+# The limit corresponds to a displacement of about 2.8 m, since these boundary
+# layers mix over metres. Override it with BPLIM.
 bplim = parse(Float64, get(ENV, "BPLIM", "20"))
 
 t_save   = zeros(length(iterations))
@@ -64,8 +61,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
                      ylabel = "z")
 
     # Thermal perturbation: subtract the background profile, then normalize by
-    # N²_ref δ so the colorbar shows an O(1) number instead of a value like
-    # ~1e-6 that displays as 0.00000 under Plots' default tick formatting.
+    # N²_ref δ so the colorbar shows a number of order 1.
     bp_xz = (b_xz .- reshape(b_background.(zb), 1, :)) ./ bp_scale
     mid_plot = heatmap(xb, zb, bp_xz'; color = :balance,
                        clims = (-bplim, bplim),
@@ -74,8 +70,8 @@ anim = @animate for (i, iter) in enumerate(iterations)
     mid_title = passive_scalar ? "b' (passive scalar)" : "b' = b − b_bg(z)"
 
 
-    # casetag, not case: the tag carries the profile and T, so the four T values
-    # of a given √Ri are distinguishable in the frame titles.
+    # casetag rather than case, so the frame titles carry the profile and T and
+    # the different T values of one √Ri can be told apart.
     ttl = @sprintf("%s,  t = %.2f tidal periods", casetag, t / T_tide)
     plot(u_plot, mid_plot, layout = (2, 1), size = (1000, 700),
          title = [string("u,  ", ttl) mid_title])

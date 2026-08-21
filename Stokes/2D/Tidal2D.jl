@@ -1,12 +1,13 @@
 using Printf
 using Oceananigans
 
-# Tidal (Stokes) boundary layer following Gayen et al. (2009)
-# z runs from 0 (bottom wall) to Lz (top), grid refined near the bottom.
+# 2D tidal (Stokes) boundary layer, after Gayen et al. (2009).
+# z runs from 0 at the bottom wall to Lz at the top, with the grid refined near
+# the bottom.
 
 # ---------------- Physical & numerical parameters ----------------
-Lx, Ly, Lz = 20, 20, 30        # domain size (m); Ly only used if you go 3D
-Nx, Ny, Nz = 64, 64, 256       # Ny only used if you go 3D
+Lx, Ly, Lz = 20, 20, 30        # domain size (m); Ly is only used in 3D
+Nx, Ny, Nz = 64, 64, 256       # Ny is only used in 3D
 
 ω  = 1.4075235e-4              # M2 tidal frequency (s⁻¹), period ≈ 12.4 h
 U₀ = 0.05                      # tidal velocity amplitude (m s⁻¹)
@@ -39,7 +40,7 @@ grid = RectilinearGrid(topology = (Periodic, Flat, Bounded),
                        x = (0, Lx),
                        z = z_faces)
 
-# For 3D (needed for real turbulence) and/or GPU, use instead:
+# For 3D, which is needed for real turbulence, and for the GPU, use instead:
 # grid = RectilinearGrid(GPU(); topology = (Periodic, Periodic, Bounded),
 #                        size = (Nx, Ny, Nz), x = (0, Lx), y = (0, Ly), z = z_faces)
 
@@ -52,19 +53,19 @@ grid = RectilinearGrid(topology = (Periodic, Flat, Bounded),
 u_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 v_bcs = FieldBoundaryConditions(bottom = ValueBoundaryCondition(0))
 
-# Insulating bottom (default anyway, but explicit), fixed gradient N² at top
-# so the background stratification is maintained there.
+# Insulating bottom, which is the default but is written out here, and a fixed
+# gradient N² at the top to hold the background stratification there.
 b_bcs = FieldBoundaryConditions(top    = GradientBoundaryCondition(N²),
                                 bottom = FluxBoundaryCondition(0))
 
 # ---------------- Forcing ----------------
-# Body force du/dt = U₀ ω cos(ωt) drives a free-stream velocity U₀ sin(ωt)
-# (starting from rest at t = 0).
+# Body force du/dt = U₀ ω cos(ωt), which drives a free-stream velocity
+# U₀ sin(ωt), starting from rest at t = 0.
 @inline tidal_forcing(x, z, t, p) = p.U₀ * p.ω * cos(p.ω * t)
 u_tide = Forcing(tidal_forcing, parameters = (; U₀, ω))
 
-# Sponge layer in the top ~5 m: damps internal waves radiated by the boundary
-# layer so they don't reflect off the rigid lid and re-enter the domain.
+# Sponge layer in the top few metres, damping the internal waves radiated by the
+# boundary layer so they do not reflect off the rigid lid and return.
 sponge_width = 5.0
 sponge_rate  = 1 / 2000               # ≈ 20 damping times per tidal period
 @inline top_mask(x, z) = exp(-(z - Lz)^2 / (2 * sponge_width^2))
@@ -88,9 +89,9 @@ model = NonhydrostaticModel(grid;
             forcing     = (u = (u_tide, u_sponge), w = w_sponge, b = b_sponge))
 
 # ---------------- Initial conditions ----------------
-# Confine the random kick to the near-wall region (within a few Stokes layers)
-# so we perturb the boundary layer without filling the stratified interior
-# (and the sponge region) with noise.
+# Keep the random kick within a few Stokes layers of the wall, so the boundary
+# layer is perturbed without filling the stratified interior, or the sponge,
+# with noise.
 kick = 0.1 * U₀
 damped_noise(z) = kick * randn() * exp(-z / (4δ))
 
@@ -124,8 +125,8 @@ c = model.tracers.c
 
 filename = "TidalBoundaryLayer2D"
 
-# (1) x-z slices for animation. 1200 frames ≈ 2.5 min of video at 8 fps;
-# raise n_frames if you want smoother animation.
+# (1) x-z slices for the animation. 1200 frames is about 2.5 min of video at
+# 8 fps; raise n_frames for a smoother animation.
 n_frames = 1200
 simulation.output_writers[:xz_slices] =
     JLD2Writer(model, (; u, w, b, c),
@@ -135,8 +136,8 @@ simulation.output_writers[:xz_slices] =
                overwrite_existing = true,
                with_halos = false)
 
-# (2) Horizontally averaged profiles + turbulence statistics.
-# These are 1D so we can afford high output frequency (200 per tidal period).
+# (2) Horizontally averaged profiles and turbulence statistics. These are 1D, so
+# they can be written often — 200 times per tidal period.
 U  = Field(Average(u, dims = (1, 2)))          # mean velocity profile
 B  = Field(Average(b, dims = (1, 2)))          # mean buoyancy profile
 dbdz = Field(∂z(B))                            # mean stratification profile
