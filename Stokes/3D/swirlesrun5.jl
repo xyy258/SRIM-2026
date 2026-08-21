@@ -13,8 +13,8 @@
 # against themselves at a different phase, and a phase strip underneath saying
 # where in the tidal cycle the frame sits.
 #
-#   outputs/tke_animations/animation_TKE_T5.mp4
-#   outputs/tke_animations/animation_TKE_T10.mp4
+#   outputs/tke_animations/animation_TKE_T5_log.mp4
+#   outputs/tke_animations/animation_TKE_T10_log.mp4
 #
 # The name is `animation_*` and it lives under outputs/ because that is the ONLY
 # pattern .gitignore re-includes (see the negation at the bottom of it). A movie
@@ -57,8 +57,11 @@
 #   SMOOTH_WINDOW   tide20        boxcar width: tide20 | tide | none
 #   ZMAX            T + 10        top of the plotted column (m)
 #   XMAX            (auto)        TKE axis top; auto = max over the window
-#   XSCALE          linear        linear | log   (log needs XMIN)
-#   XMIN            1e-9          only used when XSCALE=log
+#   XSCALE          log           log | linear
+#   DECADES         4             log only: how many decades below XMAX the axis
+#                                 floor sits, so the interface is not squashed
+#                                 into the bottom pixel by a dead cell above it
+#   XMIN            (auto)        log only: overrides DECADES with a hard floor
 #   SHARE_XLIM      0             1 → the same TKE axis in BOTH movies
 #   PREVIEW         0             1 → one PNG per T instead of the movie, to
 #                                 check the axes before spending the render
@@ -84,8 +87,12 @@ const SKIP     = parse(Float64, get(ENV, "SKIP_PERIODS", "1"))
 const STRIDE   = parse(Int,     get(ENV, "STRIDE", "2"))
 const FPS      = parse(Int,     get(ENV, "FPS", "30"))
 const SMOOTH   = get(ENV, "SMOOTH_WINDOW", "tide20")
-const XSCALE   = get(ENV, "XSCALE", "linear")
-const XMIN     = parse(Float64, get(ENV, "XMIN", "1e-9"))
+const XSCALE   = get(ENV, "XSCALE", "log")
+const DECADES  = parse(Int, get(ENV, "DECADES", "4"))
+# Empty string, not a number: the floor is derived from XMAX and DECADES unless
+# it is set, and there is no fixed default that is right for both T = 5 and
+# T = 10 — the two windows do not span the same range of TKE.
+const XMIN_ENV = get(ENV, "XMIN", "")
 const SHARE_XL = get(ENV, "SHARE_XLIM", "0") == "1"
 const PREVIEW  = get(ENV, "PREVIEW", "0") == "1"
 
@@ -124,6 +131,14 @@ clr(s) = get(CLR, s, "#000000")
 const SUPS = Dict('-'=>'⁻', '0'=>'⁰', '1'=>'¹', '2'=>'²', '3'=>'³', '4'=>'⁴',
                   '5'=>'⁵', '6'=>'⁶', '7'=>'⁷', '8'=>'⁸', '9'=>'⁹')
 sup(n::Integer) = String([SUPS[c] for c in string(n)])
+
+# TKE is a sum of variances and so is ≥ 0 as mathematics, but ⟨uu⟩ − U² is a
+# difference of two nearly equal numbers wherever the flow has relaminarized, and
+# it does come back very slightly negative there. On a linear axis that is a
+# harmless wiggle at the left edge; on a log axis it is undefined. Masked to NaN,
+# which Plots draws as a gap — an honest statement that there is no measurable
+# turbulence in that cell, rather than a line pinned to the axis floor.
+poslog(v) = XSCALE == "log" ? [x > 0 ? x : NaN for x in v] : v
 
 # Centred boxcar of half-width `nh` samples, shrinking at the edges — copied from
 # MixedLayerDiffusivity.jl so both scripts smooth identically.
@@ -204,10 +219,14 @@ function animate_T(T, cases, xmax_shared)
 
     # x-axis fixed across every frame AND every case: a curve that shrinks by half
     # must look half as long, which it cannot do on an axis that rescales with it.
-    # Only the plotted column counts towards the maximum — the near-wall peak at
-    # z < 0.1 m is an order above anything at the interface and would flatten the
-    # part of the profile the movie is about... except it is IN the plotted column,
-    # so it does set the scale. Use XMAX to crop to the interface instead.
+    #
+    # THE AXIS IS LOGARITHMIC BY DEFAULT, and this is the reason. The near-wall
+    # peak at z ≈ 0.004 m is one to two orders above anything at the interface,
+    # and it is inside the plotted column, so on a linear axis it sets the scale
+    # and presses the interface — the part the movie is about — into the left
+    # edge. The decay of TKE across the pycnocline is a decay through decades, so
+    # decades are what the axis should show. XSCALE=linear restores the old
+    # behaviour, where XMAX is then needed to crop the peak out.
     auto_xmax = 0.0
     for c in cases
         kz = findall(z -> z <= zmax, c.z)
@@ -220,18 +239,37 @@ function animate_T(T, cases, xmax_shared)
     xmax = xmax_shared !== nothing ? xmax_shared :
            parse(Float64, get(ENV, "XMAX", string(1.05 * auto_xmax)))
 
-    # TKE here runs to ~1e-4 m² s⁻², which on a linear axis prints as five
-    # leading zeros on every tick. Pull the leading decade out into the axis
-    # label instead, so the ticks read 0, 2, 4 … A log axis needs the real
-    # numbers, so it keeps them.
+    # On a linear axis TKE ~1e-4 prints as five leading zeros on every tick, so
+    # the leading decade is pulled into the label and the ticks read 0, 2, 4 …
+    # A log axis shows the real numbers and needs no such trick.
     xfac = (XSCALE == "log" || !(xmax > 0)) ? 1.0 : 10.0^floor(Int, log10(xmax))
     xlab = xfac == 1.0 ? "TKE  (m² s⁻²)" :
            "TKE  (×10" * sup(floor(Int, log10(xmax))) * " m² s⁻²)"
-    xlims = XSCALE == "log" ? (XMIN, xmax) : (0.0, xmax / xfac)
 
-    @printf("T = %.0f: %d frames (%.2f–%.2f periods, stride %d), z ≤ %.1f m, TKE ≤ %.3e m²/s²\n",
+    # THE FLOOR IS SET FROM THE TOP, NOT FROM THE DATA. TKE above the pycnocline
+    # in the N/ω = 10 case falls to whatever the closure leaves behind — 1e-12 and
+    # below is normal — so an axis reaching down to the smallest positive sample
+    # would spend eight decades on dead water and squash the four that carry the
+    # boundary layer into a couple of centimetres. DECADES below xmax, snapped to
+    # a decade boundary so the ticks are round powers of ten.
+    xmin = if XSCALE != "log"
+        0.0
+    elseif !isempty(XMIN_ENV)
+        parse(Float64, XMIN_ENV)
+    else
+        10.0^(floor(Int, log10(xmax)) - DECADES + 1)
+    end
+    xlims = XSCALE == "log" ? (xmin, xmax) : (0.0, xmax / xfac)
+
+    # One labelled tick per decade. Left to itself GR labels every SECOND decade
+    # on a short log axis, which on a four-decade range means two labels and a
+    # reader counting gridlines to work out what the third one is.
+    xticks = XSCALE == "log" ?
+             10.0 .^ (ceil(Int, log10(xmin)):floor(Int, log10(xmax))) : :auto
+
+    @printf("T = %.0f: %d frames (%.2f–%.2f periods, stride %d), z ≤ %.1f m, TKE ∈ [%.1e, %.3e] m²/s² (%s)\n",
             T, length(frame_times), frame_times[1] / T_tide, frame_times[end] / T_tide,
-            STRIDE, zmax, xmax)
+            STRIDE, zmax, xlims[1] * (XSCALE == "log" ? 1.0 : xfac), xmax, XSCALE)
 
     # The phase strip's own axis, drawn once and reused: the full animated window
     # of U∞ = U₀ sin(ωt), with a dot marking the frame.
@@ -244,7 +282,7 @@ function animate_T(T, cases, xmax_shared)
         t = frame_times[i]
 
         p1 = plot(xlabel = xlab, ylabel = "z  (m)",
-                  xlims = xlims, ylims = (0, zmax),
+                  xlims = xlims, ylims = (0, zmax), xticks = xticks,
                   xscale = XSCALE == "log" ? :log10 : :identity,
                   legend = :topright, legendtitle = "N/ω",
                   title = @sprintf("TKE profiles, T = %g m   |   ωt/2π = %.2f   |   U∞/U₀ = %+.2f",
@@ -257,11 +295,14 @@ function animate_T(T, cases, xmax_shared)
         # an annotation rather than a legend entry: the legend is the N/ω key, and
         # a dashed line sitting inside it reads as a fifth case.
         hline!(p1, [T]; color = :black, ls = :dash, lw = 1.2, label = "")
-        annotate!(p1, xlims[1] + 0.02 * (xlims[2] - xlims[1]), T + 0.03 * zmax,
-                  text("z = T", 8, :left, :bottom, :black))
+        # Just inside the left edge — GEOMETRICALLY so on a log axis, where a
+        # linear offset from xmin lands most of the way across the plot.
+        x_ann = XSCALE == "log" ? xlims[1] * (xlims[2] / xlims[1])^0.02 :
+                                  xlims[1] + 0.02 * (xlims[2] - xlims[1])
+        annotate!(p1, x_ann, T + 0.03 * zmax, text("z = T", 8, :left, :bottom, :black))
 
         for c in cases
-            plot!(p1, c.TKE[:, idx[c.tag][i]] ./ xfac, c.z;
+            plot!(p1, poslog(c.TKE[:, idx[c.tag][i]] ./ xfac), c.z;
                   lw = 2, color = clr(c.s), label = @sprintf("%g", c.s))
         end
 
@@ -283,7 +324,7 @@ function animate_T(T, cases, xmax_shared)
     # on one frame before spending it — especially when XMAX or ZMAX has been set
     # by hand and might have cropped the profile out of the box.
     if PREVIEW
-        out = joinpath(figdir, "preview_TKE_T" * num_lbl(T) * ".png")
+        out = joinpath(figdir, "preview_TKE_T" * num_lbl(T) * "_" * XSCALE * ".png")
         savefig(draw_frame(cld(length(frame_times), 2)), out)
         @info "PREVIEW=1 — wrote $(relpath(out, HERE)) and skipped the movie"
         return (; T, out, nframes = 1, xmax, zmax, tags = [c.tag for c in cases])
@@ -295,7 +336,10 @@ function animate_T(T, cases, xmax_shared)
         draw_frame(i)
     end
 
-    out = joinpath(animdir, "animation_TKE_T" * num_lbl(T) * ".mp4")
+    # The scale is IN THE NAME. A log run must not silently overwrite the linear
+    # movie of the same T — they are different readings of the same data and both
+    # are worth keeping side by side.
+    out = joinpath(animdir, "animation_TKE_T" * num_lbl(T) * "_" * XSCALE * ".mp4")
     mp4(anim, out, fps = FPS)
     @info "wrote $(relpath(out, HERE))"
     return (; T, out, nframes = length(frame_times), xmax, zmax,
@@ -342,8 +386,8 @@ results = [r for r in (animate_T(T, get(loaded, T, Any[]), xmax_shared) for T in
 open(joinpath(logdir, "tke_animations.log"), "a") do io
     for out in (io, stdout)
         println(out, "\n", "="^88)
-        @printf(out, "==== %s  swirlesrun5.jl  SKIP_PERIODS=%g STRIDE=%d SMOOTH=%s FPS=%d\n",
-                Dates.format(now(), "yyyy-mm-dd HH:MM:SS"), SKIP, STRIDE, SMOOTH, FPS)
+        @printf(out, "==== %s  swirlesrun5.jl  XSCALE=%s SKIP_PERIODS=%g STRIDE=%d SMOOTH=%s FPS=%d\n",
+                Dates.format(now(), "yyyy-mm-dd HH:MM:SS"), XSCALE, SKIP, STRIDE, SMOOTH, FPS)
         println(out, "="^88)
         for r in results
             @printf(out, "T = %-4g  %4d frames  z ≤ %5.1f m  TKE ≤ %.3e  cases: %s\n    %s\n",
