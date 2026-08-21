@@ -9,7 +9,7 @@ using Oceananigans, JLD2, Plots, Printf
 # as a family of curves. One PNG per case: figures/Figure5_P4_T<T>_sqrtRi<s>.png.
 #
 # Markers follow the paper: ∘ = mixed-layer height h_m where the normalized
-# gradient first reaches 0.1; △ = where Ri_g = N²/S² first reaches 0.25.
+# gradient PEAKS; △ = where Ri_g = N²/S² first reaches 0.25.
 #
 # Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
 # Stratification is labelled by N/ω = √Ri; directory tags keep the sqrtRi
@@ -64,15 +64,7 @@ N²_bg_over_N²(z, T) = 1 / (1 + exp(-sharp * (z - T)))           # dimensionles
 ramp = ["#A8CBEC", "#6BA3DE", "#3C7CC4", "#0B3164"]
 
 # Lowest height at which fv crosses `level` from below, linearly interpolated.
-function first_crossing(z, fv, level; zmin = -Inf)
-    for i in 1:length(fv)-1
-        z[i] < zmin && continue
-        if fv[i] < level <= fv[i+1]
-            return z[i] + (level - fv[i]) * (z[i+1] - z[i]) / (fv[i+1] - fv[i])
-        end
-    end
-    return NaN
-end
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
 
 interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
     i = searchsortedlast(z, z₀)
@@ -142,7 +134,7 @@ for T in T_values, s in n_over_ω
 
     scatter!(pb, [NaN], [NaN]; markershape = :circle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
-             markerstrokewidth = 1.5, label = "h_m: ∂b/∂z / N² = 0.1")
+             markerstrokewidth = 1.5, label = "h_m: peak ∂b/∂z")
     scatter!(pb, [NaN], [NaN]; markershape = :utriangle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
              markerstrokewidth = 1.5, label = "Ri_g = 0.25")
@@ -165,7 +157,7 @@ for T in T_values, s in n_over_ω
         plot!(pa, bn[kc], zc[kc]; color = col, linewidth = 2, label = lbl)
         plot!(pb, G[kg], zg[kg]; color = col, linewidth = 2, label = "")
 
-        h_m = first_crossing(zg, G, 0.1)
+        h_m = mixed_layer_height(zg, G, 1.0; zmax = min(40.0, zg[end]))   # G is already ÷ N²_ref
         Rig = (G .* N²) ./ max.(S², eps())
         z_Rig = first_crossing(zg, Rig, 0.25; zmin = δs)   # skip near-wall noise
 

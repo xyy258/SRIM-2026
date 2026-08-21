@@ -24,6 +24,7 @@ using Oceananigans, JLD2, Plots, Printf, Statistics
 #      the other only B. Disagreement means the SGS flux is wrong, usually
 #      under-counted, which shows as the flux route reading low.
 #   3. K_sgs/K_T ≪ 1.         Above ~0.5 the number characterises AMD, not the flow.
+#   3b. h itself unambiguous — the peak of dB/dz must be ONE interface.
 #   4. delta_eff steady, ideally tracking h.
 #   5. only THEN the panel (d) slope.
 #
@@ -83,6 +84,11 @@ moments_file(tag) = joinpath(@__DIR__, outroot, tag, "TidalBL3D_" * tag * "_mome
 # mixing_<tag>.jld2 and leaving only the last one.
 const GRAD_FLOOR = parse(Float64, get(ENV, "GRAD_FLOOR", "0.05"))
 const RESULT_SUFFIX = get(ENV, "RESULT_SUFFIX", "")
+# The saved mixing_*.jld2 may need a suffix of its own: with several definitions
+# of h on disk at once, the figures want the SAME filename in three different
+# folders while the data files must stay distinguishable in the one folder they
+# all share with the moments.
+const MIX_SUFFIX = get(ENV, "MIX_SUFFIX", RESULT_SUFFIX)
 
 # Minimum |r| for the panel (d) slope to be quotable as an exponent. A
 # least-squares slope through a round cloud is still a number, and with n in the
@@ -115,18 +121,10 @@ const smooth_window = SMOOTH == "tide20" ? T_tide / 20 :
 # Helpers
 # ---------------------------------------------------------------------------
 
-# Lowest height at which fv crosses `level` from below, linearly interpolated.
-# COPIED VERBATIM from Figure5.jl so the mixed-layer height h is defined
-# identically across the project — do not "improve" one copy alone.
-function first_crossing(z, fv, level; zmin = -Inf)
-    for i in 1:length(fv)-1
-        z[i] < zmin && continue
-        if fv[i] < level <= fv[i+1]
-            return z[i] + (level - fv[i]) * (z[i+1] - z[i]) / (fv[i+1] - fv[i])
-        end
-    end
-    return NaN
-end
+# The mixed-layer height, and first_crossing with it, now live in ONE file that
+# every consumer includes — see its header for the definition and for why it is
+# the peak of the gradient rather than the old 0.1 N² crossing.
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
 
 interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
     i = searchsortedlast(z, z₀)
@@ -327,11 +325,20 @@ function analyse(T, s)
     K_sgs = [mask[k, n] ? -F_s[k, n] / G[k, n] : NaN for k in axes(G, 1), n in axes(G, 2)]
     K_ratio = K_sgs ./ K_T
 
-    # Mixed-layer height: normalised gradient first reaching 0.1, the same
-    # definition (and the same helper) Figure5.jl uses. The gradient here is the
-    # model's own ∂z(b) on Faces rather than an offline difference of B on
-    # Centers — same definition, better discretisation.
-    h = [first_crossing(zf, view(G, :, n) ./ N²_ref, 0.1) for n in 1:nx]
+    # Mixed-layer height: where ∂⟨b⟩/∂z PEAKS — the middle of the sharpened
+    # pycnocline, not its foot. See mixed_layer_height.jl for the definition and
+    # for what it costs at N/ω = 0. The gradient here is the model's own ∂z(b) on
+    # Faces rather than an offline difference of B on Centers.
+    #
+    # The search stops at zref for the same reason zref itself exists: above it
+    # the sponge and the far field take over, and in the passive N/ω = 0 case the
+    # tallest bump up there is noise, not an interface.
+    h = [mixed_layer_height(zf, view(G, :, n), N²_ref; zmax = zref,
+                            F = view(F_b, :, n)) for n in 1:nx]
+    # Is that peak a single interface, or the tallest of several bumps? Counted
+    # per sample and reported in the verification block below.
+    h_nup = [h_upcrossings(zf, view(G, :, n); zmax = zref,
+                           F = view(F_b, :, n)) for n in 1:nx]
 
     # --- bulk relation ------------------------------------------------------
     #   (1/Lz)∫₀^zref F_b dz = −(1/Lz)∫₀^zref K_T dB/dz dz ≈ −K_T δb/Lz
@@ -395,7 +402,7 @@ function analyse(T, s)
 
     return (; tag, T, s, Ri, N²_ref, zref, cᴰ, zc, zf, xs, xlab, times,
               W_max, TKE, K_T, K_sgs, K_ratio, K_T_bulk, K_T_pe, K_T_pe_full,
-              K_bdy, leakage, δ_eff, h, PE, δb,
+              K_bdy, leakage, δ_eff, h, h_nup, PE, δb,
               ustar, Fint, Fpk, F_b, G, Bs, Us, uws, kaps, dPEdt,
               K_at_h, TKE_at_h, fit_keep, slope, rcorr, nfit)
 end
@@ -481,6 +488,22 @@ function verify(c)
         @printf("  3. K_sgs/K_T at z = h: median %.2f (90th pct %.2f)              %s\n",
                 med, quantile(g, 0.9), ok3 ? "PASS" : "FAIL")
         ok3 || push!(fails, @sprintf("K_sgs/K_T = %.2f — K_T characterises the AMD closure, not the flow", med))
+    end
+
+    # 3b. IS h WELL DEFINED? The peak definition assumes there is one peak. Where
+    #     the gradient above the layer is noise rather than an interface — the
+    #     passive N/ω = 0 case — the global maximum jumps between bumps and h is
+    #     not a length scale. This is the check that says so out loud.
+    nup = c.h_nup[c.fit_keep]
+    frac_amb = isempty(nup) ? NaN : count(>(1), nup) / length(nup)
+    hh_all = filter(isfinite, c.h[c.fit_keep])
+    met["h_ambiguous_frac"] = frac_amb
+    if H_DEF != "crossing"
+        ok3b = frac_amb < 0.2
+        @printf("  3b. h = %s: ambiguous in %4.0f %% of samples, h = %.2f ± %.2f m  %s\n",
+                H_DEF == "flux" ? "peak of −F_b" : "peak of dB/dz", 100frac_amb, isempty(hh_all) ? NaN : mean(hh_all),
+                isempty(hh_all) ? NaN : std(hh_all), ok3b ? "PASS" : "FAIL")
+        ok3b || push!(fails, @sprintf("h is ambiguous in %.0f %% of samples — the gradient above the layer has several comparable bumps, so the peak is not an interface. Do not use h as a length scale for this case", 100frac_amb))
     end
 
     # 4. shape factor
@@ -687,7 +710,7 @@ for T in T_values, s in n_over_ω
     # a simulation writer produces (those all use overwrite_existing = true).
     outdir = joinpath(@__DIR__, outroot, c.tag)
     mkpath(outdir)
-    resfile = joinpath(outdir, "mixing_$(c.tag)$(RESULT_SUFFIX).jld2")
+    resfile = joinpath(outdir, "mixing_$(c.tag)$(MIX_SUFFIX).jld2")
     jldsave(resfile;
             tag = c.tag, T = c.T, n_over_omega = c.s, Ri = c.Ri, N2_ref = c.N²_ref,
             zref = c.zref, grad_floor = GRAD_FLOOR, smooth = SMOOTH,
@@ -696,7 +719,8 @@ for T in T_values, s in n_over_ω
             TKE = c.TKE, K_T = c.K_T, K_sgs = c.K_sgs, K_sgs_over_K_T = c.K_ratio,
             K_T_bulk = c.K_T_bulk, K_T_pe = c.K_T_pe, K_T_pe_full = c.K_T_pe_full,
             K_boundary_term = c.K_bdy, zref_leakage = c.leakage, delta_eff = c.δ_eff,
-            h = c.h, PE = c.PE, dPEdt = c.dPEdt, delta_b = c.δb, ustar = c.ustar,
+            h = c.h, h_def = H_DEF, h_nup = c.h_nup,
+            PE = c.PE, dPEdt = c.dPEdt, delta_b = c.δb, ustar = c.ustar,
             F_b = c.F_b, dBdz = c.G, kappa_sgs = c.kaps, uw = c.uws,
             F_integral = c.Fint, F_peak = c.Fpk,
             K_at_h = c.K_at_h, TKE_at_h = c.TKE_at_h,

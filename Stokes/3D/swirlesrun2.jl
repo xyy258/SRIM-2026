@@ -65,7 +65,7 @@ const ω       = 1e-4
 const T_tide  = 2π / ω
 const outroot = joinpath(HERE, get(ENV, "OUT_ROOT", "outputs"))
 const figdir  = get(ENV, "FIG_DIR", joinpath(HERE, "figures"))
-const logdir  = joinpath(HERE, "logs")
+const logdir  = get(ENV, "LOG_DIR", joinpath(HERE, "logs"))
 const SUFFIX  = get(ENV, "RESULT_SUFFIX", "")
 const SKIP    = parse(Float64, get(ENV, "SKIP_PERIODS", "3"))
 const SWEEP   = parse.(Float64, split(get(ENV, "SKIP_SWEEP", "0 1 2 3 4 5 6")))
@@ -79,6 +79,13 @@ default(fontfamily = "sans-serif", framestyle = :box, grid = true, gridalpha = 0
 # --- the fit, COPIED VERBATIM from MixedLayerDiffusivity.jl -------------------
 # Do not "improve" one copy alone: the whole point of reading the saved arrays
 # is that this script and the main analysis agree by construction.
+# Three definitions of h can be on disk at once (see mixed_layer_height.jl), and
+# they are not interchangeable: a figure built from a mixture of them would be
+# meaningless. Files written before h_def existed were all the 0.1-crossing.
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
+h_def_of(f) = try jldopen(io -> haskey(io, "h_def") ? io["h_def"] : "crossing", f, "r")
+              catch; "crossing" end
+
 function loglog_slope(x, y)
     m = @. isfinite(x) && isfinite(y) && x > 0 && y > 0
     n = count(m)
@@ -98,6 +105,7 @@ function discover()
         isdir(d) || continue
         for f in readdir(d; join = true)
             startswith(basename(f), "mixing_") && endswith(f, ".jld2") || continue
+            h_def_of(f) == H_DEF || continue
             tag = try
                 jldopen(io -> io["tag"], f, "r")
             catch e

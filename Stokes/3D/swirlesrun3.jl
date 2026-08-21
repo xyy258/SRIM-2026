@@ -56,7 +56,7 @@ const SKIP   = parse(Float64, get(ENV, "SKIP_PERIODS", "3"))
 const SMIN   = parse(Float64, get(ENV, "SQRT_RI_MIN", "5"))
 const outroot = joinpath(HERE, get(ENV, "OUT_ROOT", "outputs"))
 const figdir  = get(ENV, "FIG_DIR", joinpath(HERE, "figures"))
-const logdir  = joinpath(HERE, "logs")
+const logdir  = get(ENV, "LOG_DIR", joinpath(HERE, "logs"))
 const SUFFIX  = get(ENV, "RESULT_SUFFIX", "")
 const LEGACY  = filter(!isempty, split(get(ENV, "LEGACY_DIRS",
     joinpath(HERE, "-Varying L_strat fraction of Lz") * ":" *
@@ -76,11 +76,9 @@ function loglog_slope(x, y)          # verbatim from MixedLayerDiffusivity.jl
     r = sum((lx .- sx) .* (ly .- sy)) / sqrt(sum((lx .- sx) .^ 2) * sum((ly .- sy) .^ 2))
     return (slope, r, n)
 end
-first_crossing(z, fv, lev) = begin
-    i = findfirst(k -> isfinite(fv[k]) && fv[k] >= lev, eachindex(fv))
-    (i === nothing || i == 1) ? NaN :
-        z[i-1] + (z[i] - z[i-1]) * (lev - fv[i-1]) / (fv[i] - fv[i-1])
-end
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
+h_def_of(f) = try jldopen(io -> haskey(io, "h_def") ? io["h_def"] : "crossing", f, "r")
+              catch; "crossing" end
 interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
     i = searchsortedlast(z, z₀)
     i < 1 && return fv[1]
@@ -94,6 +92,7 @@ function load_new()
     best = Dict{String,String}()
     for d in readdir(outroot; join = true), f in (isdir(d) ? readdir(d; join = true) : String[])
         startswith(basename(f), "mixing_") && endswith(f, ".jld2") || continue
+        h_def_of(f) == H_DEF || continue
         tag = try jldopen(io -> io["tag"], f, "r") catch; continue end
         (!haskey(best, tag) || mtime(f) > mtime(best[tag])) && (best[tag] = f)
     end
@@ -143,7 +142,10 @@ function load_legacy(root)
             G[k, n] = (B[k, n] - B[k-1, n]) / (zc[k] - zc[k-1])
         end
         G[1, :] .= G[2, :]
-        h = [first_crossing(zf, view(G, :, n) ./ N²_ref, 0.1) for n in 1:nt]
+        # Legacy runs have no F_sgs, so under H_DEF=flux the flux is the resolved
+        # part alone — the same caveat their K_T already carries.
+        h = [mixed_layer_height(zf, view(G, :, n), N²_ref; zmax = min(40.0, zf[end]),
+                                F = view(wb, :, n)) for n in 1:nt]
         fl = GRAD_FLOOR * N²_ref
         K  = [(g = interp_at(zf, view(G, :, n), h[n]);
                (isnan(g) || abs(g) < fl) ? NaN :

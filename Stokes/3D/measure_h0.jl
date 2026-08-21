@@ -14,9 +14,9 @@ using Oceananigans, JLD2, Printf, Statistics
 # DEFINITION: at the phase of the last full period where near-wall TKE peaks, h0
 # is the first height ABOVE that peak at which TKE has fallen to TKE_FRAC (default
 # 1 %) of it. That is a different quantity from the mixed-layer height h used
-# elsewhere (normalised buoyancy gradient reaching 0.1, Figure5.jl's
-# first_crossing) — h0 measures where the TURBULENCE reaches, h where the
-# STRATIFICATION has been erased. Both are reported so the two can be compared.
+# elsewhere (the peak of ∂⟨b⟩/∂z — see mixed_layer_height.jl) — h0 measures where
+# the TURBULENCE reaches, h where the STRATIFICATION has been sharpened. Both are
+# reported so the two can be compared, and on these runs they are FAR apart.
 #
 #   julia --project=. measure_h0.jl outputs/<tag>/TidalBL3D_<tag>_moments.jld2
 #   julia --project=. measure_h0.jl <tag>          # resolves under OUT_ROOT
@@ -101,14 +101,12 @@ end
 # The mixed-layer height at the same instant, for comparison. N²_ref is recovered
 # from the far field rather than passed in, so this script needs no case knobs.
 N²_ref = maximum(filter(isfinite, view(G, :, npk)))
-function first_crossing(z, fv, level)
-    for i in 1:length(fv)-1
-        fv[i] < level <= fv[i+1] &&
-            return z[i] + (level - fv[i]) * (z[i+1] - z[i]) / (fv[i+1] - fv[i])
-    end
-    return NaN
-end
-h_ml = N²_ref > 0 ? first_crossing(zf, view(G, :, npk) ./ N²_ref, 0.1) : NaN
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
+h_ml = N²_ref > 0 ? mixed_layer_height(zf, view(G, :, npk), N²_ref; zmax = 40.0) : NaN
+# Whether that peak is one interface or the tallest of several bumps. In the
+# N/ω = 0 cases this script is normally run on, the buoyancy is passive and the
+# gradient above the layer is noise — h_ml is then not a height of anything.
+h_nup = peak_upcrossings(zf, view(G, :, npk); zmax = 40.0)
 
 println("\n", "="^72)
 @printf("h0 MEASUREMENT — %s\n", basename(fname))
@@ -120,7 +118,10 @@ println("="^72)
 zc[kpk] > 0.5H_PEAK &&
     @warn @sprintf("the TKE peak sits at z = %.2f m, over half of H_PEAK = %.1f m — that is probably not a wall peak. Check the profile before trusting h0.",
                    zc[kpk], H_PEAK)
-@printf("  mixed-layer height h (∂B/∂z reaching 0.1 N²_ref) = %.3f m\n", h_ml)
+@printf("  mixed-layer height h (%s) = %.3f m%s\n",
+        H_DEF == "peak" ? "peak of ∂B/∂z" : "∂B/∂z reaching 0.1 N²_ref", h_ml,
+        H_DEF == "peak" && h_nup > 1 ?
+            @sprintf("   [AMBIGUOUS: %d comparable bumps — not an interface]", h_nup) : "")
 println()
 @printf("  >>>  h0 (TKE down to %.0f %% of peak)  =  %.3f m  <<<\n",
         100 * (isnan(frac_used) ? TKE_FRAC : frac_used), h0)
