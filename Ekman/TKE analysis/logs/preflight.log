@@ -1,9 +1,0 @@
-
-==============================================================================
-==== 2026-08-18 12:43:40  preflight
-==== JULIA_NUM_PRECOMPILE_TASKS=1
-==============================================================================
-preflight: packages loaded, Oceananigans 0.110.11
-preflight: model.closure_fields[1] = nothing
-preflight: model.closure_fields[2] = (:νₑ, :κₑ)
-preflight: CUDA functional — NVIDIA RTX 5000 Ada Generation
