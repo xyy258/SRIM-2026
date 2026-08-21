@@ -1,14 +1,14 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Analysis of horizontally averaged profiles saved by Tidal3D.jl for one case:
+# Analysis of the horizontally averaged profiles saved by Tidal3D.jl for one case:
 #   julia --project=. Tidal3Dprofiles.jl Ri500
-# Produces (all in outputs/<case>/, labeled with the case):
-#   1. Mean velocity profiles vs the laminar Stokes solution
+# Produces, all in outputs/<case>/ and labelled with the case:
+#   1. Mean velocity profiles against the laminar Stokes solution
 #   2. Friction velocity u_τ over the tidal cycle
-#   3. Turbulence intensity + Reynolds stress profiles at peak flow
-# and from the thermal field (active for Ri > 0, passive for Ri = 0):
+#   3. Turbulence intensities and Reynolds stress at peak flow
+# and from the thermal field, active for Ri > 0 and passive for Ri = 0:
 #   4. Heatmap of ∂b/∂z normalized by the background gradient
-#   5. Mixed-layer depth vs time (threshold + integral metrics)
+#   5. Mixed-layer depth against time, by two measures
 #   6. Stratification profiles at the end of each tidal period
 
 include(joinpath(@__DIR__, "case_params.jl"))
@@ -22,8 +22,9 @@ times = B_ts.times
 Nt    = length(times)
 zc    = znodes(B_ts)                   # centers, length Nz
 
-# Reconstruct gradients by finite-differencing between adjacent centers —
-# interior data only (no halos/BC faces), so no spurious wall artifact.
+# Reconstruct the gradients by differencing between adjacent centers. This uses
+# interior data only, with no halos or boundary faces, so no spurious value
+# appears at the wall.
 Bmean = zeros(length(zc), Nt)
 Umean = zeros(length(zc), Nt)
 for n in 1:Nt
@@ -34,15 +35,15 @@ end
 zg = 0.5 .* (zc[1:end-1] .+ zc[2:end])         # midpoints, length Nz-1
 G  = diff(Bmean, dims = 1) ./ diff(zc)         # ∂b/∂z at midpoints
 
-# Near-wall zoom for the profile plots. Expressed in Stokes thicknesses so it
-# tracks any change of dimensional scaling; 8 δ_s covers the unstratified
-# boundary layer (the paper quotes 15 δ_s for its full thickness).
+# Near-wall zoom for the profile plots, in Stokes thicknesses so that it follows
+# any change of scaling. 8 δ_s covers the unstratified boundary layer; the paper
+# quotes 15 δ_s for its full thickness.
 zmax = 8δ
 
-# ---- 1. Mean velocity vs laminar Stokes solution ----
+# ---- 1. Mean velocity against the laminar Stokes solution ----
 # Laminar solution: u(z, t) = U₀ [sin(ωt) − e^(−z/δ) sin(ωt − z/δ)].
-# A fuller, more slab-like profile with a thin sharp wall layer than this
-# indicates turbulence.
+# A fuller, more slab-like profile with a thin sharp wall layer means the flow
+# has become turbulent.
 u_laminar(z, t) = U₀ * (sin(ω * t) - exp(-z / δ) * sin(ω * t - z / δ))
 
 phases = (0.25, 0.5, 0.75, 1.0)  # fractions of the final tidal period
@@ -62,8 +63,8 @@ end
 savefig(plt1, joinpath(outdir, "velocity_vs_stokes_" * case * ".png"))
 
 # ---- 2. Friction velocity over the tidal cycle ----
-# u_τ = sqrt(ν |∂U/∂z|_wall), wall gradient estimated from the lowest cell
-# center (U = 0 at the wall by the no-slip BC).
+# u_τ = sqrt(ν |∂U/∂z|_wall), with the wall gradient estimated from the lowest
+# cell centre, since U = 0 at the wall.
 uτ = sqrt.(ν .* abs.(Umean[1, :]) ./ zc[1])
 plt2 = plot(times ./ T_tide, uτ;
             lw = 2, label = "u_τ",
@@ -75,8 +76,8 @@ plot!(plt2, times ./ T_tide,
 savefig(plt2, joinpath(outdir, "friction_velocity_" * case * ".png"))
 
 # ---- 3. Turbulence statistics at peak flow of the final period ----
-# rms values from the saved raw second moments: u'rms = sqrt(⟨u²⟩ − U²) etc.,
-# Reynolds stress u'w' ≈ ⟨uw⟩ (mean w ≈ 0).
+# rms values from the saved raw second moments, u'rms = sqrt(⟨u²⟩ − U²) and so
+# on, with the Reynolds stress u'w' ≈ ⟨uw⟩ since the mean w is zero.
 uu_ts = FieldTimeSeries(fname, "uu")
 vv_ts = FieldTimeSeries(fname, "vv")
 ww_ts = FieldTimeSeries(fname, "ww")
@@ -107,10 +108,10 @@ plt3b = plot(uwpk[ks6] ./ U₀^2, zc[ks6]; lw = 2, label = "⟨u′w′⟩/U₀�
 plot(plt3a, plt3b, layout = (1, 2), size = (1100, 500))
 savefig(joinpath(outdir, "turbulence_stats_" * case * ".png"))
 
-# ============ Thermal-field diagnostics ============
-# Normalized by N²_ref, the background gradient the tracer actually carries, so
-# these run for Ri = 0 as well — there the scalar is passive and the mixed layer
-# grows unopposed, which is the reference the stratified cases are read against.
+# ---- Thermal-field diagnostics ----
+# Normalized by N²_ref, the background gradient the tracer carries, so these work
+# at Ri = 0 as well. There the scalar is passive and the mixed layer grows
+# unopposed, which is the reference the stratified cases are read against.
 begin
     ks = findall(z -> z <= zmax, zg)
 
@@ -124,19 +125,18 @@ begin
             colorbar_title = "∂b/∂z / N²")
     savefig(joinpath(outdir, "buoyancy_gradient_normalized_" * case * ".png"))
 
-    # ---- 5. Mixed-layer depth vs time ----
-    #  (a) threshold depth: highest contiguous height from the wall where the
-    #      stratification is below half background (can spike on bursts)
-    #  (b) integral "mixing thickness": ∫ (1 − ∂b/∂z / N²)₊ dz — smooth and
-    #      the more trustworthy measure.
+    # ---- 5. Mixed-layer depth against time ----
+    #  (a) threshold depth: the highest continuous height from the wall at which
+    #      the stratification is below half the background. It can spike on
+    #      bursts.
+    #  (b) integral mixing thickness, ∫ (1 − ∂b/∂z / N²)₊ dz, which is smooth and
+    #      the more trustworthy of the two.
     #
-    # Both are measured against the *initial background* N²_bg(z) rather than the
-    # far-field constant N∞². With the uniform background these are identical.
-    # With the exponential one they are not: the seabed starts unstratified, so
-    # comparing to N∞² would score the initial condition itself as already mixed
-    # — the integral would read ∫exp(−z/L) dz = L = 10 δ_s at t = 0 and the
-    # threshold depth 0.69 L ≈ 6.9 δ_s. Referencing N²_bg makes both start at
-    # zero, so the curves show mixing the flow actually did.
+    # Both are measured against the initial background N²_bg(z) rather than the
+    # far-field N∞². The two agree for a uniform background but not otherwise: if
+    # the seabed starts unstratified, comparing with N∞² would count the initial
+    # condition itself as already mixed. Using N²_bg makes both start at zero, so
+    # the curves show only the mixing the flow has done.
     function threshold_depth(g, z; frac = 0.5)
         k = 1
         while k <= length(z) && g[k] < frac * N²_background(z[k])
@@ -171,7 +171,7 @@ begin
     plt6 = plot(xlabel = "∂b/∂z / N∞²", ylabel = "z (m)", ylims = (0, zmax),
                 xlims = (0, 1.5),
                 title = "$case: stratification profiles", legend = :bottomright)
-    # The exponential background, so mixing is read against where the profile
+    # The background profile, so mixing is read against where the profile
     # started rather than against a vertical line at 1.
     plot!(plt6, N²_background.(zg[ks]) ./ N²_ref, zg[ks];
           lw = 1.5, ls = :dash, color = :black, label = "background N²_bg/N∞²")

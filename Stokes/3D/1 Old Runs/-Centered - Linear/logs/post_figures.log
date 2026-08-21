@@ -1,0 +1,11 @@
+┌ Warning: Missing /home/tll46/SRIM-2026/Stokes/3D/output_Ri2500/TidalBL3D_Ri2500_profiles.jld2 — skipping Ri2500
+└ @ Main ~/SRIM-2026/Stokes/3D/Figure4.jl:48
+[ Info: Saved figures/Figure4_reproduction.png
+[ Info: Saved figures/Figure5_Ri0.png
+[ Info: Saved figures/Figure5_Ri500.png
+┌ Warning: Missing /home/tll46/SRIM-2026/Stokes/3D/output_Ri2500/TidalBL3D_Ri2500_profiles.jld2 — skipping Ri2500
+└ @ Main ~/SRIM-2026/Stokes/3D/Figure5.jl:77
+[ Info: Saved figures/Figure4_reproduction.png
+[ Info: Saved figures/Figure5_Ri0.png
+[ Info: Saved figures/Figure5_Ri500.png
+[ Info: Saved figures/Figure5_Ri2500.png

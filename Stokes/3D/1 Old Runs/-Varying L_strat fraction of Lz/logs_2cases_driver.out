@@ -1,0 +1,9 @@
+[2026-08-04 22:41:03] === rerun L0p2Lz_Ri2500 & L0p5Lz_Ri2500 on 150δ grid (8p each) ===
+[2026-08-04 22:41:03] run L0p2Lz_Ri2500: L_STRAT_LZ=0.2, 8 periods (restart from spin-up)
+[2026-08-05 03:23:49]   L0p2Lz_Ri2500 reached 7.99 periods
+[2026-08-05 03:23:49] run L0p5Lz_Ri2500: L_STRAT_LZ=0.5, 8 periods (restart from spin-up)
+[2026-08-05 08:07:00]   L0p5Lz_Ri2500 reached 8.00 periods
+[2026-08-05 08:07:00] figures 4 & 5
+[2026-08-05 08:07:30]   Figure4 OK
+[2026-08-05 08:08:00]   Figure5 OK
+[2026-08-05 08:08:00] === DONE ===
