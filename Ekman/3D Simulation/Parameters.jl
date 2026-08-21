@@ -3,7 +3,7 @@ const U∞ = 0.04                 # far stream velocity
 const f₀ = 1e-4                 # Coriolis parameter
 
 if !@isdefined(r) || isnothing(r)
-    const r   = 75              # ratio N/f
+    r = 75                      # ratio N/f (not const — swept in loops)
 end
 const Pr = 10                   # Prandtl number
 const z₀ = 0.0016               # m (roughness length)
@@ -21,8 +21,8 @@ const duration = 40e4           # non-dimensional duration of the simulation
 const S = 20
 
 # Other parameters
-const N   = r*f₀                # buoyancy frequency
-const N²  = (r*f₀)^2            # squared buoyancy frequency
+N   = r*f₀                      # buoyancy frequency
+N²  = (r*f₀)^2                  # squared buoyancy frequency
 const κ   = 0.41                # von Karman constant
 const ν₀  = 1e-6                # molecular kinematic viscosity
 const D   = U∞/f₀               # Rossby lengthscale
@@ -36,7 +36,7 @@ const Re∞ = U∞*D/ν₀             # Reynolds number
 
 
 if !@isdefined(profile) || isnothing(profile)
-    const profile = 4           # type of initial buoyancy profile
+    profile = 4                 # type of initial buoyancy profile (not const — swept in loops)
 end                             # (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay, 4=softplus)
 
 const mask = 1                  # type of masking in sponge layer (0=piecewise, 1=Gaussian)
@@ -44,7 +44,7 @@ const H = Lz + S                # domain height, with sponge layer
 
 if profile == 1
     if !@isdefined(T) || isnothing(T)
-        const T = 10            # adjusts when sharp change in buoyancy occurs
+        T = 10                  # adjusts when sharp change in buoyancy occurs (not const — swept)
     end
 elseif profile == 2
     if !@isdefined(Lᴰ) || isnothing(Lᴰ)
@@ -56,7 +56,7 @@ elseif profile == 3
     end
 elseif profile == 4
     if !@isdefined(T) || isnothing(T)
-        const T = 10            # change in buoyancy
+        T = 10                  # change in buoyancy (not const — swept)
     end
     sharp = 6                   # changes how sharply buoyancy profile changes
 end

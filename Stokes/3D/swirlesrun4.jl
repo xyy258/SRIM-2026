@@ -50,13 +50,20 @@ const SKIP    = parse(Float64, get(ENV, "SKIP_PERIODS", "3"))
 const KSRC    = get(ENV, "K_SOURCE", "bulk")
 const outroot = joinpath(HERE, get(ENV, "OUT_ROOT", "outputs"))
 const figdir  = get(ENV, "FIG_DIR", joinpath(HERE, "figures"))
-const logdir  = joinpath(HERE, "logs")
+const logdir  = get(ENV, "LOG_DIR", joinpath(HERE, "logs"))
 const SUFFIX  = get(ENV, "RESULT_SUFFIX", "")
 KSRC in ("bulk", "at_h") || error("K_SOURCE must be bulk or at_h — got \"$KSRC\"")
 
 mkpath(figdir); mkpath(logdir)
 default(fontfamily = "sans-serif", framestyle = :box, grid = true, gridalpha = 0.15,
         tickfontsize = 8, guidefontsize = 9, legendfontsize = 7, titlefontsize = 10)
+
+# Three definitions of h can be on disk at once (see mixed_layer_height.jl), and
+# they are not interchangeable: a figure built from a mixture of them would be
+# meaningless. Files written before h_def existed were all the 0.1-crossing.
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
+h_def_of(f) = try jldopen(io -> haskey(io, "h_def") ? io["h_def"] : "crossing", f, "r")
+              catch; "crossing" end
 
 function loglog_slope(x, y)          # verbatim from MixedLayerDiffusivity.jl
     m = @. isfinite(x) && isfinite(y) && x > 0 && y > 0
@@ -77,6 +84,7 @@ function load_cases()
         isdir(d) || continue
         for f in readdir(d; join = true)
             startswith(basename(f), "mixing_") && endswith(f, ".jld2") || continue
+            h_def_of(f) == H_DEF || continue
             tag = try jldopen(io -> io["tag"], f, "r") catch; continue end
             (!haskey(best, tag) || mtime(f) > mtime(best[tag])) && (best[tag] = f)
         end

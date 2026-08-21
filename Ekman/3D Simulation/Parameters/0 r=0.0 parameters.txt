@@ -5,11 +5,11 @@ Square buoyancy frequency:      N²  = 0.00e+00,
 Coriolis parameter:             f   = 1.00e-04,
 Ratio:                          r   = N/f = 0.0
 Molecular kinematic viscosity:  ν₀  = 1.00e-06,
-Reynolds number:                Re∞ = 4.55e+07,
+Reynolds number:                Re∞ = 1.60e+07,
 Prandtl number:                 Pr  = 10.0,
 Molecular diffusivity:          κ₀  = 1.00e-07,
-Frictional velocity             u*  = 5.99e-03
-Drag coefficient:               cᴰ  = 0.0127,
-Layer lengthscale:              δ   = 59.89
-Frictional Reynolds             Re* = 3.59e+05
-Frictional Richardson           Ri* = 0.0
+Frictional velocity             u*  = 4.24e-03
+Drag coefficient:               cᴰ  = 0.0121,
+Layer lengthscale:              δ   = 42.37
+Friction Reynolds               Re* = 1.79e+05
+Friction Richardson             Ri* = 0.0
