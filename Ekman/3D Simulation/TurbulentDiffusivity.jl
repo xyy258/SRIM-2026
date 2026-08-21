@@ -12,9 +12,9 @@ zC = znodes(w_series.grid, Center())
 t_end = w_series.times[end]
 t_indices = findall(t -> t >= t_end - 2π/f₀ * 2, w_series.times)
 
-local wb = zeros(length(zC))
-local db_dz = zeros(length(zC))
-local tke = zeros(length(zC))
+wb = zeros(length(zC))
+db_dz = zeros(length(zC))
+tke = zeros(length(zC))
 
 for n in t_indices
     w = Array(interior(w_series[n], :, :, :))

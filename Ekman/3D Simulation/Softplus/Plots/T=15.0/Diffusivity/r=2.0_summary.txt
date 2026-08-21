@@ -1,4 +1,0 @@
-K_t at interface (z=25.8637 m): 5.685392e-05 m²/s
-∂b/∂z at interface: 5.554803e-08 s⁻²
-w'b' at interface: -3.158123e-12 m/s²
-r = N/f: 2.0

@@ -19,7 +19,8 @@ const t_step  = 5
 for p in profiles
     global profile = p
     for value in values
-        plt = plot(size = (800, 500))
+        plt  = plot(size = (800, 500))
+        plt2 = plot(size = (800, 500))   # l_κ vs mixed layer height
 
         global T = value
         @info("Plot for T=$T...")
@@ -51,6 +52,7 @@ for p in profiles
 
             l_N_time = Float64[]
             l_kappa_time = Float64[]
+            h_time = Float64[]   # mixed layer height (interface depth) per snapshot
 
             for n in t_indices
                 u = Array(interior(u_series[n], :, :, :))
@@ -87,6 +89,7 @@ for p in profiles
                 if K_t_int > 0 && tke_int > 1e-8
                     push!(l_N_time, sqrt(max(tke_int, 0)) / N)
                     push!(l_kappa_time, K_t_int / sqrt(max(tke_int, 1e-12)))
+                    push!(h_time, z_int)
                 end
             end
 
@@ -119,6 +122,34 @@ for p in profiles
                     label     = fit_lbl
                 )
             end
+
+            # --- l_κ vs mixed layer height (tests K_t ~ h*sqrt(TKE)) ---
+            scatter!(plt2, h_time, l_kappa_time,
+                color             = idx,
+                markersize        = 3.0,
+                markerstrokewidth = 0,
+                markeralpha       = 0.6,
+                label             = @sprintf("r = %.1f", r)
+            )
+
+            if length(h_time) >= 2
+                x_log, y_log = log10.(h_time), log10.(l_kappa_time)
+                m, c = [x_log ones(length(x_log))] \ y_log
+                R = cor(x_log, y_log)
+
+                x_fit = range(minimum(h_time), maximum(h_time), length=100)
+                y_fit = 10 .^ (m .* log10.(x_fit) .+ c)
+
+                fit_lbl = isnan(R) ? @sprintf("l_κ = %.3g h^{%.3g}", 10^c, m) :
+                                     @sprintf("l_κ = %.3g h^{%.3g} (R = %.2f)", 10^c, m, R)
+
+                plot!(plt2, x_fit, y_fit,
+                    linestyle = :dash,
+                    linewidth = 1.5,
+                    color     = idx,
+                    label     = fit_lbl
+                )
+            end
         end
 
         plot!(plt,
@@ -128,11 +159,24 @@ for p in profiles
             ylabel    = "l_κ = κₜ / √TKE [m]",
             minorgrid = true,
             legend    = :bottomright,
-            title     = "Interfacial Temporal Length Scale Scatter Plot for T=$T",
+            title     = @sprintf("l_κ vs l_N (T = %d)", T),
             margin    = 25px
         )
 
         mkpath(save_folder)
-        savefig(plt, save_folder * "Interfacial_TimeSeries_Length_Scale_LogLog_T=$T.png")
+        savefig(plt, save_folder * "l_k_l_N.png")
+
+        plot!(plt2,
+            xscale    = :log10,
+            yscale    = :log10,
+            xlabel    = "h = mixed layer height [m]",
+            ylabel    = "l_κ = κₜ / √TKE [m]",
+            minorgrid = true,
+            legend    = :bottomright,
+            title     = @sprintf("l_κ vs h (T = %d)", T),
+            margin    = 25px
+        )
+
+        savefig(plt2, save_folder * "l_k_h.png")
     end
 end
