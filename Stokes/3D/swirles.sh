@@ -8,7 +8,29 @@
 #SBATCH --time=12:00:00
 #SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out   # Standard output log
 #SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err    # Standard error log
-  
+
+# ---------------------------------------------------------------------------
+# The N/omega column: T = 10 m, N/omega in {0, 1, 2, 5, 10, 25, 50}, 8 periods.
+# swirlesrun7.jl carries the reasoning; the practical points are:
+#
+#   sbatch swirles.sh          run it
+#
+# The four cases at N/omega = 0, 1, 2 and 10 are already complete from the
+# previous column and are skipped, so this is 3 new cases at ~1.95 h = 5.9 h in
+# the 12 h wall. If those four are NOT on this filesystem all seven run, which is
+# 13.6 h and does not fit: the wall-clock guard then declines the cases it cannot
+# finish and re-submitting the same script continues rather than restarts, since
+# every case writes its own completion marker.
+#
+# Check which of the two it will be BEFORE submitting, on a login node -- this
+# prints the plan and exits without touching the GPU:
+#
+#   cd /cephfs/store/damtp/tll46/SRIM-2026/Stokes/3D
+#   DRY_RUN=1 julia --project=. swirlesrun7.jl
+#
+# Other stages:  SWEEP_STAGE=spinup | cases | post | auto (default)
+# ---------------------------------------------------------------------------
+
 # Exit immediately if any command fails
 set -eo pipefail
 
@@ -37,4 +59,4 @@ export JULIA_DEPOT_PATH="/cephfs/store/damtp/tll46/.julia:$HOME/.julia"
 mkdir -p /cephfs/store/damtp/tll46/.julia
 
 # Run the Julia script with project activation
-srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlesrun5.jl"
+srun julia --project="$PROJECT_DIR" "Stokes/3D/swirlesrun7.jl"
