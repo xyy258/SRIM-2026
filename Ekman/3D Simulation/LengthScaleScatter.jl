@@ -4,12 +4,12 @@ using Oceananigans, Plots, Printf, JLD2
 using Plots.PlotMeasures
 using Statistics
 
-ratios   = [0.5, 1, 2, 5]
+ratios   = [0, 0.5, 1, 2, 5]
 values   = [5, 10, 15, 20, 30, 40, 50]
 profiles = [4]
 
 # --- Sampling Parameters ---
-const avg_len = 0.5             # Vertical physical window centered at interface peak [m]
+const avg_len = 0.1         # Vertical physical window centered at interface peak [m]
 const t_step  = 5
 
 # ======================================================================== #
@@ -48,7 +48,7 @@ for p in profiles
             # Downsampled snapshots over the last 5 inertial periods (T_f)
             T_f = 2π / f₀
             n_periods = 4
-            t_indices = findall(t -> t >= u_series.times[end] - 4 * T_f, u_series.times)[1:t_step:end]
+            t_indices = findall(t -> t >= u_series.times[end] - n_periods * T_f, u_series.times)[1:t_step:end]
 
             l_N_time = Float64[]
             l_kappa_time = Float64[]
