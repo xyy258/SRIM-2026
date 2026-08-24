@@ -1,0 +1,4 @@
+Three different ways to define the mixed layer height:
+1: When the buoyancy gradient first recovers to 10% of the background value
+2: Maximum value of the buoyancy gradient profile
+3: Maximum value of the buoyancy flux profile

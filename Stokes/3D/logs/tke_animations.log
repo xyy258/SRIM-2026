@@ -1,0 +1,9 @@
+
+========================================================================================
+==== 2026-08-20 16:04:40  swirlesrun5.jl  SKIP_PERIODS=1 STRIDE=2 SMOOTH=tide20 FPS=30
+========================================================================================
+T = 5      701 frames  z ≤  15.0 m  TKE ≤ 1.585e-05  cases: P4_T5_sqrtRi0, P4_T5_sqrtRi1, P4_T5_sqrtRi2, P4_T5_sqrtRi10
+    outputs/tke_animations/animation_TKE_T5_log.mp4
+T = 10     701 frames  z ≤  20.0 m  TKE ≤ 1.599e-05  cases: P4_T10_sqrtRi0, P4_T10_sqrtRi1, P4_T10_sqrtRi2, P4_T10_sqrtRi10
+    outputs/tke_animations/animation_TKE_T10_log.mp4
+========================================================================================

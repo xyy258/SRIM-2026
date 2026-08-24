@@ -1,0 +1,59 @@
+8 case(s): P4_T5_sqrtRi0, P4_T10_sqrtRi0, P4_T5_sqrtRi1, P4_T10_sqrtRi1, P4_T5_sqrtRi2, P4_T10_sqrtRi2, P4_T5_sqrtRi10, P4_T10_sqrtRi10
+
+================================================================================================
+==== 2026-08-21 11:40:22  swirlesrun4.jl   l = K_T(bulk)/√TKE   SKIP_PERIODS=3
+================================================================================================
+
+-- h --
+case                      N/ω |      slope        r      n | median l/L
+P4_T5_sqrtRi0               0 |      +2.64     0.62   1001 |      0.172
+P4_T10_sqrtRi0              0 |      +2.14     0.63   1001 |      0.138
+P4_T5_sqrtRi1               1 |      -1.68    -0.19    985 |      0.024
+P4_T10_sqrtRi1              1 |      -5.52    -0.22   1001 |      0.010
+P4_T5_sqrtRi2               2 |      +1.67     0.06    987 |      0.008
+P4_T10_sqrtRi2              2 |      +5.09     0.20    979 |      0.006
+P4_T5_sqrtRi10             10 |      -0.46    -0.06   1001 |      0.002
+P4_T10_sqrtRi10            10 |      +0.69     0.08   1001 |      0.002
+
+-- delta_s --
+case                      N/ω |      slope        r      n | median l/L
+P4_T5_sqrtRi0               0 |        n/a  (const)   1001 |     23.377
+P4_T10_sqrtRi0              0 |        n/a  (const)   1001 |     21.094
+P4_T5_sqrtRi1               1 |        n/a  (const)    985 |      2.487
+P4_T10_sqrtRi1              1 |        n/a  (const)   1001 |      1.115
+P4_T5_sqrtRi2               2 |        n/a  (const)    987 |      0.759
+P4_T10_sqrtRi2              2 |        n/a  (const)    979 |      0.563
+P4_T5_sqrtRi10             10 |        n/a  (const)   1001 |      0.156
+P4_T10_sqrtRi10            10 |        n/a  (const)   1001 |      0.127
+
+-- ustar_over_omega --
+case                      N/ω |      slope        r      n | median l/L
+P4_T5_sqrtRi0               0 |      +0.10     0.17   1001 |      0.341
+P4_T10_sqrtRi0              0 |      +0.14     0.23   1001 |      0.302
+P4_T5_sqrtRi1               1 |      +0.20     0.24    985 |      0.038
+P4_T10_sqrtRi1              1 |      +0.20     0.19   1001 |      0.017
+P4_T5_sqrtRi2               2 |      +0.15     0.13    987 |      0.012
+P4_T10_sqrtRi2              2 |      -0.04    -0.03    979 |      0.008
+P4_T5_sqrtRi10             10 |      -0.12    -0.21   1001 |      0.002
+P4_T10_sqrtRi10            10 |      +0.12     0.30   1001 |      0.002
+
+-- q_over_N --
+case                      N/ω |      slope        r      n | median l/L
+P4_T5_sqrtRi0               0 |       +NaN      NaN      0 |        NaN
+P4_T10_sqrtRi0              0 |       +NaN      NaN      0 |        NaN
+P4_T5_sqrtRi1               1 |      -0.47    -0.25    985 |      0.426
+P4_T10_sqrtRi1              1 |      +0.16     0.04   1001 |      0.244
+P4_T5_sqrtRi2               2 |      +0.24     0.07    987 |      0.217
+P4_T10_sqrtRi2              2 |      +1.00     0.24    979 |      0.167
+P4_T5_sqrtRi10             10 |      +0.00     0.00   1001 |      0.103
+P4_T10_sqrtRi10            10 |      -0.19    -0.25   1001 |      0.154
+
+------------------------------------------------------------------------------------------------
+A candidate is THE scale only if slope ≈ 1 AND median l/L is the same
+across cases. Slope 1 with a case-dependent ratio means l is merely
+correlated with that scale, not set by it.
+wrote h_defs/peak_gradient/figures/l_vs_h.png
+wrote h_defs/peak_gradient/figures/l_vs_delta_s.png
+wrote h_defs/peak_gradient/figures/l_vs_ustar_over_omega.png
+wrote h_defs/peak_gradient/figures/l_vs_q_over_N.png
+================================================================================================

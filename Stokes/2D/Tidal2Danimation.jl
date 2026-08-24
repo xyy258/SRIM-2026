@@ -1,15 +1,13 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Animation of x-z slices saved by TidalBoundaryLayer.jl
-# Changes from the original:
-#   - plots buoyancy *perturbation* b' = b − N²z (the background ramp otherwise
-#     hides the overturns you're looking for)
-#   - fixed color limits across all frames, so colors are comparable in time
-#   - adds a u panel to see the oscillating shear and turbulent bursts
-#   - optional zoom on the bottom few metres, where all the action is
-#   - colorbars scaled so labels aren't all "0.000"
+# Animation of the x-z slices saved by Tidal2D.jl.
+# Three panels: u, showing the oscillating shear and the turbulent bursts, the
+# buoyancy perturbation b' = b − N²z, and the dye tracer. The perturbation is
+# plotted rather than b itself, since the background ramp would otherwise hide
+# the overturns. The colour limits are fixed across frames so that colours can be
+# compared in time, and scaled so the labels are not all "0.000".
 
-# ---- parameters (must match the simulation) ----
+# ---- parameters, which must match the simulation ----
 ω  = 1.4075235e-4
 N² = 1e-7
 U₀ = 0.05
@@ -18,7 +16,7 @@ T_tide = 2π / ω
 filename = "TidalBoundaryLayer2D"
 
 zoom_height = 6.0    # set to Lz to see the whole domain
-stride      = 1      # plot every `stride`-th saved frame (increase to speed up)
+stride      = 1      # plot every `stride`-th frame; raise it for a quicker run
 
 # Load one snapshot just to get the grid/coordinates
 u_ic = FieldTimeSeries(filename * ".jld2", "u", iterations = 0)
@@ -37,7 +35,7 @@ iterations = iterations[1:stride:end]
 
 # Fixed color limits
 ulim  = 1.2 * U₀
-bplim = 2N²           # b' scale: N² × (a couple of metres of displacement)
+bplim = 2N²           # b' scale: a displacement of a couple of metres
 
 t_save   = zeros(length(iterations))
 b_bottom = zeros(length(xb), length(iterations))
@@ -53,9 +51,9 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t    = file_xz["timeseries/t/$iter"]
 
     t_save[i] = t
-    b_bottom[:, i] = b_xz[:, 1]          # buoyancy in the lowest grid cell
+    b_bottom[:, i] = b_xz[:, 1]          # buoyancy in the lowest cell
 
-    # Buoyancy perturbation: subtract the background ramp N²z
+    # Buoyancy perturbation, with the background ramp N²z subtracted
     bp_xz = b_xz .- reshape(N² .* zb, 1, :)
 
     u_plot = heatmap(xu, zu, u_xz'; color = :balance, clims = (-ulim, ulim),
@@ -77,8 +75,8 @@ end
 
 mp4(anim, "TidalBoundaryLayer2D.mp4", fps = 12)
 
-# ---- Bottom buoyancy Hovmöller diagram ----
-# Scale by 1e6 so the colorbar labels are readable.
+# ---- Bottom buoyancy against time ----
+# Scaled by 1e6 so the colorbar labels are readable.
 heatmap(xb, t_save ./ T_tide, 1e6 .* b_bottom';
         xlabel = "x", ylabel = "t / tidal period",
         title = "buoyancy in lowest grid cell (×10⁻⁶)",

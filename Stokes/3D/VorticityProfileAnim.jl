@@ -1,21 +1,19 @@
 using Oceananigans, JLD2, Plots, Printf, Statistics
 
-# Animation of the plane-averaged (⟨·⟩ over x, y) vorticity profiles of the tidal
-# boundary layer, built from the horizontally averaged mean profiles written by
-# Tidal3D.jl (writer 3, *_profiles.jld2):
+# Animation of the plane-averaged vorticity profiles of the tidal boundary layer,
+# built from the mean profiles Tidal3D.jl writes to *_profiles.jld2:
 #   julia --project=.. VorticityProfileAnim.jl Ri500
 #
-# For a horizontally periodic domain the plane average annihilates the x- and
-# y-derivatives (⟨∂w/∂x⟩ = ⟨∂w/∂y⟩ = 0 by telescoping), so the plane-averaged
-# vorticity components reduce EXACTLY to vertical shears of the mean horizontal
-# velocity (∂z commutes with the horizontal average — no approximation):
-#     ⟨ω_x⟩ = ⟨∂w/∂y − ∂v/∂z⟩ = −∂⟨v⟩/∂z = −dV/dz
-#     ⟨ω_y⟩ = ⟨∂u/∂z − ∂w/∂x⟩ = +∂⟨u⟩/∂z = +dU/dz
-# With no rotation (coriolis = nothing) the mean spanwise flow ⟨v⟩ ≈ 0, so
-# ⟨ω_x⟩ ≈ 0 and ⟨ω_y⟩ carries the oscillating Stokes shear — both are plotted.
+# In a horizontally periodic domain the plane average removes the x and y
+# derivatives, so the plane-averaged vorticity components are exactly the
+# vertical shears of the mean horizontal velocity:
+#     ⟨ω_x⟩ = ⟨∂w/∂y − ∂v/∂z⟩ = −dV/dz
+#     ⟨ω_y⟩ = ⟨∂u/∂z − ∂w/∂x⟩ = +dU/dz
+# Without rotation the mean spanwise flow is nearly zero, so ⟨ω_x⟩ is nearly zero
+# and ⟨ω_y⟩ carries the oscillating Stokes shear. Both are plotted.
 #
-# Horizontal axis: vorticity normalised by the forcing frequency ω, ⟨ω⟩/ω.
-# Vertical axis:   height z (metres). One frame per saved profile (strided).
+# Horizontal axis: vorticity normalised by the forcing frequency, ⟨ω⟩/ω.
+# Vertical axis:   height z in metres. One frame per saved profile.
 
 include(joinpath(@__DIR__, "case_params.jl"))
 
@@ -33,7 +31,7 @@ zf_int = (zc[1:end-1] .+ zc[2:end]) ./ 2   # midpoints where dU/dz, dV/dz land
 Δzc    = diff(zc)
 kz     = findall(z -> z <= zmax_m, zf_int)
 
-# ⟨ω_x⟩/ω = -(dV/dz)/ω and ⟨ω_y⟩/ω = +(dU/dz)/ω, at zf_int.
+# ⟨ω_x⟩/ω = −(dV/dz)/ω and ⟨ω_y⟩/ω = +(dU/dz)/ω, at the midpoints zf_int.
 function omega_profiles(n)
     U = vec(interior(Ufield[n]))
     V = vec(interior(Vfield[n]))
@@ -42,11 +40,11 @@ function omega_profiles(n)
     return ωx, ωy
 end
 
-# Keep the animation short: stride to ≲ 300 frames.
+# Keep the animation short by taking at most about 300 frames.
 stride = max(1, length(times) ÷ 300)
 frames = 1:stride:length(times)
 
-# Symmetric x-limits from a robust percentile over all shown frames.
+# Symmetric x-limits, from a percentile over every frame shown.
 allvals = Float64[]
 for n in frames
     ωx, ωy = omega_profiles(n)

@@ -1,19 +1,20 @@
 using Oceananigans, JLD2, Plots, Printf
 
-# Figure 5 for the SOFTPLUS sweep.
+# Figure 5 for the softplus sweep.
 # Background: b_bg(z) = (N∞²/s)·log(1+e^{s(z−T)}), N²_bg(z) = N∞²·sigmoid(s(z−T))
-# — unstratified below the pycnocline at z = T, N∞² above (case_params.jl).
+# — unstratified below the pycnocline at z = T, N∞² above it (case_params.jl).
 #
-# Per case (T, √Ri): vertical profiles of the plane-averaged (a) buoyancy and
-# (b) buoyancy gradient at each whole tidal period, so mixed-layer growth shows
-# as a family of curves. One PNG per case: figures/Figure5_P4_T<T>_sqrtRi<s>.png.
+# For each case (T, √Ri): vertical profiles of the plane-averaged (a) buoyancy
+# and (b) buoyancy gradient at each whole tidal period, so that mixed-layer
+# growth appears as a family of curves. One PNG per case, as
+# figures/Figure5_P4_T<T>_sqrtRi<s>.png.
 #
-# Markers follow the paper: ∘ = mixed-layer height h_m where the normalized
-# gradient first reaches 0.1; △ = where Ri_g = N²/S² first reaches 0.25.
+# Markers follow the paper: ∘ is the mixed-layer height h_m, where the normalized
+# gradient peaks, and △ is where Ri_g = N²/S² first reaches 0.25.
 #
-# Reads only *_profiles.jld2 written by Tidal3D.jl, under outputs/<tag>/.
-# Stratification is labelled by N/ω = √Ri; directory tags keep the sqrtRi
-# spelling because they name data already on disk.
+# Reads only the *_profiles.jld2 files under outputs/<tag>/. The stratification
+# is labelled by N/ω = √Ri; the folder names keep the sqrtRi spelling, since they
+# name data already on disk.
 #   julia --project=. Figure5.jl
 # Subsets:  T_VALUES="10 20" N_OVER_OMEGA="1 2 5" julia --project=. Figure5.jl
 
@@ -25,54 +26,40 @@ const δs = sqrt(2ν / ω)            # Stokes thickness — near-wall cutoff fo
 const a  = U₀ / ω                  # tidal excursion scale, sets the buoyancy scale
 const T_tide = 2π / ω
 
-# These must match case_params.jl — the t = 0 overlay is only the true initial
-# condition if the profile parameters agree with the run. The default tracks
-# case_params.jl, which changed from 6 to 2 for the K_T / TKE study: at sharp = 6
-# the transition width 2ln9/sharp = 0.73 m is thinner than the grid above z ≈ 10 m,
-# so the pycnocline began life as a numerical step at large T.
-#
-# EVERY RUN ARCHIVED UNDER "-Softplus T sweep, no-slip bottom/" WAS MADE AT
-# SHARP = 6. Redrawing those figures needs SHARP=6 set explicitly, or the overlay
-# will not be the initial condition they actually started from.
+# These must match case_params.jl: the t = 0 curve is only the true initial
+# condition if the profile parameters agree with the run.
+# The archived runs under "-Softplus T sweep, no-slip bottom/" were made with
+# SHARP = 6, so redrawing those figures needs SHARP=6 set explicitly.
 const sharp = parse(Float64, get(ENV, "SHARP", "2"))
 const Lz    = 50.0
 
 parse_list(key, default) = parse.(Float64, split(get(ENV, key, default)))
 const T_values    = parse_list("T_VALUES", "5 10 20 30")
-# N/ω and √Ri are the same number; SQRT_RI is still honoured so the existing
-# sweep driver keeps working unchanged.
+# N/ω and √Ri are the same number; SQRT_RI is still accepted so the sweep driver
+# keeps working unchanged.
 const n_over_ω = parse_list("N_OVER_OMEGA", get(ENV, "SQRT_RI", "0 0.5 1 2 5 10"))
 const outroot  = get(ENV, "OUT_ROOT", "outputs")
 # Whole periods to draw, one curve each. Four at a time, which is what the colour
-# ramp below holds; a longer list reuses its last colour. Runs are n_periods = 8
-# now, so a driver plotting the END of a run passes N_PERIODS_PLOT="5 6 7 8" —
-# the default is kept at 1–4 so existing 4-period data plots unchanged. Periods
-# past the end of a run are dropped rather than erroring.
+# ramp below holds; a longer list reuses its last colour. To plot the end of an
+# 8-period run instead, pass N_PERIODS_PLOT="5 6 7 8". Periods past the end of a
+# run are dropped rather than treated as an error.
 const n_periods_plot = parse.(Int, split(get(ENV, "N_PERIODS_PLOT", "1 2 3 4")))
 
 num_lbl(x) = isinteger(x) ? string(Int(x)) : replace(string(x), "." => "p")
 tag_of(T, s) = "P4_T" * num_lbl(T) * "_sqrtRi" * num_lbl(s)
 
-# Depth window per case, mirroring Lz_test in case_params.jl.
+# Depth window per case, following Lz_test in case_params.jl.
 zmax_of(T) = min(Lz, max(70δs, T + 10))
 
-# Softplus background, normalized by N∞² (so these are shape-only and independent
-# of Ri). Same expressions as case_params.jl profile 4.
+# Softplus background, normalized by N∞² so that it depends on shape only and not
+# on Ri. The same expressions as profile 4 in case_params.jl.
 b_bg_over_N²(z, T)  = log(1 + exp(sharp * (z - T))) / sharp     # metres²·s⁻²/N∞² → metres
 N²_bg_over_N²(z, T) = 1 / (1 + exp(-sharp * (z - T)))           # dimensionless
 
 ramp = ["#A8CBEC", "#6BA3DE", "#3C7CC4", "#0B3164"]
 
-# Lowest height at which fv crosses `level` from below, linearly interpolated.
-function first_crossing(z, fv, level; zmin = -Inf)
-    for i in 1:length(fv)-1
-        z[i] < zmin && continue
-        if fv[i] < level <= fv[i+1]
-            return z[i] + (level - fv[i]) * (z[i+1] - z[i]) / (fv[i+1] - fv[i])
-        end
-    end
-    return NaN
-end
+# The shared definitions of the mixed-layer height and of first_crossing.
+include(joinpath(@__DIR__, "mixed_layer_height.jl"))
 
 interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
     i = searchsortedlast(z, z₀)
@@ -105,15 +92,15 @@ for T in T_values, s in n_over_ω
     dz = diff(zc)
     zmax_m = zmax_of(T)
 
-    # N² is the buoyancy actually felt (0 at √Ri = 0); N²_ref is what the tracer
-    # carries and what the profiles are normalized by, so the √Ri = 0 panels are
-    # a real passive-scalar figure instead of a divide-by-zero.
+    # N² is the buoyancy actually felt, which is zero at √Ri = 0. N²_ref is what
+    # the tracer carries and what the profiles are normalized by, so the √Ri = 0
+    # panels show the passive scalar instead of a division by zero.
     N²     = Ri * ω^2
     N²_ref = Ri > 0 ? N² : ω^2
     bscale = a * N²_ref
     gscale = N²_ref
 
-    # δ = u*/f (peak wall stress over the final period)
+    # δ = u*/f, from the peak wall stress over the final period
     z1 = zc[1]
     uτ = [sqrt(ν * abs(interior(U_ts[n])[1, 1, 1]) / z1) for n in 1:length(times)]
     ustar = maximum(uτ[times .>= (times[end] - T_tide)])
@@ -131,8 +118,8 @@ for T in T_values, s in n_over_ω
               legend = :topright,
               foreground_color_legend = nothing, background_color_legend = nothing)
 
-    # Initial/background profile at t = 0, normalized like the data: buoyancy by
-    # a·N∞², gradient by N∞². Drawn first so the curves sit on top.
+    # The background profile at t = 0, normalized like the data: buoyancy by
+    # a·N∞² and gradient by N∞². Drawn first so the curves sit on top of it.
     plot!(pa, b_bg_over_N².(zc[kc], T) ./ a, zc[kc]; color = :black,
           linestyle = :dash, linewidth = 1.5, label = "background (t = 0)")
     plot!(pb, N²_bg_over_N².(zg[kg], T), zg[kg]; color = :black,
@@ -142,7 +129,7 @@ for T in T_values, s in n_over_ω
 
     scatter!(pb, [NaN], [NaN]; markershape = :circle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
-             markerstrokewidth = 1.5, label = "h_m: ∂b/∂z / N² = 0.1")
+             markerstrokewidth = 1.5, label = "h_m: peak ∂b/∂z")
     scatter!(pb, [NaN], [NaN]; markershape = :utriangle, markersize = 6,
              color = RGB(0.42, 0.42, 0.42), markerstrokecolor = :white,
              markerstrokewidth = 1.5, label = "Ri_g = 0.25")
@@ -165,7 +152,7 @@ for T in T_values, s in n_over_ω
         plot!(pa, bn[kc], zc[kc]; color = col, linewidth = 2, label = lbl)
         plot!(pb, G[kg], zg[kg]; color = col, linewidth = 2, label = "")
 
-        h_m = first_crossing(zg, G, 0.1)
+        h_m = mixed_layer_height(zg, G, 1.0; zmax = min(40.0, zg[end]))   # G is already ÷ N²_ref
         Rig = (G .* N²) ./ max.(S², eps())
         z_Rig = first_crossing(zg, Rig, 0.25; zmin = δs)   # skip near-wall noise
 

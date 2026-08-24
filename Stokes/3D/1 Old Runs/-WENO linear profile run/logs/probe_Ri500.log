@@ -1,0 +1,99 @@
+PROBE Ri500  read failed: SystemError: opening file "output_Ri500/TidalBL3D_Ri500_profiles.jld2": No such file or directory
+PROBE Ri500  t=0.195 periods  iter=1038  (establishing rate)
+PROBE Ri500  t=0.470 periods  iter=2672  rate=2.75 periods/hr  eta_15=5.3 hr
+PROBE Ri500  t=0.800 periods  iter=4303  rate=3.30 periods/hr  eta_15=4.3 hr
+PROBE Ri500  t=1.210 periods  iter=6257  rate=4.10 periods/hr  eta_15=3.4 hr
+PROBE Ri500  t=1.630 periods  iter=8407  rate=4.20 periods/hr  eta_15=3.2 hr
+PROBE Ri500  t=2.030 periods  iter=10542  rate=4.00 periods/hr  eta_15=3.2 hr
+PROBE Ri500  t=2.415 periods  iter=12678  rate=3.85 periods/hr  eta_15=3.3 hr
+PROBE Ri500  t=2.830 periods  iter=14810  rate=4.15 periods/hr  eta_15=2.9 hr
+PROBE Ri500  t=3.265 periods  iter=16934  rate=4.35 periods/hr  eta_15=2.7 hr
+PROBE Ri500  t=3.690 periods  iter=19065  rate=4.25 periods/hr  eta_15=2.7 hr
+PROBE Ri500  t=4.110 periods  iter=21193  rate=4.20 periods/hr  eta_15=2.6 hr
+PROBE Ri500  t=4.480 periods  iter=23343  rate=3.70 periods/hr  eta_15=2.8 hr
+PROBE Ri500  t=4.890 periods  iter=25468  rate=4.10 periods/hr  eta_15=2.5 hr
+PROBE Ri500  t=5.300 periods  iter=27592  rate=4.10 periods/hr  eta_15=2.4 hr
+PROBE Ri500  t=5.715 periods  iter=29715  rate=4.15 periods/hr  eta_15=2.2 hr
+PROBE Ri500  t=6.135 periods  iter=31856  rate=4.20 periods/hr  eta_15=2.1 hr
+PROBE Ri500  t=6.520 periods  iter=33988  rate=3.85 periods/hr  eta_15=2.2 hr
+PROBE Ri500  t=6.870 periods  iter=36125  rate=3.50 periods/hr  eta_15=2.3 hr
+PROBE Ri500  t=7.280 periods  iter=38275  rate=4.10 periods/hr  eta_15=1.9 hr
+PROBE Ri500  t=7.675 periods  iter=40393  rate=3.95 periods/hr  eta_15=1.9 hr
+PROBE Ri500  t=8.045 periods  iter=42518  rate=3.70 periods/hr  eta_15=1.9 hr
+PROBE Ri500  t=8.395 periods  iter=44641  rate=3.50 periods/hr  eta_15=1.9 hr
+PROBE Ri500  t=8.805 periods  iter=46774  rate=4.10 periods/hr  eta_15=1.5 hr
+PROBE Ri500  t=9.195 periods  iter=48906  rate=3.90 periods/hr  eta_15=1.5 hr
+PROBE Ri500  t=9.540 periods  iter=51073  rate=3.45 periods/hr  eta_15=1.6 hr
+PROBE Ri500  t=9.890 periods  iter=53185  rate=3.50 periods/hr  eta_15=1.5 hr
+PROBE Ri500  t=10.270 periods  iter=55304  rate=3.80 periods/hr  eta_15=1.2 hr
+PROBE Ri500  t=10.640 periods  iter=57441  rate=3.70 periods/hr  eta_15=1.2 hr
+PROBE Ri500  t=10.975 periods  iter=59598  rate=3.35 periods/hr  eta_15=1.2 hr
+PROBE Ri500  t=11.395 periods  iter=61703  rate=4.20 periods/hr  eta_15=0.9 hr
+PROBE Ri500  t=11.775 periods  iter=63826  rate=3.80 periods/hr  eta_15=0.8 hr
+PROBE Ri500  t=12.140 periods  iter=65989  rate=3.65 periods/hr  eta_15=0.8 hr
+PROBE Ri500  t=12.480 periods  iter=68113  rate=3.40 periods/hr  eta_15=0.7 hr
+PROBE Ri500  t=12.890 periods  iter=70243  rate=4.10 periods/hr  eta_15=0.5 hr
+PROBE Ri500  t=13.260 periods  iter=72385  rate=3.70 periods/hr  eta_15=0.5 hr
+PROBE Ri500  t=13.625 periods  iter=74517  rate=3.65 periods/hr  eta_15=0.4 hr
+PROBE Ri500  t=13.975 periods  iter=77091  rate=3.50 periods/hr  eta_15=0.3 hr
+PROBE Ri500  t=14.480 periods  iter=80202  rate=5.05 periods/hr  eta_15=0.1 hr
+PROBE Ri500  t=14.935 periods  iter=83304  rate=4.55 periods/hr  eta_15=0.0 hr
+
+[1007240] signal 15: Terminated
+in expression starting at /home/tll46/SRIM-2026/Stokes/3D/logs/probe.jl:35
+unknown function (ip: 0x709f01898d6f) at /lib/x86_64-linux-gnu/libc.so.6
+pthread_cond_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv_cond_wait at /workspace/srcdir/libuv/src/unix/thread.c:822
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:523
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+#wait#398 at ./condition.jl:141
+wait at ./condition.jl:136 [inlined]
+_trywait at ./asyncevent.jl:185
+profile_printing_listener at ./Base.jl:332
+#start_profile_listener##0 at ./Base.jl:352
+jfptr_YY.start_profile_listenerYY.YY.0_16003.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+start_task at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/task.c:1252
+unknown function (ip: (nil)) at (unknown file)
+epoll_pwait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv__io_poll at /workspace/srcdir/libuv/src/unix/linux.c:1404
+uv_run at /workspace/srcdir/libuv/src/unix/core.c:430
+ijl_task_get_next at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/scheduler.c:457
+poptask at ./task.jl:1216
+wait at ./task.jl:1228
+#wait#398 at ./condition.jl:141
+wait at ./condition.jl:136 [inlined]
+_trywait at ./asyncevent.jl:185
+wait at ./asyncevent.jl:202 [inlined]
+sleep at ./asyncevent.jl:312 [inlined]
+probe at /home/tll46/SRIM-2026/Stokes/3D/logs/probe.jl:31
+unknown function (ip: 0x709edf3032c9) at (unknown file)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+do_call at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:123
+eval_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:243
+eval_stmt_value at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:194 [inlined]
+eval_body at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:707
+jl_interpret_toplevel_thunk at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/interpreter.c:898
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1035
+jl_toplevel_eval_flex at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:975
+ijl_toplevel_eval at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1047
+ijl_toplevel_eval_in at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/toplevel.c:1092
+eval at ./boot.jl:489
+include_string at ./loading.jl:2874
+_include at ./loading.jl:2934
+include at ./Base.jl:306
+exec_options at ./client.jl:317
+_start at ./client.jl:550
+jfptr__start_63319.1 at /home/tll46/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/sys.so (unknown line)
+jl_apply at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/julia.h:2391 [inlined]
+true_main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:971
+jl_repl_entrypoint at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/src/jlapi.c:1139
+main at /cache/build/builder-amdci5-4/julialang/julia-release-1-dot-12/cli/loader_exe.c:58
+unknown function (ip: 0x709f0182a1c9) at /lib/x86_64-linux-gnu/libc.so.6
+__libc_start_main at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+unknown function (ip: 0x4010b8) at /workspace/srcdir/glibc-2.17/csu/../sysdeps/x86_64/start.S
+unknown function (ip: (nil)) at (unknown file)
+Allocations: 2990838 (Pool: 2990731; Big: 107); GC: 5
+┌ Warning: Opening file with JLD2.MmapIO failed, falling back to IOStream
+└ @ JLD2 ~/.julia/packages/JLD2/ADycq/src/JLD2.jl:162

@@ -1,0 +1,30 @@
+[2026-08-04 02:23:19] === L=1·Lz rerun on new 150δ domain: fresh Ri0 spin-up (6p) → Ri ∈ {Ri500 Ri2500} (8p) ===
+[2026-08-04 02:23:19] spin-up L1Lz_Ri0 from rest: 6 periods
+[2026-08-04 05:42:22]   spin-up reached 6.00 periods
+[2026-08-04 05:42:22] run L1Lz_Ri500: 8 periods (restart from output_L1Lz_Ri0/TidalBL3D_L1Lz_Ri0_fields.jld2)
+[2026-08-04 10:24:11]   L1Lz_Ri500 reached 8.00 periods
+[2026-08-04 10:24:11]   animation L1Lz_Ri500
+[2026-08-04 10:24:12]   L1Lz_Ri500 animation failed
+[2026-08-04 10:24:12]   vorticity (xz) L1Lz_Ri500
+[2026-08-04 10:24:13]   L1Lz_Ri500 vorticity-xz failed
+[2026-08-04 10:24:13]   vorticity-profile animation L1Lz_Ri500
+[2026-08-04 10:24:14]   L1Lz_Ri500 vorticity-profile-anim failed
+[2026-08-04 10:24:14] run L1Lz_Ri2500: 8 periods (restart from output_L1Lz_Ri0/TidalBL3D_L1Lz_Ri0_fields.jld2)
+[2026-08-04 15:06:10]   L1Lz_Ri2500 reached 8.00 periods
+[2026-08-04 15:06:10]   animation L1Lz_Ri2500
+[2026-08-04 15:06:11]   L1Lz_Ri2500 animation failed
+[2026-08-04 15:06:11]   vorticity (xz) L1Lz_Ri2500
+[2026-08-04 15:06:12]   L1Lz_Ri2500 vorticity-xz failed
+[2026-08-04 15:06:12]   vorticity-profile animation L1Lz_Ri2500
+[2026-08-04 15:06:14]   L1Lz_Ri2500 vorticity-profile-anim failed
+[2026-08-04 15:06:14] all simulations + per-case post-processing done
+[2026-08-04 15:06:14] figures 4 & 5 (mixed sweep)
+[2026-08-04 15:06:15]   Figure4_metres failed
+[2026-08-04 15:06:16]   Figure5 failed
+[2026-08-04 15:06:16] === DONE ===
+[2026-08-04 15:06:16]   L1Lz_Ri0: 6.00 periods
+[2026-08-04 15:06:16]   L1Lz_Ri500: 8.00 periods
+[2026-08-04 15:06:16]   L1Lz_Ri2500: 8.00 periods
+387M	output_L1Lz_Ri0
+492M	output_L1Lz_Ri2500
+492M	output_L1Lz_Ri500
