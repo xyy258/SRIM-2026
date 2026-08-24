@@ -177,7 +177,7 @@ zC = znodes(u_series.grid, Center())
 
 # Time averaged average velocity profiles over two inertial periods
 T_f = 2π / f₀  # Inertial period
-n_periods = 2
+n_periods = 5
 t_end = u_series.times[end]
 t_indices = findall(t -> t >= t_end - n_periods*T_f, u_series.times)
 
