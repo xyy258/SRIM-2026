@@ -1,0 +1,144 @@
+
+==============================================================================
+==== 2026-08-24 22:29:24  MixedLayerDiffusivity.jl 
+==== FIG_DIR=/cephfs/store/damtp/tll46/SRIM-2026/Stokes/3D/h_defs/crossing_0p1/figures  H_DEF=crossing  H_LEVEL=0.1  LOG_DIR=/cephfs/store/damtp/tll46/SRIM-2026/Stokes/3D/h_defs/crossing_0p1/logs  MIX_SUFFIX=_hcross  N_OVER_OMEGA=0 1 2 5 10 25 50  T_VALUES=10
+==============================================================================
+[ Info: Oceananigans will use 4 threads
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi0   (T = 10 m, N/ω = 0, Ri = 0, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.987e-19 m/s  (= 7.47e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.3 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 107.3 %; flux leaking past zref = 0.23 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.03 (90th pct 0.06)              PASS
+  4. delta_eff = 9.96 ± 2.43 m (CV 0.24); mean h = 7.19 m          PASS
+     delta_eff/Lz = 0.199 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.17  (r = +0.23, n = 1334)
+     N/ω = 0: K_T ~ TKE/N is UNDEFINED (N = 0), so this case CANNOT
+     discriminate between the two scalings. It is the unstratified control:
+     it shows the machinery works and the √TKE·l branch unsuppressed.
+     The exponent needs the stratified cases.
+     WEAK FIT: r = 0.23 means the power law explains only 5 % of the
+     scatter. Do not quote this slope as an exponent. Usual causes: too few
+     independent samples (SMOOTH=tide gives the envelope, tide20 does not),
+     or h jittering between samples, so 'at z = h' is a moving target.
+  → checks 1-4 pass: the measurement chain is sound. Check 5 is not
+    applicable at N = 0 — run the stratified cases for the exponent.
+  wrote outputs/P4_T10_sqrtRi0/mixing_P4_T10_sqrtRi0_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi0.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi1   (T = 10 m, N/ω = 1, Ri = 1, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 3.064e-19 m/s  (= 7.66e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.2 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 5.2 %; flux leaking past zref = 0.03 × ∫F_b
+      — small, so the boundary term may be dropped)
+  3. K_sgs/K_T at z = h: median 0.03 (90th pct 0.05)              PASS
+  4. delta_eff = 4.55 ± 4.02 m (CV 0.88); mean h = 10.30 m          FAIL
+     delta_eff/Lz = 0.091 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.48  (r = +0.77, n = 1091)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: √TKE·l
+  → FAILED CHECKS (read no further down the list than the first):
+      • delta_eff wanders (CV 0.88) — use the integral, not the peak
+  wrote outputs/P4_T10_sqrtRi1/mixing_P4_T10_sqrtRi1_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi1.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi2   (T = 10 m, N/ω = 2, Ri = 4, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.928e-19 m/s  (= 7.32e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.4 %, bias =  +0.0 %   PASS
+     (brief's uncorrected K_T_pe: 41.8 %; flux leaking past zref = 0.28 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.03 (90th pct 0.07)              PASS
+  4. delta_eff = 4.08 ± 3.21 m (CV 0.79); mean h = 10.21 m          FAIL
+     delta_eff/Lz = 0.082 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.60  (r = +0.51, n = 1001)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: √TKE·l
+  → FAILED CHECKS (read no further down the list than the first):
+      • delta_eff wanders (CV 0.79) — use the integral, not the peak
+  wrote outputs/P4_T10_sqrtRi2/mixing_P4_T10_sqrtRi2_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi2.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi5   (T = 10 m, N/ω = 5, Ri = 25, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.817e-19 m/s  (= 7.04e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   1.5 %, bias =  +0.0 %   PASS
+     (brief's uncorrected K_T_pe: 107.8 %; flux leaking past zref = 0.77 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.06 (90th pct 0.12)              PASS
+  4. delta_eff = 3.73 ± 3.64 m (CV 0.98); mean h = 10.20 m          FAIL
+     delta_eff/Lz = 0.075 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.98  (r = +0.76, n = 1240)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: TKE/N
+  → FAILED CHECKS (read no further down the list than the first):
+      • delta_eff wanders (CV 0.98) — use the integral, not the peak
+  wrote outputs/P4_T10_sqrtRi5/mixing_P4_T10_sqrtRi5_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi5.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi10   (T = 10 m, N/ω = 10, Ri = 100, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.907e-19 m/s  (= 7.27e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   2.2 %, bias =  +0.0 %   PASS
+     (brief's uncorrected K_T_pe: 87.0 %; flux leaking past zref = 0.51 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.10 (90th pct 0.31)              PASS
+  4. delta_eff = 6.77 ± 2.60 m (CV 0.38); mean h = 9.68 m          PASS
+     delta_eff/Lz = 0.135 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +1.10  (r = +0.77, n = 1313)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: TKE/N
+  → all checks pass; the slope above can be read as physics.
+  wrote outputs/P4_T10_sqrtRi10/mixing_P4_T10_sqrtRi10_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi10.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi25   (T = 10 m, N/ω = 25, Ri = 625, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.734e-19 m/s  (= 6.83e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.9 %, bias =  +0.0 %   PASS
+     (brief's uncorrected K_T_pe: 93.0 %; flux leaking past zref = 0.93 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.29 (90th pct 0.63)              PASS
+  4. delta_eff = 12.43 ± 2.33 m (CV 0.19); mean h = 9.03 m          PASS
+     delta_eff/Lz = 0.249 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +1.06  (r = +0.71, n = 1291)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: TKE/N
+  → all checks pass; the slope above can be read as physics.
+  wrote outputs/P4_T10_sqrtRi25/mixing_P4_T10_sqrtRi25_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi25.png
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi50   (T = 10 m, N/ω = 50, Ri = 2500, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 3.702e-19 m/s  (= 9.25e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.5 %, bias =  -0.1 %   PASS
+     (brief's uncorrected K_T_pe: 114.8 %; flux leaking past zref = 1.11 × ∫F_b
+      — NOT small, so the boundary term must NOT be dropped)
+  3. K_sgs/K_T at z = h: median 0.59 (90th pct 0.85)              FAIL
+  4. delta_eff = 13.13 ± 1.89 m (CV 0.14); mean h = 8.64 m          PASS
+     delta_eff/Lz = 0.263 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.86  (r = +0.85, n = 1401)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: TKE/N
+  → FAILED CHECKS (read no further down the list than the first):
+      • K_sgs/K_T = 0.59 — K_T characterises the AMD closure, not the flow
+  wrote outputs/P4_T10_sqrtRi50/mixing_P4_T10_sqrtRi50_hcross.jld2
+         h_defs/crossing_0p1/figures/K_T_P4_T10_sqrtRi50.png
+
+==============================================================================
+7 case(s) analysed; 4 with failing checks:
+  P4_T10_sqrtRi1
+      • delta_eff wanders (CV 0.88) — use the integral, not the peak
+  P4_T10_sqrtRi2
+      • delta_eff wanders (CV 0.79) — use the integral, not the peak
+  P4_T10_sqrtRi5
+      • delta_eff wanders (CV 0.98) — use the integral, not the peak
+  P4_T10_sqrtRi50
+      • K_sgs/K_T = 0.59 — K_T characterises the AMD closure, not the flow
+
+Do not read the panel (d) slope for a case whose check 1, 2 or 3 failed.
+==============================================================================
