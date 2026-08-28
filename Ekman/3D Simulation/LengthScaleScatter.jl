@@ -1,6 +1,6 @@
 ENV["GKSwstype"] = "100"
 
-using Oceananigans, Plots, Printf, JLD2, Statistics
+using Oceananigans, Plots, Printf, JLD2, Statistics, LaTeXStrings
 using Plots.PlotMeasures
 
 # Define parameter ranges for sweep
@@ -43,7 +43,8 @@ for p in profiles
         global T = value
         @info @sprintf("Generating l_κ vs l_N plot for T = %d...", T)
 
-        plt = plot(size = (850, 550), margin = 25px)
+        # Added dpi = 300 for high-resolution rendering
+        plt = plot(size = (850, 550), margin = 25px, dpi = 600)
 
         case_medians_x = Float64[]
         case_medians_y = Float64[]
@@ -135,7 +136,7 @@ for p in profiles
         # --- Saturating Exponential Fit & Reference Lines ---
         if length(case_medians_x) >= 2
             lo, hi = minimum(all_l_N), maximum(all_l_N)
-            plot!(plt, [lo, hi], [lo, hi], color = :black, linewidth = 1.2, linestyle = :dash, label = "l_κ = l_N  (1:1)")
+            plot!(plt, [lo, hi], [lo, hi], color = :black, linewidth = 1.2, linestyle = :dash, label = L"l_\kappa = l_N" * "  (1:1)")
 
             # Grid Search Fit minimizing log least-squares on per-case medians
             best_sse = Inf
@@ -155,7 +156,7 @@ for p in profiles
             xf = exp10.(range(log10(lo), log10(hi), length=300))
             yf = L_fit .* (1.0 .- exp.(-xf ./ x0_fit))
             plot!(plt, xf, yf, color = :black, linewidth = 2.5,
-                  label = @sprintf("l_κ = L_∞(1 − e^{-l_N/x_0}), L_∞ = %.2f m, x_0 = %.2f m", L_fit, x0_fit))
+                  label = latexstring(@sprintf("l_\\kappa = L_\\infty (1 - e^{-l_N/x_0}), \\ L_\\infty = %.2f", L_fit)) * " m, " * latexstring(@sprintf("x_0 = %.2f", x0_fit)) * " m")
 
             scatter!(plt, case_medians_x, case_medians_y,
                 markersize        = 6,
@@ -164,7 +165,7 @@ for p in profiles
                 markerstrokecolor = :black,
                 label             = "case medians (fitted)"
             )
-            hline!(plt, [L_fit], color = :black, linewidth = 1.0, linestyle = :dot, label = @sprintf("plateau L_∞ = %.2f m", L_fit))
+            hline!(plt, [L_fit], color = :black, linewidth = 1.0, linestyle = :dot, label = "plateau " * latexstring(@sprintf("L_\\infty = %.2f", L_fit)) * " m")
         end
 
         # --- Dynamic Viewport Clipping (0.5th to 99.9th percentiles) ---
@@ -178,14 +179,16 @@ for p in profiles
         plot!(plt,
             xscale    = :log10,
             yscale    = :log10,
-            xlabel    = "l_N = √TKE / N   (buoyancy scale, m)",
-            ylabel    = "l_κ = κₜ / √TKE   (m)",
+            xlabel    = L"l_N = \sqrt{TKE} / N" * "  (m)",
+            ylabel    = L"l_\kappa = K_t / \sqrt{TKE}" * "  (m)",
             minorgrid = true,
             legend    = :bottomright,
-            title     = @sprintf("l_κ vs l_N (T = %d)", T)
+            title     = L"l_\kappa" * " vs " * latexstring(@sprintf("l_N \\ (T = %d)", T))
         )
 
         mkpath(save_folder)
-        savefig(plt, "l_k_l_N.png")
+        savefig(plt, joinpath(save_folder, "l_k_l_N.png"))
+        # Option for lossless vector output:
+        # savefig(plt, joinpath(save_folder, "l_k_l_N.pdf"))
     end
 end
