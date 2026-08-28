@@ -331,5 +331,5 @@ Friction Richardson             Ri* = %.1f",
 Lx, Ly, Lz, Nx, Ny, Nz, U∞, N², f₀, r, ν₀, Re∞, Pr, κ₀, u_star, cᴰ, δ, Re_star, Ri_star))
 end
 
-include("Ekman_anim.jl")
-include("Ekman_plot.jl")
+# include("Ekman_anim.jl")
+# include("Ekman_plot.jl")
