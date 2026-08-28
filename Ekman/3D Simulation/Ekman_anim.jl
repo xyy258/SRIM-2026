@@ -64,16 +64,18 @@ anim = @animate for (i, iter) in enumerate(iterations)
     t_save[i] = t # save the time
 
     b_xz_plot = heatmap(xb, Lzmask, b_xz'/bscale;
-        color = :thermal,
-        clims = (0, 1.05.*maximum(b_xz'/bscale)),
+        color  = :thermal,
+        clims  = (0, 1.05.*maximum(b_xz'/bscale)),
         xlabel = "x", ylabel = "z",
-        xlims = (0, Lx), ylims = (0,Lz)); # Shows entire height of domain
+        xlims  = (0, Lx), ylims = (0,Lz),
+        dpi    = 600); # Shows entire height of domain
 
     b_diff_xz_plot = heatmap(xb, zbmask, (b_xz[:,1:Nzmask] .- b_initial[:,1:Nzmask])'/bscale;
-        color = :coolwarm,
-        clims = (-clim_abs,clim_abs).*1.05,
+        color  = :coolwarm,
+        clims  = (-clim_abs,clim_abs).*1.05,
         xlabel = "x", ylabel = "z",
-        xlims = (0, Lx), ylims = (0,zbmask[end]));
+        xlims  = (0, Lx), ylims = (0,zbmask[end]),
+        dpi    = 600);
 
     if (r==0 || isnothing(r)) == true
         b_title = @sprintf("b at t = %s, N/f = %.1f", round(t), r);
@@ -135,25 +137,28 @@ anim = @animate for i in 1:length(times)
              ylims     = ylimits,
              grid      = true,
              margin    = 25px,
-             legend    = false)
+             legend    = false,
+             dpi       = 600)
 
     # Plot u_avg profile normalized by U*
     p2 = plot( v_prof/u_star, zu,
-            linewidth = 3,
-            color     = :crimson,
-            xlabel    = "<v>/u*",
-            ylabel    = "Height z",
-            xlims     = (-10, 7.5),
-            ylims     = ylimits,
-            grid      = true,
-            margin    = 25px,
-            legend    = false)
+             linewidth = 3,
+             color     = :crimson,
+             xlabel    = "<v>/u*",
+             ylabel    = "Height z",
+             xlims     = (-10, 7.5),
+             ylims     = ylimits,
+             grid      = true,
+             margin    = 25px,
+             legend    = false,
+             dpi       = 600)
 
     plot(p1,p2,
         layout     = (2,1),
         size       = (1000,600),
         margin     = 25px,
-        plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t))
+        plot_title = @sprintf("Velocity profiles (N/f = %.1f) | t = %.1f", r, t),
+        dpi        = 600)
 end
 
 mkpath(save_folder*"Velocity")
@@ -204,7 +209,8 @@ anim_vort = @animate for i in 1:length(vort_times)
                xlims     = (-100, 100),
                ylims     = ylimits,
                grid      = true,
-               legend    = false)
+               legend    = false,
+               dpi       = 600)
 
     # Panel 2: ωy profile
     p_y = plot(ωy_prof / f₀, zy,
@@ -215,7 +221,8 @@ anim_vort = @animate for i in 1:length(vort_times)
                xlims     = (-50, 200),
                ylims     = ylimits,
                grid      = true,
-               legend    = false)
+               legend    = false,
+               dpi       = 600)
 
     # # Panel 3: ωz profile
     # p_z = plot(ωz_prof / f₀, zz / δ,
@@ -231,7 +238,8 @@ anim_vort = @animate for i in 1:length(vort_times)
         layout     = (1, 2),
         size       = (1000, 600),
         margin     = 25px,
-        plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t)
+        plot_title = @sprintf("Plane-Averaged Vorticity Profiles (N/f = %.1f) | t = %.1f", r, t),
+        dpi        = 600
     )
 end
 
