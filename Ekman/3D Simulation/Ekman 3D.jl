@@ -76,7 +76,12 @@ elseif profile == 3
     (x, y, z) -> scale * (z + Lᴰ * (exp(-z / Lᴰ) - 1))
 elseif profile == 4
     Profile = "softplus"
-    (x, y, z) -> (scale / sharp) * log(1 + exp(sharp * (z - T)))
+bᵢ = (x, y, z) -> begin
+        arg = sharp * (z - T)
+        # Avoid Float64 overflow
+        sp = arg > 30 ? arg : log(1 + exp(arg))
+        return (scale / sharp) * sp
+    end
 end
 @info "Using a(n) $Profile initial buoyancy profile..."
 
@@ -155,7 +160,7 @@ simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.9, max_change = 1.2, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.9, max_change = 1.25, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
