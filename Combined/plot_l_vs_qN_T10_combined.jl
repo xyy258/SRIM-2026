@@ -1,0 +1,200 @@
+# l against √TKE/N at z = h, T = 10 m, Stokes and Ekman on one axis.
+#
+# This is Stokes/3D/plot_l_vs_qN_T10.jl with the Ekman column added. Both sides
+# use the same mixing length and the same abscissa,
+#
+#     l = K_T(z=h) / √TKE(z=h)        x = √TKE(z=h) / N
+#
+# the same mixed-layer height (crossing at 0.1 N²_ref), and the same N, because
+# the Stokes tidal frequency ω and the Ekman Coriolis parameter f are both
+# 1e-4 s⁻¹, so N/ω and N/f label identical N.
+#
+# ---------------- The one thing that is not identical ----------------
+# "Ekman 3D.jl" saves no subgrid buoyancy flux, so the Ekman K_T is built from
+# the resolved flux alone. To compare like with like, the Stokes side is drawn
+# twice:
+#
+#   filled circles   full Stokes K_T = −(⟨w'b'⟩ + F_sgs)/⟨∂b/∂z⟩, the published
+#                    quantity, and the one the fit is made against
+#   open squares     resolved-only Stokes K_T − K_sgs, formed here purely so
+#                    that the Ekman crosses have a matching reference
+#
+# The gap between the two Stokes symbols is the size of the error the Ekman
+# points carry. It is negligible at N/ω = 1 and about a factor of two at 50.
+#
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl
+#        (run reduce_ekman_T10.jl first — it writes the Ekman side)
+
+using JLD2, Plots, Printf, Statistics
+
+get!(ENV, "GKSwstype", "100")
+const HERE   = @__DIR__
+const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
+const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10.jld2")
+const FIGDIR = joinpath(HERE, "figures")
+const ω      = 1e-4
+const T_tide = 2π / ω
+const SKIP   = 3                      # Stokes spin-up, in tidal periods
+const SVALS  = [1, 2, 5, 10, 25, 50]
+
+# The ramp swirlesrun4.jl uses, so colours mean the same N in every figure.
+const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
+              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
+              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
+function ramp_colour(s)
+    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
+    for i in 1:length(RAMP)-1
+        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
+        x <= x1 || continue
+        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
+        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
+        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
+    end
+    return "#000000"
+end
+med(v) = (w = filter(isfinite, v); isempty(w) ? NaN : median(w))
+
+interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
+    i = searchsortedlast(z, z₀)
+    i < 1 && return fv[1]
+    i >= length(z) && return fv[end]
+    fv[i] + (fv[i+1] - fv[i]) * (z₀ - z[i]) / (z[i+1] - z[i])
+end
+
+logl = String[]
+say(s) = (println(s); flush(stdout); push!(logl, s))
+
+# ---------------- Stokes ----------------
+# K_sgs is stored as a full (z, t) profile, so the resolved-only diffusivity at
+# z = h has to be interpolated onto h the same way K_at_h was.
+stokes = []
+for s in SVALS
+    tag = "P4_T10_sqrtRi$s"
+    f   = joinpath(STOKES, "outputs", tag, "mixing_$(tag)_hcross.jld2")
+    isfile(f) || (say("missing $f — skipped"); continue)
+    d = jldopen(f, "r") do io
+        (t = io["times"], Kh = io["K_at_h"], E = io["TKE_at_h"], h = io["h"],
+         zf = io["z_face"], Ksgs = io["K_sgs"], frac = io["checks"]["K_sgs_over_K_T"])
+    end
+    Ksgs_h = [interp_at(d.zf, view(d.Ksgs, :, n), d.h[n]) for n in eachindex(d.h)]
+    m  = d.t .>= SKIP * T_tide
+    q  = sqrt.(max.(d.E[m], 0))
+    l  = d.Kh[m] ./ q                          # full K_T
+    lr = (d.Kh[m] .- Ksgs_h[m]) ./ q           # resolved-only K_T
+    x  = q ./ (s * ω)
+    g  = @. isfinite(l) && isfinite(x) && l > 0 && x > 0
+    gr = @. isfinite(lr) && isfinite(x) && lr > 0 && x > 0
+    push!(stokes, (s = s, x = x[g], l = l[g], xm = med(x[g]), lm = med(l[g]),
+                   xr = med(x[gr]), lr = med(lr[gr]), frac = d.frac))
+end
+isempty(stokes) && error("no Stokes T = 10 mixing files under $STOKES/outputs")
+
+# ---------------- Ekman ----------------
+ekman = []
+if isfile(EKFILE)
+    jldopen(EKFILE, "r") do io
+        for r in io["ratios"]
+            g = @sprintf("r=%.1f", r)
+            N = io["$g/N"]; E = io["$g/TKE_at_h"]; Kh = io["$g/K_at_h"]
+            q = sqrt.(max.(E, 0))
+            l = Kh ./ q
+            x = q ./ N
+            k = @. isfinite(l) && isfinite(x) && l > 0 && x > 0
+            any(k) || continue
+            push!(ekman, (r = r, x = x[k], l = l[k], xm = med(x[k]), lm = med(l[k])))
+        end
+    end
+else
+    say("WARNING: $EKFILE not found — run reduce_ekman_T10.jl first. Stokes only.")
+end
+
+# ---------------- the fit, on the Stokes medians as before ----------------
+function fit_sat(cs)
+    best = (Inf, 0.0, 0.0)
+    for L in 0.30:0.002:1.60, x0 in 0.05:0.005:4.0
+        sse = 0.0
+        for c in cs
+            p = L * (1 - exp(-c.xm / x0))
+            p > 0 || (sse = Inf; break)
+            sse += (log(c.lm) - log(p))^2
+        end
+        sse < best[1] && (best = (sse, L, x0))
+    end
+    return best
+end
+sse, L∞, x0 = fit_sat(stokes)
+say(@sprintf("Stokes fit (unchanged): L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l",
+             L∞, x0, 100 * sqrt(sse / length(stokes))))
+say("")
+say("case medians — x = √TKE/N (m), l = K_T/√TKE (m)")
+say("  Stokes                                    Ekman")
+say("  N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l")
+for i in 1:max(length(stokes), length(ekman))
+    a = i <= length(stokes) ? stokes[i] : nothing
+    b = i <= length(ekman)  ? ekman[i]  : nothing
+    sa = a === nothing ? " "^45 :
+         @sprintf("  %-5g %7.4f %7.4f %10.4f %10.3f", a.s, a.xm, a.lm, a.lr, a.frac)
+    sb = b === nothing ? "" : @sprintf(" | %-5g %8.4f %7.4f", b.r, b.xm, b.lm)
+    say(sa * sb)
+end
+
+# ---------------- the figure ----------------
+ally = sort(reduce(vcat, ([c.l for c in stokes]..., [c.l for c in ekman]...)))
+ylo  = ally[max(1, round(Int, 0.005 * length(ally)))] / 1.5
+yhi  = ally[round(Int, 0.999 * length(ally))] * 1.5
+
+p = plot(xscale = :log10, yscale = :log10, legend = :bottomright, ylims = (ylo, yhi),
+         xlabel = "√TKE / N   (buoyancy scale, m)", ylabel = "l = K_T/√TKE   (m)",
+         title = "T = 10 m:  l against √TKE/N at z = h  —  Stokes (tidal) and Ekman",
+         size = (980, 720), left_margin = 5Plots.mm, bottom_margin = 5Plots.mm,
+         legendfontsize = 7, foreground_color_legend = nothing)
+
+for c in stokes
+    scatter!(p, c.x, c.l; ms = 1.6, msw = 0, alpha = 0.40,
+             color = ramp_colour(c.s), label = "")
+end
+for c in ekman
+    scatter!(p, c.x, c.l; ms = 2.6, msw = 0.6, alpha = 0.55, marker = :xcross,
+             color = ramp_colour(c.r), msc = ramp_colour(c.r), label = "")
+end
+
+xs = reduce(vcat, ([c.x for c in stokes]..., [c.x for c in ekman]...))
+lo, hi = minimum(xs), maximum(xs)
+plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash, label = "l = √TKE/N  (1:1)")
+slo = minimum(c.xm for c in stokes); shi = maximum(c.xm for c in stokes)
+xin = exp.(range(log(slo), log(shi); length = 300))
+plot!(p, xin, L∞ .* (1 .- exp.(-xin ./ x0)); color = :black, lw = 2.5,
+      label = @sprintf("Stokes fit: l = L∞(1 − e^(−x/x₀)), L∞ = %.2f m, x₀ = %.2f m", L∞, x0))
+xou = exp.(range(log(shi), log(hi); length = 300))
+plot!(p, xou, L∞ .* (1 .- exp.(-xou ./ x0)); color = :black, lw = 1.4, ls = :dashdot,
+      label = "Stokes fit, extrapolated past the fitted range")
+hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
+       label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
+
+# Medians last, so they sit on top of their clouds.
+scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
+         ms = 7, msw = 1.5, mc = :white, msc = :black,
+         label = "Stokes case medians (full K_T, fitted)")
+scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
+         ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
+         label = "Stokes medians, resolved K_T only (Ekman-comparable)")
+scatter!(p, [c.xm for c in ekman], [c.lm for c in ekman];
+         ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
+         label = "Ekman case medians (resolved K_T only)")
+
+# One colour key, drawn as invisible series so the N labels appear once.
+for s in SVALS
+    scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(s),
+             label = @sprintf("N/ω = N/f = %g", s))
+end
+
+mkpath(FIGDIR)
+f = joinpath(FIGDIR, "l_vs_q_over_N_ath_T10_combined.png")
+savefig(p, f)
+say("")
+say("wrote $f")
+
+mkpath(joinpath(HERE, "logs"))
+open(joinpath(HERE, "logs", "plot_l_vs_qN_T10_combined.log"), "w") do io
+    foreach(l -> println(io, l), logl)
+end

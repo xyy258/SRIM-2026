@@ -1,0 +1,11 @@
+Ekman T = 10 m reduction — h = crossing at 0.1 N²_ref, resolved flux only, window = 4.0 inertial periods, T_STEP = 2
+started 2026-08-28T17:06:43.632
+  r=0.5   N=5.00e-05  nt= 629  med h=11.917 m  med K_at_h=1.720e-03  med TKE_at_h=2.215e-06  finite l: 603/629
+  r=1.0   N=1.00e-04  nt= 629  med h=15.430 m  med K_at_h=1.733e-03  med TKE_at_h=1.355e-06  finite l: 617/629
+  r=2.0   N=2.00e-04  nt= 629  med h=15.893 m  med K_at_h=1.285e-03  med TKE_at_h=1.304e-06  finite l: 599/629
+  r=5.0   N=5.00e-04  nt= 629  med h=12.968 m  med K_at_h=6.561e-04  med TKE_at_h=1.291e-06  finite l: 576/629
+  r=10.0  N=1.00e-03  nt= 629  med h=11.362 m  med K_at_h=3.270e-04  med TKE_at_h=1.360e-06  finite l: 605/629
+  r=25.0  N=2.50e-03  nt= 629  med h= 9.394 m  med K_at_h=1.011e-04  med TKE_at_h=1.259e-06  finite l: 616/629
+  r=50.0  N=5.00e-03  nt= 629  med h= 8.380 m  med K_at_h=3.204e-05  med TKE_at_h=1.029e-06  finite l: 619/629
+wrote /home/tll46/SRIM-2026/Combined/Data/ekman_lengthscales_T10.jld2
+finished 2026-08-28T17:09:54.049
