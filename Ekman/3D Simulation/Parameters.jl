@@ -11,11 +11,11 @@ const z₀ = 0.0016               # m (roughness length)
 # Dimensions
 const Lx, Ly, Lz = 75,75,150
 # Grid size
-const Nx, Ny, Nz = 100,100,500
+const Nx, Ny, Nz = 100,100,400
 
 # Duration and timestep
 const max_Δt   = 15             # maximum allowable timestep
-const duration = 1e7            # non-dimensional duration of the simulation
+const duration = 8e5            # non-dimensional duration of the simulation
 
 # Sponge layer thickness
 const S = 20

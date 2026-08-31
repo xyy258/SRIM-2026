@@ -5,7 +5,7 @@ using Plots.PlotMeasures
 
 # Define parameter ranges for sweep
 ratios   = [0.5, 1, 2, 5, 10, 25, 50]
-values   = [5, 10, 15, 20, 30, 40, 50]
+values   = [5, 10, 20]
 profiles = [4]
 
 # --- Reference Style Color Ramp ---
@@ -41,15 +41,19 @@ for p in profiles
     global profile = p
     for value in values
         global T = value
-        @info @sprintf("Generating l_κ vs l_N plot for T = %d...", T)
+        @info @sprintf("Generating length scale plots for T = %d...", T)
 
-        # Added dpi = 300 for high-resolution rendering
-        plt = plot(size = (850, 550), margin = 25px, dpi = 600)
+        # Create two subplots: plt1 for buoyancy scale (l_N) and plt2 for shear scale (L_s)
+        plt1 = plot(margin = 15px)
+        plt2 = plot(margin = 15px)
 
-        case_medians_x = Float64[]
-        case_medians_y = Float64[]
-        all_l_N        = Float64[]
-        all_l_kappa    = Float64[]
+        case_medians_x   = Float64[]
+        case_medians_x_s = Float64[]
+        case_medians_y   = Float64[]
+
+        all_l_N     = Float64[]
+        all_l_S     = Float64[]
+        all_l_kappa = Float64[]
 
         for (idx, ratio) in enumerate(ratios)
             global r = ratio
@@ -76,7 +80,8 @@ for p in profiles
             n_periods = 4
             t_indices = findall(t -> t >= u_series.times[end] - n_periods * T_f, u_series.times)[1:t_step:end]
 
-            l_N_time = Float64[]
+            l_N_time     = Float64[]
+            l_S_time     = Float64[]
             l_kappa_time = Float64[]
 
             for n in t_indices
@@ -100,6 +105,15 @@ for p in profiles
                 wb_inst    = vec(mean(w_prime .* b_prime, dims=(1, 2)))
                 db_dz_inst = Array(interior(db_dz_series[n], 1, 1, :))[1:nz]
 
+                # Mean velocity shear calculation: S = sqrt((du/dz)^2 + (dv/dz)^2)
+                du_dz = [ (u_mean[2] - u_mean[1]) / (zC[2] - zC[1]);
+                          (u_mean[3:nz] .- u_mean[1:nz-2]) ./ (zC[3:nz] .- zC[1:nz-2]);
+                          (u_mean[nz] - u_mean[nz-1]) / (zC[nz] - zC[nz-1]) ]
+                dv_dz = [ (v_mean[2] - v_mean[1]) / (zC[2] - zC[1]);
+                          (v_mean[3:nz] .- v_mean[1:nz-2]) ./ (zC[3:nz] .- zC[1:nz-2]);
+                          (v_mean[nz] - v_mean[nz-1]) / (zC[nz] - zC[nz-1]) ]
+                S_inst = sqrt.(du_dz.^2 .+ dv_dz.^2)
+
                 # Identify interface peak depth and sampling window
                 idx_peak = argmax(db_dz_inst)
                 z_int    = zC[idx_peak]
@@ -108,16 +122,26 @@ for p in profiles
 
                 tke_int = mean(tke_inst[rng])
                 K_t_int = -mean(wb_inst[rng]) / (mean(db_dz_inst[rng]) + 1e-10)
+                S_int   = mean(S_inst[rng])
 
-                if K_t_int > 0 && tke_int > 1e-8
+                if K_t_int > 0 && tke_int > 1e-8 && S_int > 1e-8
                     push!(l_N_time, sqrt(max(tke_int, 0)) / N)
+                    push!(l_S_time, sqrt(max(tke_int, 0)) / S_int)
                     push!(l_kappa_time, K_t_int / sqrt(max(tke_int, 1e-12)))
                 end
             end
 
             @info @sprintf("Plotting %d timesteps for r = %.1f...", length(l_N_time), r)
 
-            scatter!(plt, l_N_time, l_kappa_time,
+            scatter!(plt1, l_N_time, l_kappa_time,
+                color             = ramp_colour(r),
+                markersize        = 2.5,
+                markerstrokewidth = 0,
+                markeralpha       = 0.45,
+                label             = @sprintf("r = %.1f", r)
+            )
+
+            scatter!(plt2, l_S_time, l_kappa_time,
                 color             = ramp_colour(r),
                 markersize        = 2.5,
                 markerstrokewidth = 0,
@@ -127,18 +151,19 @@ for p in profiles
 
             if !isempty(l_N_time)
                 push!(case_medians_x, med(l_N_time))
+                push!(case_medians_x_s, med(l_S_time))
                 push!(case_medians_y, med(l_kappa_time))
                 append!(all_l_N, l_N_time)
+                append!(all_l_S, l_S_time)
                 append!(all_l_kappa, l_kappa_time)
             end
         end
 
-        # --- Saturating Exponential Fit & Reference Lines ---
+        # --- Fits and Reference Lines for l_N ---
         if length(case_medians_x) >= 2
             lo, hi = minimum(all_l_N), maximum(all_l_N)
-            plot!(plt, [lo, hi], [lo, hi], color = :black, linewidth = 1.2, linestyle = :dash, label = L"l_\kappa = l_N" * "  (1:1)")
+            plot!(plt1, [lo, hi], [lo, hi], color = :black, linewidth = 1.2, linestyle = :dash, label = L"l_\kappa = l_N" * "  (1:1)")
 
-            # Grid Search Fit minimizing log least-squares on per-case medians
             best_sse = Inf
             L_fit, x0_fit = 0.5, 1.0
             for L in range(0.3 * maximum(case_medians_y), 1.8 * maximum(case_medians_y), length=150)
@@ -155,40 +180,67 @@ for p in profiles
 
             xf = exp10.(range(log10(lo), log10(hi), length=300))
             yf = L_fit .* (1.0 .- exp.(-xf ./ x0_fit))
-            plot!(plt, xf, yf, color = :black, linewidth = 2.5,
-                  label = latexstring(@sprintf("l_\\kappa = L_\\infty (1 - e^{-l_N/x_0}), \\ L_\\infty = %.2f", L_fit)) * " m, " * latexstring(@sprintf("x_0 = %.2f", x0_fit)) * " m")
+            plot!(plt1, xf, yf, color = :black, linewidth = 2.5,
+                  label = latexstring(@sprintf("l_\\kappa = L_\\infty (1 - e^{-l_N/x_0}), \\ L_\\infty = %.2f", L_fit)) * " m")
 
-            scatter!(plt, case_medians_x, case_medians_y,
+            scatter!(plt1, case_medians_x, case_medians_y,
                 markersize        = 6,
                 markerstrokewidth = 1.5,
                 markercolor       = :white,
                 markerstrokecolor = :black,
-                label             = "case medians (fitted)"
+                label             = "case medians"
             )
-            hline!(plt, [L_fit], color = :black, linewidth = 1.0, linestyle = :dot, label = "plateau " * latexstring(@sprintf("L_\\infty = %.2f", L_fit)) * " m")
+            hline!(plt1, [L_fit], color = :black, linewidth = 1.0, linestyle = :dot, label = "plateau " * latexstring(@sprintf("L_\\infty = %.2f", L_fit)) * " m")
         end
 
-        # --- Dynamic Viewport Clipping (0.5th to 99.9th percentiles) ---
+        # --- Reference 1:1 Line and Medians for L_s ---
+        if length(case_medians_x_s) >= 2
+            lo_s, hi_s = minimum(all_l_S), maximum(all_l_S)
+            plot!(plt2, [lo_s, hi_s], [lo_s, hi_s], color = :black, linewidth = 1.2, linestyle = :dash, label = L"l_\kappa = L_s" * "  (1:1)")
+            scatter!(plt2, case_medians_x_s, case_medians_y,
+                markersize        = 6,
+                markerstrokewidth = 1.5,
+                markercolor       = :white,
+                markerstrokecolor = :black,
+                label             = "case medians"
+            )
+        end
+
+        # --- Dynamic Viewport Clipping ---
         if !isempty(all_l_kappa)
             sorted_y = sort(all_l_kappa)
             ylo = sorted_y[max(1, round(Int, 0.005 * length(sorted_y)))] / 1.5
             yhi = sorted_y[round(Int, 0.999 * length(sorted_y))] * 1.5
-            plot!(plt, ylims = (ylo, yhi))
+            plot!(plt1, ylims = (ylo, yhi))
+            plot!(plt2, ylims = (ylo, yhi))
         end
 
-        plot!(plt,
+        # Format Subplot 1 (l_N)
+        plot!(plt1,
             xscale    = :log10,
             yscale    = :log10,
-            xlabel    = L"l_N = \sqrt{TKE} / N" * "  (m)",
-            ylabel    = L"l_\kappa = K_t / \sqrt{TKE}" * "  (m)",
+            xlabel    = L"l_N = \sqrt{\mathrm{TKE}} / N" * "  (m)",
+            ylabel    = L"l_\kappa = K_t / \sqrt{\mathrm{TKE}}" * "  (m)",
             minorgrid = true,
             legend    = :bottomright,
-            title     = L"l_\kappa" * " vs " * latexstring(@sprintf("l_N \\ (T = %d)", T))
+            title     = L"l_\kappa \text{ vs } l_N"
         )
 
+        # Format Subplot 2 (L_s)
+        plot!(plt2,
+            xscale    = :log10,
+            yscale    = :log10,
+            xlabel    = L"L_s = \sqrt{\mathrm{TKE}} / \left|\partial \bar{\mathbf{u}} / \partial z\right|" * "  (m)",
+            ylabel    = L"l_\kappa = K_t / \sqrt{\mathrm{TKE}}" * "  (m)",
+            minorgrid = true,
+            legend    = :bottomright,
+            title     = L"l_\kappa \text{ vs } L_s"
+        )
+
+        # Combine both subplots side-by-side into a single figure
+        combined_plt = plot(plt1, plt2, layout = (1, 2), size = (1600, 550), dpi = 600)
+
         mkpath(save_folder)
-        savefig(plt, joinpath(save_folder, "l_k_l_N.png"))
-        # Option for lossless vector output:
-        # savefig(plt, joinpath(save_folder, "l_k_l_N.pdf"))
+        savefig(combined_plt, joinpath(save_folder, "Lengthscales.png"))
     end
 end

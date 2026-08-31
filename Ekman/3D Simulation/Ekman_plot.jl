@@ -8,192 +8,225 @@ default(dpi = 600, fontfamily = "Computer Modern")
 
 # Import parameters
 include("Parameters.jl")
-# Sets the following:
-# Root data file name:    "root"
-# Folder to be saved in:  "save_folder"
-include("Filename_plot.jl")
 
-# Standardize r value (treat nothing or 0 as 0.0)
-r_val = (isnothing(r) || r == 0) ? 0.0 : Float64(r)
+# Range of profiles and stratification ratios
+profiles = 0:4
+r_vals   = [0.5, 1, 2, 5, 10, 25, 50]
+
+# Secondary parameter sets matching simulation configurations
+T_vals  = [5, 10, 20]
+Lᴰ_vals = [5, 10, 20]
+
+for profile in profiles
+    for r_input in r_vals
+        # Standardize r value for Filename_plot.jl scoping
+        r     = (isnothing(r_input) || r_input == 0) ? 0.0 : Float64(r_input)
+        r_val = r
+
+        # Determine parameter variations based on profile index
+        sub_params = if profile in (1, 4)
+            [(T=t, Lᴰ=1.0) for t in T_vals]
+        elseif profile in (2, 3)
+            [(T=1.0, Lᴰ=l) for l in Lᴰ_vals]
+        else
+            [(T=1.0, Lᴰ=1.0)]
+        end
+
+        for params in sub_params
+            T  = params.T
+            Lᴰ = params.Lᴰ
+
+            # Dynamically sets 'save_folder' and 'root', and creates directory[cite: 2]
+            include("Filename_plot.jl")
+
+            @info "=========================================="
+            @info "Processing Profile: $profile | r = $r_val"
+            @info "Root: $root"
+            @info "Save folder: $save_folder"
+            @info "=========================================="
 
 
-#  ======================================================  #
-## Plot of average buoyancy gradient with depth over time ##
-#  ======================================================  #
+            #  ======================================================  #
+            ## Plot of average buoyancy gradient with depth over time ##
+            #  ======================================================  #
 
-# Set the filename
-filename = root * "Avg_grad_b"
+            filename = root * "Avg_grad_b"
+            if isfile(filename * ".jld2")
+                db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
 
-db_dz_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
+                xb, yb, zb = nodes(db_dz_timeseries)
+                t_save = db_dz_timeseries.times
 
-# Extract grid coordinates
-xb, yb, zb = nodes(db_dz_timeseries)
+                const nz = length(zb)
+                const nt = length(t_save)
+                gradient_data = zeros(nz, nt)
 
-# Extract simulation times directly from FieldTimeSeries
-t_save = db_dz_timeseries.times
+                for t_idx in 1:nt
+                    gradient_data[:, t_idx] = vec(interior(db_dz_timeseries[t_idx], 1, 1, 1:nz))
+                end
 
-# Extract the data slice into a 2D matrix [nz, nt]
-const nz = length(zb)
-const nt = length(t_save)
-gradient_data = zeros(nz, nt)
+                zbconcat = zb[findall(<(Lz), zb)]
+                Nzconcat = length(zbconcat)
 
-for t_idx in 1:nt
-    gradient_data[:, t_idx] = vec(interior(db_dz_timeseries[t_idx], 1, 1, 1:nz))
+                bscale = (r_val == 0.0) ? 1.0 : N²
+
+                @info "Plot of average buoyancy gradient heatmap with depth over time..."
+
+                heatmap(t_save * f₀, zbconcat, gradient_data[1:Nzconcat, :] / bscale,
+                        xlabel = L"t f_0",
+                        ylabel = "Height z",
+                        title  = @sprintf("(∂b/∂z)/N² for profile %d (r = %.1f)", profile, r_val),
+                        size   = (1000, 400),
+                        margin = 25px,
+                        color  = :thermal)
+
+                mkpath(save_folder * "Buoyancy gradient plot")
+                savefig(save_folder * @sprintf("Buoyancy gradient plot/r = %.1f.png", r_val))
+            else
+                @warn "Skipping buoyancy gradient plot: file $(filename).jld2 not found."
+            end
+
+
+            #  =======================================  #
+            ##  Horizontally averaged buoyancy profile ##
+            #  =======================================  #
+
+            filename = root * "Avg_b"
+            if isfile(filename * ".jld2")
+                b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
+
+                zb = znodes(b_avg_timeseries.grid, Center())
+
+                b_initial = vec(interior(b_avg_timeseries[1], 1, 1, :))
+                b_final   = vec(interior(b_avg_timeseries[end], 1, 1, :))
+
+                z_mask = findall(<(Lz), zb)
+
+                b_plot_final   = b_final[z_mask]
+                b_plot_initial = b_initial[z_mask]
+                z_plot         = zb[z_mask]
+
+                bscale = (r_val == 0.0) ? 1.0 : N²
+
+                @info "Plot of average buoyancy profile..."
+
+                plot(b_plot_initial / bscale, z_plot,
+                     xlabel    = "b/N²",
+                     ylabel    = "Height z",
+                     title     = @sprintf("<b> profile %d for r = %.1f", profile, r_val),
+                     linewidth = 2,
+                     label     = "Initial",
+                     linestyle = :dash,
+                     legend    = :bottomright,
+                     size      = (800, 400),
+                     margin    = 25px)
+
+                plot!(b_plot_final / bscale, z_plot,
+                      linewidth = 2,
+                      label     = "Final")
+
+                mkpath(save_folder * "Averaged buoyancy profile")
+                savefig(save_folder * @sprintf("Averaged buoyancy profile/r = %.1f.png", r_val))
+            else
+                @warn "Skipping averaged buoyancy profile plot: file $(filename).jld2 not found."
+            end
+
+
+            #  ===============================================  #
+            ## Horizontally averaged buoyancy gradient profile ##
+            #  ===============================================  #
+
+            filename = root * "Avg_grad_b"
+            if isfile(filename * ".jld2")
+                db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
+
+                zb = znodes(db_dz_avg_timeseries.grid, Center())
+
+                db_dz_initial = vec(interior(db_dz_avg_timeseries[1], 1, 1, :))
+                db_dz_final   = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))
+
+                z_mask = findall(<(Lz), zb)
+
+                db_dz_plot_initial = db_dz_initial[z_mask]
+                db_dz_plot_final   = db_dz_final[z_mask]
+                z_plot             = zb[z_mask]
+
+                bscale = (r_val == 0.0) ? 1.0 : N²
+
+                @info "Plot of average buoyancy gradient profile..."
+
+                plot(db_dz_plot_initial / bscale, z_plot,
+                     xlabel    = "(∂b/∂z)/N²",
+                     ylabel    = "Height z",
+                     title     = @sprintf("∂<b>/∂z profile %d for r = %.1f", profile, r_val),
+                     linewidth = 2,
+                     label     = "Initial",
+                     linestyle = :dash,
+                     legend    = :bottomright,
+                     size      = (800, 600),
+                     margin    = 25px)
+
+                plot!(db_dz_plot_final / bscale, z_plot,
+                      linewidth = 2,
+                      label     = "Final")
+
+                mkpath(save_folder * "Averaged buoyancy gradient profile")
+                savefig(save_folder * @sprintf("Averaged buoyancy gradient profile/r = %.1f.png", r_val))
+            else
+                @warn "Skipping averaged buoyancy gradient profile plot: file $(filename).jld2 not found."
+            end
+
+
+            #  ==================  #
+            ##   Hodograph plot   ##
+            #  ==================  #
+
+            vel_file = root * "Avg_vel.jld2"
+            if isfile(vel_file)
+                u_series = FieldTimeSeries(vel_file, "u_avg")
+                v_series = FieldTimeSeries(vel_file, "v_avg")
+
+                xu, yu, zu = nodes(u_series)
+                zC = znodes(u_series.grid, Center())
+
+                T_f = 2π / f₀
+                n_periods = 5
+                t_end = u_series.times[end]
+                t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
+
+                u_profile = vec(sum([interior(u_series[n], 1, 1, :) for n in t_indices]) ./ length(t_indices))
+                v_profile = vec(sum([interior(v_series[n], 1, 1, :) for n in t_indices]) ./ length(t_indices))
+
+                slice   = 1:length(zC)
+                u_slice = u_profile[slice]
+                v_slice = v_profile[slice]
+                z_slice = zC[slice]
+
+                @info "Plot of hodograph..."
+
+                plot(u_slice / U∞, v_slice / U∞,
+                     linewidth      = 2,
+                     line_z         = z_slice,
+                     color          = :viridis,
+                     marker         = :circle,
+                     markersize     = 2,
+                     marker_z       = z_slice,
+                     xlabel         = L"\langle u \rangle / U_\infty",
+                     ylabel         = L"\langle v \rangle / U_\infty",
+                     colorbar_title = "Height z",
+                     colorbar       = true,
+                     size           = (1000, 500),
+                     margin         = 25px,
+                     legend         = false,
+                     title          = @sprintf("Ekman Hodograph (profile %d, r = %.1f)", profile, r_val)
+                )
+
+                mkpath(save_folder * "Hodograph")
+                savefig(save_folder * @sprintf("Hodograph/r = %.1f.png", r_val))
+            else
+                @warn "Skipping hodograph plot: file $vel_file not found."
+            end
+
+        end
+    end
 end
-
-# Reduce range of z
-zbconcat = zb[findall(<(Lz), zb)]
-Nzconcat = length(zbconcat)
-
-bscale = (r_val == 0.0) ? 1.0 : N²
-
-@info "Plot of average buoyancy gradient heatmap with depth over time..."
-
-heatmap(t_save * f₀, zbconcat, gradient_data[1:Nzconcat, :] / bscale,
-        xlabel = L"t f_0",
-        ylabel = "Height z",
-        title  = @sprintf("(∂b/∂z)/N² for N/f = %.1f", r_val),
-        size   = (1000, 400),
-        margin = 25px,
-        color  = :thermal) # :thermal is great for highlighting intensifying gradients
-
-mkpath(save_folder * "Buoyancy gradient plot")
-savefig(save_folder * @sprintf("Buoyancy gradient plot/r = %.1f.png", r_val))
-
-
-#  =======================================  #
-##  Horizontally averaged buoyancy profile ##
-#  =======================================  #
-
-filename = root * "Avg_b"
-b_avg_timeseries = FieldTimeSeries(filename * ".jld2", "b")
-
-# Extract grid coordinates using znodes
-zb = znodes(b_avg_timeseries.grid, Center())
-
-# Get initial and final profiles
-b_initial = vec(interior(b_avg_timeseries[1], 1, 1, :))     # First saved time step
-b_final   = vec(interior(b_avg_timeseries[end], 1, 1, :))   # Last time step
-
-# Create mask for the boundary layer region
-z_mask = findall(<(Lz), zb)
-# Otherwise, use the following for full domain plot
-# z_mask = 1:length(zb)
-
-b_plot_final   = b_final[z_mask]
-b_plot_initial = b_initial[z_mask]
-z_plot         = zb[z_mask]
-
-@info "Plot of average buoyancy profile..."
-
-# Plot
-plot(b_plot_initial / bscale, z_plot,
-     xlabel    = "b/N²",
-     ylabel    = "Height z",
-     title     = @sprintf("<b> profile for N/f = %.1f", r_val),
-     linewidth = 2,
-     label     = "Initial",
-     linestyle = :dash,
-     legend    = :bottomright,
-     size      = (800, 400),
-     margin    = 25px)
-
-plot!(b_plot_final / bscale, z_plot,
-      linewidth = 2,
-      label     = "Final")
-
-mkpath(save_folder * "Averaged buoyancy profile")
-savefig(save_folder * @sprintf("Averaged buoyancy profile/r = %.1f.png", r_val))
-
-
-#  ===============================================  #
-## Horizontally averaged buoyancy gradient profile ##
-#  ===============================================  #
-
-filename = root * "Avg_grad_b"
-db_dz_avg_timeseries = FieldTimeSeries(filename * ".jld2", "db_dz")
-
-# Extract grid coordinates using znodes
-zb = znodes(db_dz_avg_timeseries.grid, Center())
-
-# Get initial and final profiles
-db_dz_initial = vec(interior(db_dz_avg_timeseries[1], 1, 1, :))     # First saved time step
-db_dz_final   = vec(interior(db_dz_avg_timeseries[end], 1, 1, :))   # Last time step
-
-# Create mask for the boundary layer region
-z_mask = findall(<(Lz), zb)
-# Otherwise, use the following for full domain plot
-# z_mask = 1:length(zb)
-
-db_dz_plot_initial = db_dz_initial[z_mask]
-db_dz_plot_final   = db_dz_final[z_mask]
-z_plot             = zb[z_mask]
-
-@info "Plot of average buoyancy gradient profile..."
-
-# Plot
-plot(db_dz_plot_initial / bscale, z_plot,
-     xlabel    = "(∂b/∂z)/N²",
-     ylabel    = "Height z",
-     title     = @sprintf("∂<b>/∂z Profile for N/f = %.1f", r_val),
-     linewidth = 2,
-     label     = "Initial",
-     linestyle = :dash,
-     legend    = :bottomright,
-     size      = (800, 600),
-     margin    = 25px)
-
-plot!(db_dz_plot_final / bscale, z_plot,
-      linewidth = 2,
-      label     = "Final")
-
-mkpath(save_folder * "Averaged buoyancy gradient profile")
-savefig(save_folder * @sprintf("Averaged buoyancy gradient profile/r = %.1f.png", r_val))
-
-
-#  ==================  #
-##   Hodograph plot   ##
-#  ==================  #
-
-u_series = FieldTimeSeries(root * "Avg_vel.jld2", "u_avg")
-v_series = FieldTimeSeries(root * "Avg_vel.jld2", "v_avg")
-
-xu, yu, zu = nodes(u_series)
-zC = znodes(u_series.grid, Center())
-
-# Time averaged average velocity profiles over two inertial periods
-T_f = 2π / f₀  # Inertial period
-n_periods = 5
-t_end = u_series.times[end]
-t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
-
-u_profile = vec(sum([interior(u_series[n], 1, 1, :) for n in t_indices]) ./ length(t_indices))
-v_profile = vec(sum([interior(v_series[n], 1, 1, :) for n in t_indices]) ./ length(t_indices))
-
-# Looking at a slice of domain
-slice   = 1:length(zC)
-u_slice = u_profile[slice]
-v_slice = v_profile[slice]
-z_slice = zC[slice]
-
-@info "Plot of hodograph..."
-
-plot(u_slice / U∞, v_slice / U∞,
-     linewidth      = 2,
-     line_z         = z_slice,       # Colour line based on z
-     color          = :viridis,      # Colour for the line/markers
-     marker         = :circle,
-     markersize     = 2,             # Smaller marker
-     marker_z       = z_slice,       # Colours markers based on z
-     xlabel         = L"\langle u \rangle / U_\infty",
-     ylabel         = L"\langle v \rangle / U_\infty",
-     colorbar_title = "Height z",    # Adds a label to colour bar
-     colorbar       = true,
-     size           = (1000, 500),
-     margin         = 25px,
-     legend         = false,
-     title          = @sprintf("Ekman Hodograph r = N/f = %.1f", r_val)
-)
-
-mkpath(save_folder * "Hodograph")
-savefig(save_folder * @sprintf("Hodograph/r = %.1f.png", r_val))

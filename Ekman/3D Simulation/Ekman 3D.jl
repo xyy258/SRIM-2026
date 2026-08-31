@@ -160,7 +160,7 @@ simulation = Simulation(model, Δt = 0.1 * max_Δt, stop_time = duration)
 # The TimeStepWizard manages the time-step adaptively, keeping the
 # Courant-Freidrichs-Lewy (CFL) number close to `1.0` while ensuring
 # the time-step does not increase beyond the maximum allowable value
-wizard = TimeStepWizard(cfl = 0.9, max_change = 1.25, max_Δt = max_Δt)
+wizard = TimeStepWizard(cfl = 0.95, max_change = 1.25, max_Δt = max_Δt)
 # A "Callback" pauses the simulation after a specified number of timesteps and calls a function (here the timestep wizard to update the timestep)
 # To update the timestep more or less often, change IterationInterval in the next line
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(5))
@@ -177,7 +177,7 @@ progress(sim) = @printf("i: % 6d, sim time: % 8f, wall time: % 10s, Δt: % 5f, C
     sim.Δt,
     AdvectiveCFL(sim.Δt)(sim.model))
 
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(100))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(250))
 
 # ## Output
 
@@ -207,14 +207,14 @@ simulation.output_writers[:velocity] =
     JLD2Writer(model, (; u, v, w),
                filename = filename * "Velocity.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(200),
+               schedule = TimeInterval(250),
                overwrite_existing = true,
                with_halos = false)
 simulation.output_writers[:b] =
     JLD2Writer(model, (; b),
                filename = filename * "Buoyancy.jld2",
                indices = (:, 1, :),
-               schedule = TimeInterval(200),
+               schedule = TimeInterval(250),
                overwrite_existing = true,
                with_halos = false)
 
@@ -236,22 +236,22 @@ db_dz_avg = Field(Average(∂z(b), dims=(1,2)))
 simulation.output_writers[:avg_db_dz] =
     JLD2Writer(model, (; db_dz = db_dz_avg),
                 filename = filename * "Avg_grad_b.jld2",
-                schedule = TimeInterval(100),
+                schedule = TimeInterval(200),
                 overwrite_existing = true)
 simulation.output_writers[:avg_b] =
     JLD2Writer(model, (; b = b_avg),
                 filename = filename * "Avg_b.jld2",
-                schedule = TimeInterval(200),
+                schedule = TimeInterval(250),
                 overwrite_existing = true)
 simulation.output_writers[:avg_velocity] =
     JLD2Writer(model, (; u_avg, v_avg, w_avg),
                 filename = filename * "Avg_vel.jld2",
-                schedule = TimeInterval(200),
+                schedule = TimeInterval(250),
                 overwrite_existing = true)
 simulation.output_writers[:avg_vorticity] =
     JLD2Writer(model, (; ωx_avg, ωy_avg, ωz_avg),
                 filename = filename * "Avg_vort.jld2",
-                schedule = TimeInterval(200),
+                schedule = TimeInterval(250),
                 overwrite_existing = true)
 
 # # Outputting diffusivity fields νₑ, κₑ [to be fixed]
