@@ -5,7 +5,7 @@ using Oceananigans, JLD2, Plots, Printf, LaTeXStrings
 using Plots.PlotMeasures
 
 # High-DPI plot formatting with full Unicode glyph support
-default(dpi = 300, fontfamily = "DejaVu Sans")
+default(dpi = 600, fontfamily = "DejaVu Sans")
 
 # Import parameters and filename configurations
 include("Parameters.jl")
@@ -40,7 +40,7 @@ for p in profiles_sweep
             param_str = if profile in (1, 4)
                 @sprintf("r = %.1f, T = %.1f", r, T)
             elseif profile in (2, 3)
-                @sprintf("r = %.1f, Lᴰ = %.1f", r, Lᴰ)
+                @sprintf("r = %.1f, L_D = %.1f", r, Lᴰ)
             else
                 @sprintf("r = %.1f", r)
             end
@@ -51,6 +51,11 @@ for p in profiles_sweep
             @info "=========================================="
 
             bscale = (r == 0.0) ? 1.0 : N²
+
+            # Dynamic LaTeX label strings for r = 0 vs r > 0
+            grad_title_tex = (r == 0.0) ? L"\partial b / \partial z" : L"(\partial b / \partial z) / N^2"
+            b_avg_tex      = (r == 0.0) ? L"\langle b \rangle" : L"\langle b \rangle / N^2"
+            db_dz_avg_tex  = (r == 0.0) ? L"\partial \langle b \rangle / \partial z" : L"(\partial \langle b \rangle / \partial z) / N^2"
 
             # ---------------------------------------------------- #
             # 1. Average Buoyancy Gradient Heatmap (Depth vs Time) #
@@ -67,8 +72,8 @@ for p in profiles_sweep
             heatmap(t_save * f₀, zb[z_mask], grad_data[z_mask, :] / bscale,
                     color  = :thermal,
                     xlabel = L"t f",
-                    ylabel = "Height z",
-                    title  = @sprintf("(∂b/∂z)/N^2 (profile %d, %s)", profile, param_str),
+                    ylabel = L"Height $z$",
+                    title  = string(grad_title_tex, " (", param_str, ")"),
                     size   = (1000, 400),
                     margin = 25px)
 
@@ -85,9 +90,9 @@ for p in profiles_sweep
 
             # Plot initial vs final averaged buoyancy vertical profile
             plot(vec(interior(b_avg_series[1], 1, 1, z_mask)) / bscale, zb[z_mask],
-                 xlabel    = L"\langle b \rangle / N^2",
-                 ylabel    = "Height z",
-                 title     = @sprintf("<b > profile %d (%s)", profile, param_str),
+                 xlabel    = b_avg_tex,
+                 ylabel    = L"Height $z$",
+                 title     = string(L"\langle b \rangle", " (", param_str, ")"),
                  linewidth = 2,
                  linestyle = :dash,
                  label     = "Initial",
@@ -108,9 +113,9 @@ for p in profiles_sweep
             @info "Plot of average buoyancy gradient profile..."
             # Plot initial vs final averaged buoyancy gradient profile
             plot(vec(interior(db_dz_series[1], 1, 1, z_mask)) / bscale, zb[z_mask],
-                 xlabel    = L"(\partial \langle b \rangle / \partial z) / N^2",
-                 ylabel    = "Height z",
-                 title     = @sprintf("∂<b >/∂z profile %d (%s)", profile, param_str),
+                 xlabel    = db_dz_avg_tex,
+                 ylabel    = L"Height $z$",
+                 title     = string(L"\partial \langle b \rangle / \partial z", " (", param_str, ")"),
                  linewidth = 2,
                  linestyle = :dash,
                  label     = "Initial",
@@ -133,23 +138,31 @@ for p in profiles_sweep
             v_series = FieldTimeSeries(root * "Avg_vel.jld2", "v_avg")
             zC = znodes(u_series.grid, Center())
 
+            # Filter indices based on depth boundary layer height Lz
+            z_mask_vel = findall(<(Lz), zC)
+
             # Time-average over the last 5 inertial periods
             t_indices = findall(t -> t >= u_series.times[end] - 5 * (2π / f₀), u_series.times)
             u_prof = sum([vec(interior(u_series[n], 1, 1, :)) for n in t_indices]) ./ length(t_indices)
             v_prof = sum([vec(interior(v_series[n], 1, 1, :)) for n in t_indices]) ./ length(t_indices)
 
+            # Apply depth slice mask
+            u_slice = u_prof[z_mask_vel]
+            v_slice = v_prof[z_mask_vel]
+            z_slice = zC[z_mask_vel]
+
             # Plot u-velocity vs v-velocity colored by vertical height z
-            plot(u_prof / U∞, v_prof / U∞,
+            plot(u_slice / U∞, v_slice / U∞,
                  linewidth      = 2,
-                 line_z         = zC,
+                 line_z         = z_slice,
                  color          = :viridis,
                  marker         = :circle,
                  markersize     = 2,
-                 marker_z       = zC,
+                 marker_z       = z_slice,
                  xlabel         = L"\langle u \rangle / U_\infty",
                  ylabel         = L"\langle v \rangle / U_\infty",
-                 colorbar_title = "Height z",
-                 title          = @sprintf("Ekman Hodograph (profile %d, %s)", profile, param_str),
+                 colorbar_title = L"Height $z$",
+                 title          = string("Ekman Hodograph (", param_str, ")"),
                  size           = (1000, 500),
                  margin         = 25px,
                  legend         = false)

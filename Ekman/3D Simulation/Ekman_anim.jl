@@ -13,13 +13,58 @@ include("Parameters.jl")
 include("Filename_anim.jl")
 
 # Define parameter sweep configurations
-profiles_sweep = [4]
-r_vals         = [0, 0.5, 1, 2, 5, 10, 25, 50]
-T_vals         = [5, 10, 20]
-Lᴰ_vals        = [5, 10, 20]
+profiles = [4]
+r_vals   = [0, 0.5, 1, 2, 5, 10, 25, 50]
+T_vals   = [5, 10, 20]
+Lᴰ_vals  = [5, 10, 20]
+
+
+# Create grid for fit_log_layer function (uses same refinement as main simulation)
+refinement = 1.8 # controls spacing near surface (higher means finer spaced)
+stretching = 10 # controls rate of stretching at bottom
+h(k) = (Nz + 1 - k) / Nz
+ζ(k) = 1 + (h(k) - 1) / refinement
+Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
+z_faces(k) = - H * (ζ(k) * Σ(k) - 1)
+
+grid = RectilinearGrid(CPU();
+    topology = (Periodic, Periodic, Bounded),
+    size     = (Nx, Ny, Nz),
+    x = (0, Lx),
+    y = (0, Ly),
+    z = z_faces)
+
+# Function to fit logarithmic profile and extract friction velocity
+function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=5)
+    # Extract vertical center points near the wall
+    z = Array(znodes(grid, Center()))[1:n_points]
+
+    # Horizontal mean speed U = sqrt(u_avg² + v_avg²)
+    U = @. sqrt(u_avg[1:n_points]^2 + v_avg[1:n_points]^2)
+
+    # Design matrix: U = A * ln(z) + B
+    X = [log.(z) ones(n_points)]
+
+    # Least-squares regression
+    coeff = X \ U
+    A, B = coeff[1], coeff[2]
+
+    # Recover u* and z0
+    u_star_fit = A * κ
+    z0_fit     = exp(-B / A)
+
+    # R² score
+    U_pred = X * coeff
+    SS_res = sum((U .- U_pred).^2)
+    SS_tot = sum((U .- mean(U)).^2)
+    r2     = 1.0 - (SS_res / SS_tot)
+
+    return u_star_fit, z0_fit, r2
+end
+
 
 # Main execution loop across parameter combinations
-for p in profiles_sweep
+for p in profiles
     global profile = p # Expose profile to global scope for included scripts
 
     for r_input in r_vals
@@ -51,6 +96,20 @@ for p in profiles_sweep
             @info "Save folder: $save_folder"
             @info "=========================================="
 
+            # Calculate u_star from final velocity state
+            vel_file_path = joinpath(root, "Avg_vel.jld2")
+            vel_file  = jldopen(vel_file_path, "r")
+            time_keys = keys(vel_file["timeseries/t"])
+            last_iter = parse(Int, time_keys[end])
+
+            u_avg_data = vel_file["timeseries/u_avg/$last_iter"][1, 1, :]
+            v_avg_data = vel_file["timeseries/v_avg/$last_iter"][1, 1, :]
+            close(vel_file)
+
+            n_points_fit = 5
+            u_star, z₀_fit, r2 = fit_log_layer(grid, u_avg_data, v_avg_data; κ=κ, n_points=n_points_fit)
+            @info "Calculated u* = $(u_star) from fitted log layer profile"
+
             # --------------------- #
             # 1. Buoyancy Animation #
             # --------------------- #
@@ -60,50 +119,48 @@ for p in profiles_sweep
             times  = b_series.times
             bscale = (r == 0.0) ? 1.0 : N²
 
-            # Mask depth grid below specific limits for visualization
-            Lzmask = zb[zb .< Lz]
-            z_mask = findall(<(60), zb)
-            zbmask = zb[z_mask]
+            # Define LaTeX title strings based on whether buoyancy is scaled by N²
+            b_tex      = (r == 0.0) ? L"b" : L"b/N^2"
+            b_pert_tex = (r == 0.0) ? L"b - b_i" : L"(b - b_i)/N^2"
 
-            # Initial state and color bar limit calculations
-            b_initial = interior(b_series[1], :, 1, z_mask)
-            clim_val  = max(1e-6, 1.05 * maximum(i -> maximum(abs, (interior(b_series[i], :, 1, z_mask) .- b_initial) ./ bscale), 1:5:length(times)))
+            # Grid depth masks
+            idx_full = findall(<(Lz), zb)
+            idx_sub  = findall(<(60), zb)
+            Lzmask   = zb[idx_full]
+            zbmask   = zb[idx_sub]
+
+            # Pre-extract and pre-scale data to RAM (eliminates repeated per-frame math & slicing)
+            b_full = interior(b_series, :, 1, idx_full, :) ./ bscale
+            b_sub  = interior(b_series, :, 1, idx_sub, :)  ./ bscale
+
+            # Pre-calculate perturbations and static color limits
+            b_pert   = b_sub .- b_sub[:, :, 1]
+            clim_val = max(1e-6, 1.05 * maximum(abs, b_pert))
 
             @info "Making animation of buoyancy heatmaps..."
-            total_frames_b = length(times)
+            frame_indices_b = 1:2:length(times)
+            total_draws_b   = length(frame_indices_b)
 
-            # Generate animation frames for buoyancy field and perturbation
-            anim_b = @animate for i in 1:total_frames_b
-                if i % 200 == 0 || i == total_frames_b
-                    @info "  Drawing buoyancy frame $i / $total_frames_b..."
+            anim_b = @animate for (idx, i) in enumerate(frame_indices_b)
+                if idx % 100 == 0 || idx == total_draws_b
+                    @info "  Drawing buoyancy frame $idx / $total_draws_b..."
                 end
 
-                b_xz     = interior(b_series[i], :, 1, 1:length(Lzmask))
-                b_xz_sub = interior(b_series[i], :, 1, z_mask)
-
-                p1 = heatmap(xb, Lzmask, (b_xz ./ bscale)';
-                             color  = :thermal,
-                             clims  = (0, max(1e-6, 1.05 * maximum(b_xz ./ bscale))),
-                             xlabel = L"x",
-                             ylabel = L"z",
-                             xlims  = (0, Lx),
-                             ylims  = (0, Lz))
-
-                p2 = heatmap(xb, zbmask, ((b_xz_sub .- b_initial) ./ bscale)';
-                             color  = :coolwarm,
-                             clims  = (-clim_val, clim_val),
-                             xlabel = L"x",
-                             ylabel = L"z",
-                             xlims  = (0, Lx),
-                             ylims  = (0, zbmask[end]))
-
+                b_xz    = b_full[:, :, i]
+                max_b   = max(1e-6, 1.05 * maximum(b_xz))
                 t_round = round(Int, times[i])
-                plot(p1, p2,
-                     layout = (2, 1),
-                     size   = (1000, 550),
-                     margin = 25px,
-                     title  = [L"$\frac{b}{N^2}$ at $t = %$t_round$",
-                               L"$\frac{b - b_i}{N^2}$ at $t = %$t_round$"])
+
+                p1 = heatmap(xb, Lzmask, b_xz',
+                            title  = string(b_tex, L" | $t = %$t_round$"),
+                            color  = :thermal, clims = (0, max_b),
+                            xlabel = L"x", ylabel = L"z", xlims = (0, Lx), ylims = (0, Lz))
+
+                p2 = heatmap(xb, zbmask, b_pert[:, :, i]',
+                            title  = string(b_pert_tex, L" | $t = %$t_round$"),
+                            color  = :coolwarm, clims = (-clim_val, clim_val),
+                            xlabel = L"x", ylabel = L"z", xlims = (0, Lx), ylims = (0, zbmask[end]))
+
+                plot(p1, p2, layout = (2, 1), size = (1000, 550), margin = 25px)
             end
 
             # Save buoyancy animation output
@@ -118,8 +175,12 @@ for p in profiles_sweep
             v_avg_series = FieldTimeSeries(root * "Avg_vel.jld2", "v_avg")
             zu = znodes(u_avg_series[1])
 
-            @info "Making animation of plane-averaged velocity profiles..."
+            @info "Making animation of plane-averaged velocity profiles normalized by friction velocity..."
             total_frames_v = length(u_avg_series.times)
+
+            # Pre-extract 1D velocity profiles into 2D (z, t) arrays
+            u_data = interior(u_avg_series, 1, 1, :, :)
+            v_data = interior(v_avg_series, 1, 1, :, :)
 
             anim_v = @animate for i in 1:total_frames_v
                 t = u_avg_series.times[i]
@@ -128,20 +189,22 @@ for p in profiles_sweep
                     @info "   Drawing velocity frame $i / $total_frames_v at sim time t = $t_val..."
                 end
 
-                u_prof = vec(interior(u_avg_series[i], 1, 1, :))
-                v_prof = vec(interior(v_avg_series[i], 1, 1, :))
+                u_prof = u_data[:, i]
+                v_prof = v_data[:, i]
 
-                p1 = plot(u_prof, zu,
+                p1 = plot((u_prof .- U∞)/u_star, zu,
                         color  = :navy,
-                        xlabel = L"\langle u \rangle",
+                        xlabel = L"(\langle u \rangle - U_\infty)/u_*",
                         ylabel = L"z",
+                        xlims  = (-5, 2),
                         ylims  = (0, Lz),
                         legend = false)
 
-                p2 = plot(v_prof, zu,
+                p2 = plot(v_prof/u_star, zu,
                         color  = :crimson,
-                        xlabel = L"\langle v \rangle",
+                        xlabel = L"\langle v \rangle/u_*",
                         ylabel = L"z",
+                        xlims  = (-5, 2),
                         ylims  = (0, Lz),
                         legend = false)
 
@@ -168,6 +231,10 @@ for p in profiles_sweep
             @info "Making animation of plane-averaged vorticity profiles..."
             total_frames_w = length(ωx_avg_series.times)
 
+            # Pre-extract 1D vorticity profiles into 2D (z, t) arrays divided by f₀
+            ωx_data = interior(ωx_avg_series, 1, 1, :, :) ./ f₀
+            ωy_data = interior(ωy_avg_series, 1, 1, :, :) ./ f₀
+
             # Generate animation frames for mean vorticity profiles
             anim_w = @animate for i in 1:total_frames_w
                 t = ωx_avg_series.times[i]
@@ -176,17 +243,17 @@ for p in profiles_sweep
                     @info "  Drawing vorticity frame $i / $total_frames_w at sim time t = $t_val..."
                 end
 
-                p1 = plot(vec(interior(ωx_avg_series[i], 1, 1, :)) / f₀, zx,
+                p1 = plot(ωx_data[:, i], zx,
                           color  = :crimson,
-                          xlabel = L"\langle \omega_x \rangle / f_0",
+                          xlabel = L"\langle \omega_x \rangle / f",
                           ylabel = L"z",
                           xlims  = (-100, 100),
                           ylims  = (0, Lz),
                           legend = false)
 
-                p2 = plot(vec(interior(ωy_avg_series[i], 1, 1, :)) / f₀, zy,
+                p2 = plot(ωy_data[:, i], zy,
                           color  = :teal,
-                          xlabel = L"\langle \omega_y \rangle / f_0",
+                          xlabel = L"\langle \omega_y \rangle / f",
                           ylabel = L"z",
                           xlims  = (-50, 200),
                           ylims  = (0, Lz),
