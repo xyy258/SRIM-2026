@@ -4,8 +4,8 @@ using Oceananigans, Plots, Printf, JLD2, Statistics
 using Plots.PlotMeasures
 
 # Define parameter ranges for sweep
-ratios   = [0, 0.5, 1, 2, 5]
-values   = [5, 10, 15, 20, 30, 40, 50]
+ratios   = [0.5, 1, 2, 5, 10, 25, 50]
+values   = [5, 10, 20]
 profiles = [4]
 
 # =============================================== #
