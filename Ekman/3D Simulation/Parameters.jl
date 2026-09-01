@@ -9,13 +9,13 @@ const Pr = 10                   # Prandtl number
 const z₀ = 0.0016               # m (roughness length)
 
 # Dimensions
-const Lx, Ly, Lz = 75,75,100
+const Lx, Ly, Lz = 75,75,150
 # Grid size
-const Nx, Ny, Nz = 100,100,500
+const Nx, Ny, Nz = 100,100,400
 
 # Duration and timestep
-const max_Δt   = 7.5            # maximum allowable timestep
-const duration = 40e4           # non-dimensional duration of the simulation
+const max_Δt   = 15             # maximum allowable timestep
+const duration = 8e5            # non-dimensional duration of the simulation
 
 # Sponge layer thickness
 const S = 20

@@ -48,11 +48,11 @@ K_t = -wb_int / db_dz_int
 
 @printf("z = %.4f m, ∂b/∂z = %.2e, w'b' = %.2e, K_t = %.2e\n", z, db_dz_int, wb_int, K_t)
 
-p1 = plot(db_dz_smooth, zC, linewidth=2, xlabel="∂b/∂z", ylabel="z")
+p1 = plot(db_dz_smooth, zC, linewidth=2, xlabel="∂b/∂z", ylabel="z", margin=25px)
 hline!([z], color=:red, linestyle=:dash)
-p2 = plot(wb, zC, linewidth=2, xlabel="w'b'", ylabel="z")
+p2 = plot(wb, zC, linewidth=2, xlabel="w'b'", ylabel="z", margin=25px)
 hline!([z], color=:red, linestyle=:dash)
-p3 = plot(tke, zC, linewidth=2, xlabel="TKE", ylabel="z")
+p3 = plot(tke, zC, linewidth=2, xlabel="TKE", ylabel="z", margin=25px)
 hline!([z], color=:red, linestyle=:dash)
 
 mkpath(save_folder * "Diffusivity")
