@@ -311,12 +311,19 @@ for p in profiles
                 db_dz_inst = Array(interior(db_dz_series[n], 1, 1, :))[1:nz]
                 S_inst     = sqrt.(deriv_z(u_mean[1:nz], z_sub).^2 .+ deriv_z(v_mean[1:nz], z_sub).^2)
 
-                # Locate interface peak depth and construct vertical sampling window
-                idx_peak = argmax(db_dz_inst)
-                rng      = findall(abs.(z_sub .- z_sub[idx_peak]) .<= (avg_len / 2))
-                if isempty(rng)
-                    rng = [idx_peak]
-                end
+                # Locate layer height where TKE falls to 1% of peak TKE
+                    tke_peak = maximum(tke_inst)
+                    tke_candidates = findall(tke_inst .>= 0.01 * tke_peak)
+
+                    # Select the highest vertical index meeting the threshold
+                    idx_peak = isempty(tke_candidates) ? argmax(tke_inst) : maximum(tke_candidates)
+
+                    # Construct sampling window around this layer height
+                    rng = findall(abs.(z_sub .- z_sub[idx_peak]) .<= (avg_len / 2))
+                    if isempty(rng)
+                        rng = [idx_peak]
+                    end
+
 
                 # Interfacial window averages
                 tke_int = mean(tke_inst[rng])
@@ -488,6 +495,6 @@ for p in profiles
         )
 
         mkpath(save_folder)
-        savefig(combined_plt, joinpath(save_folder, "Lengthscales.png"))
+        savefig(combined_plt, joinpath(save_folder, "LengthscalesTKE.png"))
     end
 end
