@@ -1,12 +1,14 @@
 ENV["GKSwstype"] = "100"
 
-using Oceananigans, Plots, Printf, JLD2
+using Oceananigans, Plots, Printf, JLD2, LaTeXStrings
 using Plots.PlotMeasures
 using Statistics
 using CUDA
 
 # High-DPI plot formatting with full Unicode glyph support
 default(dpi = 600, fontfamily = "DejaVu Sans")
+
+n_periods = 5
 
 ratios = [0, 0.5, 1, 2, 5, 10]
 values = [5,10,20]
@@ -43,20 +45,24 @@ function ramp_colour(s)
     return "#000000"
 end
 
+# Fit logarithmic profile near wall to extract u*
+function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=5)
+    z = Array(znodes(grid, Center()))[1:n_points]
+    U = @. sqrt(u_avg[1:n_points]^2 + v_avg[1:n_points]^2)
+    X = [log.(z) ones(n_points)]
+    coeff = X \ U
+    A = coeff[1]
+    return A * κ
+end
+
 # ======================================= #
 ##  Turbulent Kinetic Energy (TKE) Plot  ##
 # ======================================= #
 
-# Inertial period
-T_f = 2π / f₀
-# Averaging over this many periods
-n_periods = 5
-
 for p in profiles
     global profile = p
     for value in values
-        plt = plot(size  = (800, 500)
-        )
+        plt = plot(size = (800, 500))
 
         global T = value
         @info("Plot for T=$T...")
@@ -65,6 +71,9 @@ for p in profiles
 
             include("Parameters.jl")
             include("Filename_plot.jl")
+
+            # Inertial period calculated after parameters are loaded
+            T_f = 2π / f₀
 
             u_series = FieldTimeSeries(root * "Velocity.jld2", "u")
             v_series = FieldTimeSeries(root * "Velocity.jld2", "v")
@@ -82,6 +91,8 @@ for p in profiles
             t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
 
             tke_profile_avg = zeros(length(zC))
+            u_avg_time_mean = zeros(length(zC))
+            v_avg_time_mean = zeros(length(zC))
 
             for n in t_indices
                 u = Array(interior(u_series[n], :, :, :))
@@ -91,6 +102,9 @@ for p in profiles
                 u_mean = Array(interior(u_avg_series[n], 1, 1, :))
                 v_mean = Array(interior(v_avg_series[n], 1, 1, :))
                 w_mean = center_w_profile(Array(interior(w_avg_series[n], 1, 1, :)))
+
+                u_avg_time_mean .+= u_mean
+                v_avg_time_mean .+= v_mean
 
                 u_prime = u .- reshape(u_mean, (1, 1, :))
                 v_prime = v .- reshape(v_mean, (1, 1, :))
@@ -102,33 +116,41 @@ for p in profiles
             end
 
             tke_profile_avg ./= length(t_indices)
+            u_avg_time_mean ./= length(t_indices)
+            v_avg_time_mean ./= length(t_indices)
+
             tke_norm = tke_profile_avg / U∞^2
+
+            # Compute u_star and normalization lengthscale h₀
+            κ_val = @isdefined(κ) ? κ : 0.41
+            u_star_fit = fit_log_layer(u_series.grid, u_avg_time_mean, v_avg_time_mean; κ=κ_val)
+            h₀ = 0.4 * u_star_fit / f₀
+            z_norm = zC ./ h₀
 
             @info "Making time-averaged TKE plot for r = $r..."
 
-            # Swapped zC and tke_norm, moved log scale to yaxis
-            plot!(plt, zC, tke_norm,
+            # Plotted against normalized height z_norm
+            plot!(plt, z_norm, tke_norm,
                 yaxis     = :log,
                 linewidth = 2,
                 color     = ramp_colour(r),
                 label     = @sprintf("r = %.1f", r)
             )
 
-            # Fit points where z <= 0.25*Lz, then extrapolate full line across all zC
-            mask = zC .<= 0.25 * Lz
+            # Fit points where z <= h₀, then extrapolate across full domain
+            mask = zC .<= h₀
             if count(mask) >= 2
                 x_sub = tke_norm[mask]
-                z_sub = zC[mask]
+                z_sub = z_norm[mask]
 
-                # Fit log10(TKE/U∞²) = m * z + c
+                # Fit log10(TKE/U∞²) = m * (z/h₀) + c
                 A = [z_sub ones(length(z_sub))]
                 m, c = A \ log10.(x_sub)
 
-                # Evaluate over full domain zC
-                x_full = 10 .^ (m .* zC .+ c)
+                # Evaluate over full domain z_norm
+                x_full = 10 .^ (m .* z_norm .+ c)
 
-                # Swapped zC and x_full
-                plot!(plt, zC, x_full,
+                plot!(plt, z_norm, x_full,
                     linestyle = :dash,
                     linewidth = 1.5,
                     color     = ramp_colour(r),
@@ -138,12 +160,11 @@ for p in profiles
         end
 
         plot!(plt,
-            xlabel    = "Depth z [m]",
+            xlabel    = "Normalized Height z / h₀",
             ylabel    = "TKE/U∞^2",
-            xlims     = (0, Lz),
             minorgrid = true,
             legend    = :bottomleft,
-            title     = "TKE (averaged over $n_periods periods) log plot against depth for T=$T",
+            title     = "TKE (averaged over $n_periods periods) against " * L"$z/h_0$" * " for T=$T",
             margin    = 25px
         )
 
