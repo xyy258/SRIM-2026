@@ -3,6 +3,9 @@ ENV["GKSwstype"] = "100"
 using Oceananigans, Plots, Printf, JLD2, Statistics, LaTeXStrings
 using Plots.PlotMeasures
 
+# High-DPI plot formatting with full Unicode glyph support
+default(dpi = 600, fontfamily = "DejaVu Sans")
+
 # ==============================================================================
 # Simulation & Parameter Setup
 # ==============================================================================
@@ -28,7 +31,114 @@ const RAMP = [
 ]
 
 # ==============================================================================
-# Helper Functions
+# Helper Functions: Adaptive Thresholding
+# ==============================================================================
+
+# Compute robust statistics from raw data using Median Absolute Deviation (MAD)
+function compute_mad_threshold(data::Vector; mad_multiplier::Real = 3.0)
+    """
+    Identify outliers using MAD (Median Absolute Deviation).
+    Points beyond median ± mad_multiplier * MAD are flagged as outliers.
+    Returns: (lower_bound, upper_bound, n_valid, n_outliers)
+    """
+    finite_data = filter(isfinite, data)
+    isempty(finite_data) && return (NaN, NaN, 0, 0)
+
+    median_val = median(finite_data)
+    mad = median(abs.(finite_data .- median_val))
+
+    if mad == 0
+        # Pass Float64 literals (2.5, 97.5) instead of integers
+        return compute_percentile_threshold(data; low_pct=2.5, high_pct=97.5)
+    end
+
+    lower = median_val - mad_multiplier * mad
+    upper = median_val + mad_multiplier * mad
+
+    n_valid = count(lower .<= finite_data .<= upper)
+    n_outliers = length(finite_data) - n_valid
+
+    return (lower, upper, n_valid, n_outliers)
+end
+
+# Percentile-based thresholding as primary filter (capping off 2.5% on either side)
+function compute_percentile_threshold(data::Vector; low_pct::Real = 2.5, high_pct::Real = 97.5)
+    """
+    Filter data to percentile range [low_pct, high_pct].
+    Returns: (lower_bound, upper_bound, n_valid, n_excluded)
+    """
+    finite_data = filter(isfinite, data)
+    isempty(finite_data) && return (NaN, NaN, 0, 0)
+
+    lower = quantile(finite_data, low_pct / 100)
+    upper = quantile(finite_data, high_pct / 100)
+
+    n_valid = count(lower .<= finite_data .<= upper)
+    n_excluded = length(finite_data) - n_valid
+
+    return (lower, upper, n_valid, n_excluded)
+end
+
+# Multi-criteria adaptive filtering combining physical and statistical thresholds
+function apply_adaptive_filter(l_N, l_S, l_kappa;
+                                tke_relative_threshold::Real = 0.01,
+                                shear_relative_threshold::Real = 0.01,
+                                low_pct::Real = 2.5,
+                                high_pct::Real = 97.5)
+    """
+    Apply adaptive filtering to length scale data:
+    1. Remove non-finite values
+    2. Use 2.5% - 97.5% percentile thresholding on l_kappa (capping 2.5% on either side)
+    3. Optionally apply relative thresholds to l_N and l_S
+    
+    Returns: (filtered_l_N, filtered_l_S, filtered_l_kappa, filter_mask)
+    """
+    n_total = length(l_kappa)
+
+    # Start with finite values
+    mask_finite = isfinite.(l_kappa) .& isfinite.(l_N) .& isfinite.(l_S)
+
+    # Percentile-based filtering on l_kappa (2.5% on each tail capped)
+    finite_kappa = filter(isfinite, l_kappa)
+    if !isempty(finite_kappa)
+        kappa_lo, kappa_hi, _, _ = compute_percentile_threshold(l_kappa; low_pct=low_pct, high_pct=high_pct)
+        mask_kappa = (kappa_lo .<= l_kappa .<= kappa_hi)
+    else
+        mask_kappa = trues(n_total)
+    end
+
+    # Relative thresholding on l_N and l_S
+    finite_l_N = filter(isfinite, l_N)
+    finite_l_S = filter(isfinite, l_S)
+
+    mask_scales = trues(n_total)
+
+    if !isempty(finite_l_N)
+        ln_median = median(finite_l_N)
+        ln_threshold = ln_median * tke_relative_threshold
+        mask_scales = mask_scales .& (l_N .>= ln_threshold)
+    end
+
+    if !isempty(finite_l_S)
+        ls_median = median(finite_l_S)
+        ls_threshold = ls_median * shear_relative_threshold
+        mask_scales = mask_scales .& (l_S .>= ls_threshold)
+    end
+
+    # Combine all masks
+    final_mask = mask_finite .& mask_kappa .& mask_scales
+
+    return (
+        l_N[final_mask],
+        l_S[final_mask],
+        l_kappa[final_mask],
+        final_mask,
+        (n_before = n_total, n_after = sum(final_mask), n_removed = n_total - sum(final_mask))
+    )
+end
+
+# ==============================================================================
+# Original Helper Functions
 # ==============================================================================
 
 # Compute median ignoring non-finite values
@@ -167,7 +277,7 @@ for p in profiles
             t_min     = u_series.times[end] - n_periods * T_f
             t_indices = findall(t -> t >= t_min, u_series.times)[1:t_step:end]
 
-            # Storage for current case time-series length scales
+            # Storage for current case time-series length scales (before filtering)
             l_N_time     = Float64[]
             l_S_time     = Float64[]
             l_kappa_time = Float64[]
@@ -214,7 +324,8 @@ for p in profiles
                 S_int   = mean(S_inst[rng])
 
                 # Filter valid points and compute characteristic length scales
-                if K_t_int > 0 && tke_int > 1e-8 && S_int > 1e-8
+                # Relaxed absolute thresholds: now just basic physical checks
+                if K_t_int > 0 && tke_int > 1e-12 && S_int > 1e-12
                     q = sqrt(tke_int)
                     push!(l_N_time, q / N)
                     push!(l_S_time, q / S_int)
@@ -222,31 +333,62 @@ for p in profiles
                 end
             end
 
-            @info @sprintf("Plotting %d timesteps for r = %.1f...", length(l_N_time), r)
+            @info @sprintf("Case r = %.1f: collected %d raw timesteps", r, length(l_N_time))
 
-            # Keyword options for individual timestep scatter points
-            sc_kwargs = (
-                color             = ramp_colour(r),
-                markersize        = 2.5,
-                markerstrokewidth = 0,
-                markeralpha       = 0.45,
-                label             = @sprintf("r = %.1f", r)
+            # ADAPTIVE FILTERING: Apply to current case data
+            if !isempty(l_N_time)
+                l_N_filt, l_S_filt, l_kappa_filt, mask_filt, filter_stats = apply_adaptive_filter(
+                    l_N_time, l_S_time, l_kappa_time; low_pct=2.5, high_pct=97.5
+                )
+
+                @info @sprintf(
+                    "  → Adaptive filter: %d → %d points (removed %d outliers, %.1f%% retained)",
+                    filter_stats.n_before, filter_stats.n_after, filter_stats.n_removed,
+                    100.0 * filter_stats.n_after / filter_stats.n_before
+                )
+
+                # Keyword options for individual timestep scatter points
+                sc_kwargs = (
+                    color             = ramp_colour(r),
+                    markersize        = 2.5,
+                    markerstrokewidth = 0,
+                    markeralpha       = 0.45,
+                    label             = @sprintf("r = %.1f", r)
+                )
+
+                # Scatter FILTERED timesteps on subplots
+                scatter!(plt1, l_N_filt, l_kappa_filt; sc_kwargs...)
+                scatter!(plt2, l_S_filt, l_kappa_filt; sc_kwargs...)
+
+                # Accumulate case statistics for overall trend analysis (from filtered data)
+                if !isempty(l_N_filt)
+                    push!(case_medians_x, med(l_N_filt))
+                    push!(case_medians_x_s, med(l_S_filt))
+                    push!(case_medians_y, med(l_kappa_filt))
+
+                    append!(all_l_N, l_N_filt)
+                    append!(all_l_S, l_S_filt)
+                    append!(all_l_kappa, l_kappa_filt)
+                end
+            else
+                @warn @sprintf("Case r = %.1f: no valid data collected", r)
+            end
+        end
+
+        # --- Second-pass filtering: Remove outliers from aggregated case medians ---
+        if length(case_medians_y) >= 3
+            @info "Applying second-pass filter to case medians..."
+            med_lo, med_hi, n_med_valid, n_med_out = compute_percentile_threshold(case_medians_y; low_pct=2.5, high_pct=97.5)
+            mask_med = (med_lo .<= case_medians_y .<= med_hi)
+
+            @info @sprintf(
+                "  → Case median filter: %d → %d medians retained (removed %d outliers)",
+                length(case_medians_y), sum(mask_med), n_med_out
             )
 
-            # Scatter instantaneous timesteps on subplots
-            scatter!(plt1, l_N_time, l_kappa_time; sc_kwargs...)
-            scatter!(plt2, l_S_time, l_kappa_time; sc_kwargs...)
-
-            # Accumulate case statistics for overall trend analysis
-            if !isempty(l_N_time)
-                push!(case_medians_x, med(l_N_time))
-                push!(case_medians_x_s, med(l_S_time))
-                push!(case_medians_y, med(l_kappa_time))
-
-                append!(all_l_N, l_N_time)
-                append!(all_l_S, l_S_time)
-                append!(all_l_kappa, l_kappa_time)
-            end
+            case_medians_x   = case_medians_x[mask_med]
+            case_medians_x_s = case_medians_x_s[mask_med]
+            case_medians_y   = case_medians_y[mask_med]
         end
 
         # --- Fits for Subplot 1 (l_N) ---
@@ -260,7 +402,7 @@ for p in profiles
                 label = L"l_\kappa = l_N" * " (1:1)"
             )
 
-            # Fit saturation curve across case medians (or change to all_l_N, all_l_kappa if desired)
+            # Fit saturation curve across case medians
             L_fit, x0_fit = fit_saturation(case_medians_x, case_medians_y)
             @info @sprintf("Optimal Fit Parameters: L_infty = %.4f m, x0 = %.4f m", L_fit, x0_fit)
 
