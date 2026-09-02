@@ -280,7 +280,7 @@ for p in profiles
             )
         end
 
-        # --- Reference Lines for Subplot 2 (L_s) ---
+        # --- Reference Lines for Subplot 2 (l_s) ---
         if length(case_medians_x_s) >= 2
             lo_s, hi_s = minimum(all_l_S), maximum(all_l_S)
 
@@ -288,7 +288,7 @@ for p in profiles
             plot!(
                 plt2, [lo_s, hi_s], [lo_s, hi_s],
                 color = :black, linewidth = 1.2, linestyle = :dash,
-                label = L"l_\kappa = L_s" * " (1:1)"
+                label = L"l_\kappa = l_s" * " (1:1)"
             )
         end
 
@@ -330,11 +330,11 @@ for p in profiles
             plt2,
             xscale    = :log10,
             yscale    = :log10,
-            xlabel    = L"L_s = \sqrt{\mathrm{TKE}} / |\partial \bar{\mathbf{u}} / \partial z|" * " (m)",
+            xlabel    = L"l_s = \sqrt{\mathrm{TKE}} / |\partial \bar{\mathbf{u}} / \partial z|" * " (m)",
             ylabel    = L"l_\kappa = K_t / \sqrt{\mathrm{TKE}}" * " (m)",
             minorgrid = true,
             legend    = :bottomright,
-            title     = L"l_\kappa" * " vs " * L"L_s"
+            title     = L"l_\kappa" * " vs " * L"l_s"
         )
 
         # --- Combine Subplots & Save Output (300 DPI) ---
