@@ -7,7 +7,7 @@ file = "Ekman 3D.jl"
 
 for p in [4]
 global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=linear+exp decay, 4=softplus)
-    for ratio in [25,50]
+    for ratio in [0.5]
         global r = ratio
 
         if profile == 0         # linear
@@ -31,7 +31,7 @@ global profile = p      # set bᵢ (0=linear, 1=nonlinear, 2=exponential, 3=line
             end
 
         elseif profile == 4     # softplus
-            for value in [5,10,15,20,30,40,50]
+            for value in [20]
                 global T = value
                 include(file)
             end
