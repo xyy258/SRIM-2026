@@ -5,13 +5,52 @@ using Plots.PlotMeasures
 using Statistics
 using CUDA
 
-ratios = [0, 0.5, 1, 2, 5]
-values = [5,10,15,20,30,40,50]
+# High-DPI plot formatting with full Unicode glyph support
+default(dpi = 600, fontfamily = "DejaVu Sans")
+
+ratios = [0, 0.5, 1, 2, 5, 10]
+values = [5,10,20]
 profiles = [4]
+
+# Extended color ramp up to r = 50.0 to make r=10, r=25, and r=50 visually distinct
+const RAMP = [
+    (log10(0.5),  (27,  78, 143)),  # Navy Blue
+    (log10(1.0),  (46, 139,  87)),  # Sea Green
+    (log10(2.0),  (200, 150, 30)),  # Ochre / Gold
+    (log10(5.0),  (180,  80, 44)),  # Burnt Orange
+    (log10(10.0), (110,  25, 120)), # Purple
+    (log10(25.0), (205,  45, 115)), # Vivid Magenta / Rose
+]
+
+# Generate hex color code interpolated across the defined RAMP array
+function ramp_colour(s)
+    # Explicitly assign off-black to r = 0 so it doesn't clamp to log10(0.5) Navy Blue
+    if s <= 0
+        return "#1A1A1A"
+    end
+
+    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
+
+    for i in 1:(length(RAMP) - 1)
+        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
+        x <= x1 || continue
+
+        f = (x - x0) / (x1 - x0)
+        rgb = @. clamp(round(Int, c0 + f * (c1 - c0)), 0, 255)
+        return "#" * bytes2hex(UInt8.(rgb))
+    end
+
+    return "#000000"
+end
 
 # ======================================= #
 ##  Turbulent Kinetic Energy (TKE) Plot  ##
 # ======================================= #
+
+# Inertial period
+T_f = 2π / f₀
+# Averaging over this many periods
+n_periods = 5
 
 for p in profiles
     global profile = p
@@ -39,8 +78,6 @@ for p in profiles
             center_w = a -> 0.5 .* (a[:, :, 1:end-1] .+ a[:, :, 2:end])
             center_w_profile = a -> 0.5 .* (a[1:end-1] .+ a[2:end])
 
-            T_f = 2π / f₀
-            n_periods = 5
             t_end = u_series.times[end]
             t_indices = findall(t -> t >= t_end - n_periods * T_f, u_series.times)
 
@@ -73,7 +110,7 @@ for p in profiles
             plot!(plt, zC, tke_norm,
                 yaxis     = :log,
                 linewidth = 2,
-                color     = idx,
+                color     = ramp_colour(r),
                 label     = @sprintf("r = %.1f", r)
             )
 
@@ -94,7 +131,7 @@ for p in profiles
                 plot!(plt, zC, x_full,
                     linestyle = :dash,
                     linewidth = 1.5,
-                    color     = idx,
+                    color     = ramp_colour(r),
                     label     = @sprintf("Fit r = %.1f (grad = %.2e)", r, m)
                 )
             end
@@ -106,7 +143,7 @@ for p in profiles
             xlims     = (0, Lz),
             minorgrid = true,
             legend    = :bottomleft,
-            title     = "TKE (averaged over 5 periods) log plot against depth for T=$T",
+            title     = "TKE (averaged over $n_periods periods) log plot against depth for T=$T",
             margin    = 25px
         )
 

@@ -1,8 +1,5 @@
 using Oceananigans, Plots, Printf, JLD2, Statistics
 
-global T = 5
-global r = 0.5
-
 include("Parameters.jl")
 include("Filename_plot.jl")
 
@@ -82,10 +79,10 @@ idx_3_candidates = findall(tke_profile .>= 0.1 * tke_peak)
 idx_3 = maximum(idx_3_candidates)
 @printf("Method 3 - TKE > 10%% peak: z = %.4f m (index %d)\n", zC[idx_3], idx_3)
 
-# Method 4: TKE drops to 5% of peak
-idx_4_candidates = findall(tke_profile .>= 0.05 * tke_peak)
+# Method 4: TKE drops to 1% of peak
+idx_4_candidates = findall(tke_profile .>= 0.02 * tke_peak)
 idx_4 = maximum(idx_4_candidates)
-@printf("Method 4 - TKE > 5%% peak: z = %.4f m (index %d)\n", zC[idx_4], idx_4)
+@printf("Method 4 - TKE > 1%% peak: z = %.4f m (index %d)\n", zC[idx_4], idx_4)
 
 # Create comparison plot
 fig = plot(layout=(2,2), size=(1000, 800))
@@ -98,7 +95,7 @@ hline!(fig[2], [zC[idx_2]], color=:red, linestyle=:dash, label="Method 2", legen
 
 plot!(fig[3], tke_profile, zC, linewidth=2, label="TKE", xlabel="TKE [m²/s²]", ylabel="Height z [m]")
 hline!(fig[3], [zC[idx_3]], color=:red, linestyle=:dash, label="Method 3 (10%)", legend=:bottomright)
-hline!(fig[3], [zC[idx_4]], color=:orange, linestyle=:dash, label="Method 4 (5%)")
+hline!(fig[3], [zC[idx_4]], color=:orange, linestyle=:dash, label="Method 4 (1%)")
 
 plot!(fig[4], -wb_profile ./ (db_dz_profile .+ 1e-10), zC, linewidth=2, label="K_t", xlabel="K_t [m²/s]", ylabel="Height z [m]")
 hline!(fig[4], [zC[idx_1]], color=:red, linestyle=:dash, label="Method 1", legend=:bottomright)
