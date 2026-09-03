@@ -1,0 +1,343 @@
+
+==============================================================================
+==== 2026-09-02 22:01:52  preflight
+==== JULIA_NUM_PRECOMPILE_TASKS=1
+==============================================================================
+   Installed libdrm_jll ───────── v2.4.134+0
+   Installed NetCDF_jll ───────── v401.1000.100+0
+   Installed ProgressMeter ────── v1.11.0
+   Installed LLVMExtra_jll ────── v0.0.44+0
+   Installed ExprTools ────────── v0.1.11
+   Installed StringManipulation ─ v0.4.6
+   Installed LLVM ─────────────── v9.11.0
+   Installed Oceananigans ─────── v0.110.13
+  Installing 3 artifacts
+   Installed artifact libdrm                   372.6 KiB
+   Installed artifact NetCDF                   970.6 KiB
+   Installed artifact LLVMExtra                3.2 MiB
+Precompiling packages...
+   5305.7 ms  ✓ ExprTools
+   2615.2 ms  ✓ LLVMExtra_jll
+    826.7 ms  ✓ libdrm_jll
+   3790.5 ms  ✓ StringManipulation
+   1051.8 ms  ✓ ProgressMeter
+   1127.9 ms  ✓ Tracy
+  24438.3 ms  ✓ Oceananigans
+   1904.8 ms  ✓ NetCDF_jll
+   8603.0 ms  ✓ LLVM
+   1377.7 ms  ✓ libva_jll
+  22679.9 ms  ✓ PrettyTables
+  10017.9 ms  ✓ NCDatasets
+   1541.7 ms  ✓ GPUToolbox
+   1608.9 ms  ✓ UnsafeAtomics → UnsafeAtomicsLLVM
+   1211.7 ms  ✓ LLVM → BFloat16sExt
+  30977.3 ms  ✓ GPUCompiler
+   1896.7 ms  ✓ FFMPEG_jll
+   1553.5 ms  ✓ NCDatasets → NCDatasetsMPIExt
+   4237.1 ms  ✓ Oceananigans → OceananigansNCDatasetsExt
+   5727.7 ms  ✓ GPUArrays
+   1093.7 ms  ✓ FFMPEG
+   1978.1 ms  ✓ GR_jll
+   2168.4 ms  ✓ GPUArrays → JLD2Ext
+  47043.6 ms  ✓ CUDACore
+   5068.2 ms  ✓ GR
+   8545.0 ms  ✓ cuFFT
+   4958.9 ms  ✓ cuRAND
+   6665.3 ms  ✓ CUPTI
+   5033.2 ms  ✓ NVML
+   7823.7 ms  ✓ cuSPARSE
+   9568.2 ms  ✓ cuBLAS
+  52341.6 ms  ✓ Plots
+  15350.8 ms  ✓ CUDATools
+   9788.9 ms  ✓ cuSOLVER
+   3058.6 ms  ✓ Plots → FileIOExt
+   5029.0 ms  ✓ CUDA
+   4205.9 ms  ✓ Atomix → AtomixCUDAExt
+   4228.3 ms  ✓ MPI → CUDAExt
+   7280.1 ms  ✓ Oceananigans → OceananigansCUDAExt
+  11245.1 ms  ✓ OceanBioME
+  40 dependencies successfully precompiled in 362 seconds. 286 already precompiled.
+  13 dependencies had output during precompilation:
+┌ cuBLAS
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ Oceananigans → OceananigansCUDAExt
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ cuSOLVER
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ cuSPARSE
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ OceanBioME
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ cuFFT
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ Atomix → AtomixCUDAExt
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ MPI → CUDAExt
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ CUPTI
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ NVML
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ CUDATools
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ CUDA
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+┌ cuRAND
+│  ┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+│  ┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│  │ This may cause errors.
+│  │ 
+│  │ If you're running under a profiler, this situation is expected. Otherwise,
+│  │ ensure that your library path environment variable (e.g., `PATH` on Windows
+│  │ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│  │ 
+│  │ In any other case, please file an issue.
+│  └ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+└  
+[ Info: Oceananigans will use 4 threads
+┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+preflight: Oceananigans 0.110.13
+preflight: model.closure_fields[2] has (:νₑ, :κₑ)
+preflight: BulkDrag constructs
+preflight: CUDA functional — NVIDIA A100-SXM4-40GB

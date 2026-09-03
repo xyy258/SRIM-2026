@@ -1,0 +1,20 @@
+Combined/ekmanrun.jl — P4_T10_r10
+Written 2026-09-02 22:18:48
+
+Dimensions                      75.0 m x 75.0 m x 150.0 m (+ 20 m sponge)
+Grid size                       100 x 100 x 400
+Far stream velocity             U∞  = 0.0400
+Square buoyancy frequency       N²  = 1.000e-06
+Coriolis parameter              f   = 1.00e-04
+Ratio                           r   = N/f = 10.0
+Pycnocline height / sharpness   T   = 10.0 m, sharp = 6.0
+Molecular kinematic viscosity   ν₀  = 1.00e-06
+Molecular diffusivity           κ₀  = 1.00e-07
+Prandtl number                  Pr  = 10.0
+Reynolds number                 Re∞ = 1.600e+07
+Drag coefficient                cᴰ  = 0.00908
+Friction velocity               u*  = 7.6070e-03  (log fit over 5 points, R² = 0.5422)
+Fitted roughness                z₀  = 1.9636e-01  (imposed 1.6000e-03)
+Layer lengthscale               δ   = 76.07 m
+Friction Reynolds               Re* = 5.787e+05
+Friction Richardson             Ri* = 100.0

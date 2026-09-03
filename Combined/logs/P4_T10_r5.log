@@ -1,0 +1,45 @@
+
+==============================================================================
+==== 2026-09-02 22:18:50  P4_T10_r5  (r = 5.0, T = 10.0)
+==============================================================================
+ekmanrun.jl case P4_T10_r5
+  architecture      GPU
+  dimensions        75.0 m x 75.0 m x 150.0 m  (+ 20 m sponge, H = 170 m)
+  grid              100 x 100 x 400   (first centre at z = 0.1182 m)
+  U∞  = 0.0400   f₀ = 1.00e-04   r = N/f = 5.0   N² = 2.500e-07
+  profile 4 (softplus), T = 10.0 m, sharp = 6.0
+  cᴰ  = 0.00908   ν₀ = 1.0e-06   κ₀ = 1.0e-07   Pr = 10
+  duration 8.000e+05 s = 12.73 inertial periods, max Δt = 15 s
+  moments every 314 s, x-z slices off, Avg_* writers ON
+i:       0, sim time:         0 (0.00 T_f), wall: 43.842 seconds, Δt:   1.80, CFL: 1.07e-01
+i:     100, sim time:       NaN (NaN T_f), wall: 1.665 minutes, Δt:    NaN, CFL: NaN
+u* = 7.6062e-03 m/s (R² = 0.5422), z₀ fit 1.964e-01 vs imposed 1.600e-03, δ = 76.06 m
+case P4_T10_r5 finished at 2026-09-02 22:22:08
+[ Info: Oceananigans will use 4 threads
+┌ Warning: CUDA runtime library `libcusparse.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libcusparse.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+┌ Warning: CUDA runtime library `libnvJitLink.so.12` was loaded from a system path, `/usr/local/software/spack/2024.2/views/maths/cuda-12.6.3/gcc-11.4.0/leehydd5fuufm35ohlbwth2mqtadrq3f/lib64/libnvJitLink.so.12`.
+│ This may cause errors.
+│ 
+│ If you're running under a profiler, this situation is expected. Otherwise,
+│ ensure that your library path environment variable (e.g., `PATH` on Windows
+│ or `LD_LIBRARY_PATH` on Linux) does not include CUDA library paths.
+│ 
+│ In any other case, please file an issue.
+└ @ CUDACore ~/.julia/packages/CUDACore/NlVPI/src/initialization.jl:199
+[ Info: closure auxiliary fields at `model.closure_fields` (Tuple)
+[ Info: SGS diffusivity resolved as `model.closure_fields[2].κₑ` — 100×100×400 Field{Center, Center, Center} on RectilinearGrid on CUDAGPU
+[ Info: writing 13 plane-averaged profiles to /cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/Ekman_moments/4/r=5.0, T=10.0/Moments.jld2 every 314 s (2547 samples)
+[ Info: Initializing simulation...
+[ Info: health @ 0.00 T_f: max|⟨w⟩_xy| = 1.699e-19 m/s (= 4.2e-18 U∞); κₑ ∈ [NaN, NaN] m²/s
+[ Info:     ... simulation initialization complete (56.120 seconds)
+[ Info: Executing initial time step...
+[ Info:     ... initial time step complete (4.943 seconds).
+[ Info: time = NaN, iteration = 100: NaN found in field u. Stopping simulation.
