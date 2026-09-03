@@ -111,3 +111,30 @@ It also means the low-N/f Ekman crosses in the figure — the ones sitting well
 above the Stokes plateau at large √TKE/N — are measured on a layer that has not
 finished deepening, and should be read as a lower bound on `l` rather than as a
 converged value.
+
+### First attempt, 2026-09-02: all seven cases failed
+
+Worth recording, because the failure was silent. Every case wrote its `t = 0`
+snapshot, stopped at iteration 100 with `NaN found in field u`, exited 0, and was
+stamped complete.
+
+Cause: `Ekman 3D.jl` writes the profile-4 softplus as
+`log(1 + exp(sharp*(z - T)))`, which overflows to `Inf` above
+
+    z = T + 709.78/sharp = 128.3 m     (T = 10, sharp = 6)
+
+Commit `e278f55` ("Updated Ekman", 2026-09-01) took `Lz` from 100 to 150, so the
+grid top `H = Lz + S` went from 120 m — just under that threshold — to 170 m,
+just over. On the real grid the naive form is non-finite in 28 of 400 cells,
+first at z = 129.2 m; `dBdz` and `κₑ` go `NaN` with it and the `NaN` reaches `u`
+through the sponge target.
+
+Two fixes, both in place: `ekmanrun.jl` uses `max(x,0) + log1p(exp(-|x|))`, which
+agrees with the naive form to 1.7e-21 where that is finite and tends to
+`N²(z - T)` above it; and the driver no longer trusts a clean exit — it checks
+that the moments file reached the stop time with finite values before writing a
+marker.
+
+**The overflow is still in `Ekman 3D.jl`.** It affects every profile-4 run at the
+current domain height, at every `T` in the sweep (threshold `T + 118.3` m, and
+even `T = 50` stays below the 170 m top).

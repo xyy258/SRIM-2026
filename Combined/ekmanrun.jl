@@ -36,6 +36,22 @@
 # sharp = 6, same duration. Parameters.jl is INCLUDED from the Ekman folder
 # rather than copied, so the two cannot drift apart.
 #
+# There is ONE deliberate departure, and it is numerical rather than physical.
+# "Ekman 3D.jl" writes the softplus as log(1 + exp(sharp*(z - T))), which
+# overflows to Inf above z = T + 709.78/sharp = 128.3 m. That was safe while the
+# grid top was H = 120 m and stopped being safe when commit e278f55 took Lz to
+# 150 (H = 170): on the first attempt at this column the top 28 of 400 cells
+# initialised to Inf, dBdz and κₑ went NaN with them, the NaN reached u through
+# the sponge target, and all seven cases stopped at iteration 100 having written
+# nothing but their t = 0 snapshot. This file uses max(x,0) + log1p(exp(-|x|)),
+# which is the same function to machine precision wherever the naive one is
+# finite and tends to N²(z - T) rather than Inf above that. See the note at bᵢ.
+#
+# THE SAME OVERFLOW IS STILL IN "Ekman 3D.jl". Every profile-4 run at the current
+# domain height hits it, for every T in the sweep (the threshold is T + 118.3 m,
+# and the tallest T = 50 still leaves it below the 170 m top). Nothing here can
+# fix that; it needs the one-line change in the Ekman folder.
+#
 # What changes is the output. Instead of turning the commented-out
 # diffusivity_fields writer back on — which writes κₑ and νₑ as raw 3D fields,
 # hundreds of GB, and still leaves the correlation ⟨κₑ ∂b/∂z⟩ to be guessed at
@@ -167,9 +183,42 @@ const EKMAN = joinpath(REPO, "Ekman", "3D Simulation")
 
 const CASE_MODE = !isempty(ARGS) && ARGS[1] == "case"
 
-const T_STRAT  = parse(Float64, get(ENV, "T_STRAT", "10"))
-const GRID_TAG = get(ENV, "GRID_TAG", "100x100x500_drag")
+const T_STRAT = parse(Float64, get(ENV, "T_STRAT", "10"))
+
+# The geometry lives in Ekman/3D Simulation/Parameters.jl and is `const` there,
+# so a case picks it up by including that file and cannot be talked out of it.
+# The driver needs three of those numbers too — for the grid tag, for the cost
+# estimate and to check that a case ran to the end — and it must not include the
+# file (the consts would then be fixed for every child it spawns), so it reads
+# them out textually instead.
+#
+# This is deliberately not hardcoded. Commit e278f55 ("Updated Ekman",
+# 2026-09-01) moved Lz 100 -> 150, Nz 500 -> 400, max_Δt 8 -> 15 and duration
+# 40e4 -> 8e5, and a hardcoded grid tag would have let markers from the old
+# geometry mark the new one complete.
+function ekman_param(name, default)
+    src = read(joinpath(EKMAN, "Parameters.jl"), String)
+    for m in eachmatch(Regex("^\\s*(?:const\\s+)?[^\\n=]*\\b" * name *
+                             "\\b[^\\n=]*=\\s*([^#\\n]+)", "m"), src)
+        vals = [tryparse(Float64, strip(t)) for t in split(m.captures[1], ",")]
+        all(!isnothing, vals) && return length(vals) == 1 ? vals[1] : vals
+    end
+    @warn "ekmanrun.jl: could not read $name from Parameters.jl — using $default"
+    return default
+end
+
+const EK_GRID  = ekman_param("Nx, Ny, Nz", [100.0, 100.0, 400.0])
+const EK_DUR   = parse(Float64, get(ENV, "DURATION", string(ekman_param("duration", 8e5))))
+const EK_MAXDT = ekman_param("max_Δt", 15.0)
+
+const GRID_TAG = get(ENV, "GRID_TAG",
+                     join(string.(Int.(EK_GRID)), "x") * "_drag")
 const OUT_ROOT = get(ENV, "OUT_ROOT", joinpath(HERE, "Data", "Ekman_moments", "4"))
+
+# Passed to the completeness check: a case is finished when its moments file
+# reaches the stop time, and truncated otherwise.
+const want_duration  = EK_DUR
+const want_moment_dt = parse(Float64, get(ENV, "MOMENT_INTERVAL", "314"))
 
 # Case folders keep "Ekman 3D.jl"'s own naming, so that Data/Ekman_moments/4 is a
 # drop-in sibling of Data/Ekman/4 and reduce_ekman_T10.jl can be pointed at
@@ -268,7 +317,14 @@ end
 # The estimate starts generous and is replaced by a measurement after the first
 # case finishes: starting a case that cannot finish wastes all of it, declining
 # one costs only a re-submission.
-case_estimate_h = parse(Float64, get(ENV, "CASE_HOURS", "1.0"))
+# 0.0058 s per step per Mcell is what the Stokes column measured on this
+# partition (Stokes/3D/logs/P4_T10_sqrtRi*.log: 403 000 steps in 1.95 h on
+# 100x100x300). The step pins at max_Δt because the advective CFL sits below the
+# wizard's target, so the step count is just duration/max_Δt. 2.5x for margin,
+# since the pressure solve is an FFT in z and does not scale quite linearly.
+const est_steps = EK_DUR / EK_MAXDT
+const est_h     = 2.5 * est_steps * 0.0058 * prod(EK_GRID) / 1e6 / 3600
+case_estimate_h = parse(Float64, get(ENV, "CASE_HOURS", string(round(est_h, digits = 2))))
 done_cases, failed_cases, skipped_cases = String[], String[], String[]
 
 function run_case(rv)
@@ -291,19 +347,66 @@ function run_case(rv)
     ok = run_julia([@__FILE__, "case", string(rv)], Dict{String,String}(),
                    "$tag.log"; label = "$tag  (r = $rv, T = $T_STRAT)")
 
-    if ok && isfile(moments_of(rv))
-        # The marker, not the file, is the test for completion: a run cut short
-        # by the wall leaves a valid but truncated Moments.jld2 behind.
-        write(marker_of(rv), string(now()))
-        push!(done_cases, tag)
-        global case_estimate_h = 1.1 * (time() - t0) / 3600
-        log(@sprintf("  %s done in %.2f h — estimate for the rest is now %.2f h",
-                     tag, (time() - t0) / 3600, case_estimate_h))
-        return true
+    # Exit status alone is not enough. Oceananigans treats a NaN in the velocity
+    # field as a reason to STOP, not to fail: it prints "NaN found in field u.
+    # Stopping simulation.", run! returns normally, the script goes on to the u*
+    # fit and exits 0. The first attempt at this column did exactly that in all
+    # seven cases and every one was marked complete on the strength of a
+    # single-sample t = 0 file. So the marker is written only if the moments file
+    # actually reached the stop time with finite values in it.
+    if ok
+        why = moments_complete(rv)
+        if why === nothing
+            write(marker_of(rv), string(now()))
+            push!(done_cases, tag)
+            global case_estimate_h = 1.1 * (time() - t0) / 3600
+            log(@sprintf("  %s done in %.2f h — estimate for the rest is now %.2f h",
+                         tag, (time() - t0) / 3600, case_estimate_h))
+            return true
+        end
+        log("  $tag exited cleanly but its output is NOT usable: $why")
     end
     push!(failed_cases, tag)
     log("  $tag FAILED — see Combined/logs/$tag.log")
     return false
+end
+
+# nothing if the case is genuinely finished; otherwise a one-line reason. Reads
+# only the last sample's t and one profile, so it costs nothing.
+const complete_code = raw"""
+using JLD2, Printf
+f, want, dt = ARGS[1], parse(Float64, ARGS[2]), parse(Float64, ARGS[3])
+isfile(f) || (println("no moments file written"); exit(1))
+io = jldopen(f, "r")
+its = sort(parse.(Int, keys(io["timeseries/t"])))
+if length(its) < 2
+    println("only $(length(its)) sample(s) in the moments file — the run did not step")
+    exit(1)
+end
+tend = io["timeseries/t/$(its[end])"]
+bad  = String[]
+for v in ("B", "dBdz", "U", "wb", "F_sgs", "kappa_sgs")
+    a = io["timeseries/$v/$(its[end])"][1, 1, :]
+    n = count(!isfinite, a)
+    n > 0 && push!(bad, @sprintf("%s (%d/%d)", v, n, length(a)))
+end
+close(io)
+if tend < want - 1.5dt
+    @printf("stopped at t = %.3e s of %.3e s (%.0f %%) after %d samples
+",
+            tend, want, 100tend/want, length(its)); exit(1)
+end
+isempty(bad) || (println("non-finite values in the last sample: ", join(bad, ", ")); exit(1))
+exit(0)
+"""
+
+function moments_complete(rv)
+    jl  = joinpath(Sys.BINDIR, "julia")
+    out = IOBuffer()
+    okc = success(pipeline(ignorestatus(`$jl --project=$PROJECT -e $complete_code
+                                         $(moments_of(rv)) $want_duration $want_moment_dt`),
+                           stdout = out, stderr = out))
+    okc ? nothing : strip(String(take!(out)))
 end
 
 # ---------------- 2. Check ----------------
@@ -367,6 +470,8 @@ function show_plan()
     todo = [rv for rv in ratios if !isfile(marker_of(rv))]
     println("\n", "#"^78)
     @printf("#  Ekman N/f column at T = %g m, grid+BC tag %s\n", T_STRAT, GRID_TAG)
+    @printf("#  from Parameters.jl: grid %s, duration %.3g s = %.2f T_f, max Δt %g s → %d steps\n",
+            join(string.(Int.(EK_GRID)), "x"), EK_DUR, EK_DUR / (2π / 1e-4), EK_MAXDT, est_steps)
     @printf("#  N/f ∈ {%s},  run order {%s}  (strongest first — see the header)\n",
             join(sort(ratios), ", "), join(ratios, ", "))
     @printf("#  output → %s\n", relpath(OUT_ROOT, REPO))
@@ -389,8 +494,9 @@ function show_plan()
         @printf("#  Expect roughly %d submissions in all.\n",
                 ceil(Int, length(todo) * case_estimate_h / wall_hours))
     end
-    println("#  Per case: 0.40 h expected (50 000 steps at 8 s, scaled from the Stokes")
-    println("#  column's 0.0058 s/step/Mcell on this partition); CASE_HOURS holds 2.5x")
+    @printf("#  Per case: %.2f h expected (%d steps x 0.0058 s/step/Mcell x %.1f Mcell, the\n",
+            est_h / 2.5, est_steps, prod(EK_GRID) / 1e6)
+    println("#  rate the Stokes column measured on this partition); CASE_HOURS holds 2.5x")
     println("#  that as margin. Replaced by the measurement once the first case finishes.")
     println("#"^78, "\n")
     flush(stdout)
@@ -486,7 +592,24 @@ vᵢ(x, y, z) = kick * randn()
 wᵢ(x, y, z) = kick * randn()
 
 scale = (r == 0 || isnothing(r)) ? 1 : N²
-bᵢ(x, y, z) = (scale / sharp) * log(1 + exp(sharp * (z - T)))   # profile 4, softplus
+
+# Profile 4, softplus — written in the numerically stable form.
+#
+# "Ekman 3D.jl" spells this log(1 + exp(sharp*(z - T))), which overflows to Inf
+# once sharp*(z - T) passes 709.78, i.e. above
+#
+#     z = T + 709.78/sharp = 128.3 m   for T = 10, sharp = 6.
+#
+# The grid top is H = Lz + S, so this was safe at the old H = 120 m and is NOT at
+# the current H = 170 m: the top 28 of 400 cells came back Inf, dBdz and κₑ went
+# NaN with them, and the NaN reached u through the sponge target by iteration 100.
+#
+# max(x,0) + log1p(exp(-|x|)) is the same function wherever the naive form is
+# finite (they agree to full double precision at z = 0, 10, 100, 120, 128) and
+# tends to the linear profile N²(z - T) above that, instead of to Inf. This is a
+# numerics fix only; no physics changes.
+softplus(x) = max(x, zero(x)) + log1p(exp(-abs(x)))
+bᵢ(x, y, z) = (scale / sharp) * softplus(sharp * (z - T))
 
 # --- forcing and sponge ------------------------------------------------------
 v_forcing_fn(x, y, z, t, p) = p.f * p.s          # balances the initial geostrophy
