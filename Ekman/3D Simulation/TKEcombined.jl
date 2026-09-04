@@ -46,7 +46,7 @@ function ramp_colour(s)
 end
 
 # Fit logarithmic profile near wall to extract u*
-function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=5)
+function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=4)
     z = Array(znodes(grid, Center()))[1:n_points]
     U = @. sqrt(u_avg[1:n_points]^2 + v_avg[1:n_points]^2)
     X = [log.(z) ones(n_points)]

@@ -279,7 +279,7 @@ v_avg_data = vel_file["timeseries/v_avg/$last_iter"][1, 1, :]
 close(vel_file)
 
 # Fit logarithmic profile: U(z) = (u*/κ) * ln(d) - (u*/κ) * ln(z₀)
-function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=5)
+function fit_log_layer(grid, u_avg, v_avg; κ=0.41, n_points=4)
     # Extract vertical center points near the wall
     z = Array(znodes(grid, Center()))[1:n_points]
 
