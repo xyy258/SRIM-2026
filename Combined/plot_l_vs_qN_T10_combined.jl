@@ -206,83 +206,181 @@ for i in 1:max(length(stokes), length(ekman))
 end
 
 # ---------------- the figure ----------------
-ally = sort(reduce(vcat, ([c.l for c in stokes]..., [c.l for c in ekman]...)))
-ylo  = ally[max(1, round(Int, 0.005 * length(ally)))] / 1.5
-yhi  = ally[round(Int, 0.999 * length(ally))] * 1.5
+# Two ways of drawing the same reduction, selected by STYLE:
+#
+#   cloud       every retained time sample as a faint point, medians on top.
+#               Shows the shape of each case's distribution, including that the
+#               clouds are trajectories rather than scatter — the excursions are
+#               the forcing cycle, not noise.
+#   errorbars   medians only, with the interquartile range in both x and l.
+#               The same information reduced to what the fit is actually made
+#               against, and readable when the clouds overlap.
+#
+# Neither is a summary of the other: the bars are quartiles of a strongly
+# autocorrelated time series, so they describe the range the case visits over a
+# forcing cycle, not the uncertainty in its median.
+const STYLE = get(ENV, "STYLE", "both")
+STYLE in ("cloud", "errorbars", "both") ||
+    error("STYLE must be cloud, errorbars or both — got \"$STYLE\"")
 
-p = plot(xscale = :log10, yscale = :log10, legend = :bottomright, ylims = (ylo, yhi),
-         xlabel = "√TKE / N   (buoyancy scale, m)", ylabel = "l = K_T/√TKE   (m)",
-         title = "T = 10 m:  l against √TKE/N at z = h  —  Stokes (tidal) and Ekman",
-         size = (980, 720), left_margin = 5Plots.mm, bottom_margin = 5Plots.mm,
-         legendfontsize = 7, foreground_color_legend = nothing)
+qlo(v) = quantile(filter(isfinite, v), 0.25)
+qhi(v) = quantile(filter(isfinite, v), 0.75)
 
-for c in stokes
-    scatter!(p, c.x, c.l; ms = 1.6, msw = 0, alpha = 0.40,
-             color = ramp_colour(c.s), label = "")
+function draw(style)
+    ally = sort(reduce(vcat, ([c.l for c in stokes]..., [c.l for c in ekman]...)))
+    if style == "cloud"
+        ylo = ally[max(1, round(Int, 0.005 * length(ally)))] / 1.5
+        yhi = ally[round(Int, 0.999 * length(ally))] * 1.5
+    else
+        # The bars stop at the quartiles, so the axis can close in on them.
+        qs  = reduce(vcat, ([qlo(c.l) for c in stokes], [qlo(c.l) for c in ekman]))
+        qh  = reduce(vcat, ([qhi(c.l) for c in stokes], [qhi(c.l) for c in ekman]))
+        ylo = minimum(qs) / 1.6
+        yhi = maximum(qh) * 1.6
+    end
+
+    p = plot(xscale = :log10, yscale = :log10, legend = :bottomright, ylims = (ylo, yhi),
+             xlabel = "√TKE / N   (buoyancy scale, m)", ylabel = "l = K_T/√TKE   (m)",
+             title = "T = 10 m:  l against √TKE/N at z = h  —  Stokes (tidal) and Ekman",
+             size = (980, 720), left_margin = 5Plots.mm, bottom_margin = 5Plots.mm,
+             legendfontsize = 7, foreground_color_legend = nothing)
+
+    if style == "cloud"
+        for c in stokes
+            scatter!(p, c.x, c.l; ms = 1.6, msw = 0, alpha = 0.40,
+                     color = ramp_colour(c.s), label = "")
+        end
+        for c in ekman
+            scatter!(p, c.x, c.l; ms = 2.6, msw = 0.6, alpha = 0.55, marker = :xcross,
+                     color = ramp_colour(c.r), msc = ramp_colour(c.r), label = "")
+        end
+    end
+
+    # Reference lines, identical in both styles.
+    xs = reduce(vcat, ([c.x for c in stokes]..., [c.x for c in ekman]...))
+    lo, hi = minimum(xs), maximum(xs)
+    if style == "errorbars"
+        lo = minimum(vcat([qlo(c.x) for c in stokes], [qlo(c.x) for c in ekman]))
+        hi = maximum(vcat([qhi(c.x) for c in stokes], [qhi(c.x) for c in ekman]))
+    end
+    plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash,
+          label = "l = √TKE/N  (1:1)")
+    slo = minimum(c.xm for c in stokes); shi = maximum(c.xm for c in stokes)
+    xin = exp.(range(log(slo), log(shi); length = 300))
+    plot!(p, xin, L∞ .* (1 .- exp.(-xin ./ x0)); color = :black, lw = 2.5,
+          label = @sprintf("Stokes fit: l = L∞(1 − e^(−x/x₀)), L∞ = %.2f m, x₀ = %.2f m", L∞, x0))
+    xou = exp.(range(log(shi), log(hi); length = 300))
+    hi > shi && plot!(p, xou, L∞ .* (1 .- exp.(-xou ./ x0)); color = :black, lw = 1.4,
+          ls = :dashdot, label = "Stokes fit, extrapolated past the fitted range")
+    hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
+           label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
+
+    if isfinite(eL)
+        elo = minimum(c.xm for c in ek_fit); ehi = maximum(c.xm for c in ek_fit)
+        xe = exp.(range(log(elo), log(ehi); length = 300))
+        plot!(p, xe, eL .* (1 .- exp.(-xe ./ ex0)); color = :grey30, lw = 2.5, ls = :dash,
+              label = @sprintf("Ekman fit (settled cases): L∞ = %.2f m, x₀ = %.2f m", eL, ex0))
+    end
+
+    # Only meaningful while the Ekman side lacks its subgrid flux.
+    if !FULL_K
+        scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
+                 ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
+                 label = "Stokes medians, resolved K_T only (Ekman-comparable)")
+    end
+
+    set = filter(c -> c.settled, ekman); uns = filter(c -> !c.settled, ekman)
+
+    if style == "errorbars"
+        # Bars carry N by colour, so the marker only has to say which flow it is
+        # and, for Ekman, whether the case has equilibrated.
+        bars(cs, key) = (
+            [c.xm for c in cs],
+            [c.lm for c in cs],
+            ([c.xm - qlo(c.x) for c in cs], [qhi(c.x) - c.xm for c in cs]),
+            ([c.lm - qlo(c.l) for c in cs], [qhi(c.l) - c.lm for c in cs]),
+            [ramp_colour(getfield(c, key)) for c in cs])
+        for (cs, key, mk, ms, lab) in ((stokes, :s, :circle, 7, "Stokes case medians (●)"),
+                                       (ekman,  :r, :xcross, 8, "Ekman case medians (✕)"))
+            isempty(cs) && continue
+            X, Y, XE, YE, C = bars(cs, key)
+            # The legend entry is a neutral grey key drawn off-plot, so that the
+            # symbol in the legend reads as the shape it is keying and not as
+            # one particular case's colour. The real markers carry no label.
+            scatter!(p, [NaN], [NaN]; marker = mk, ms = ms, msw = 1.6,
+                     mc = :grey70, msc = :black, label = lab)
+            # One series per case, so each bar takes its own colour.
+            for i in eachindex(X)
+                scatter!(p, [X[i]], [Y[i]];
+                         xerror = ([XE[1][i]], [XE[2][i]]),
+                         yerror = ([YE[1][i]], [YE[2][i]]),
+                         marker = mk, ms = ms, msw = 1.6, mc = C[i], msc = :black,
+                         linecolor = C[i], lw = 1.6, label = "")
+            end
+        end
+        # The four Ekman cases whose l has not stopped moving. A downward marker
+        # tucked just under the lower whisker, because the drift is
+        # one-directional and small enough on this axis that a second bar would
+        # not be readable. Kept close so it reads as an annotation on that bar
+        # rather than as a data point of its own.
+        scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, marker = :dtriangle, color = :grey25,
+                 label = isempty(uns) ? "" : "▼ Ekman, not equilibrated — l still falling")
+        for c in uns
+            scatter!(p, [c.xm], [qlo(c.l) / 1.10]; ms = 5, msw = 0, marker = :dtriangle,
+                     color = :grey25, label = "")
+        end
+    else
+        # Medians last, so they sit on top of their clouds.
+        scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
+                 ms = 7, msw = 1.5, mc = :white, msc = :black,
+                 label = "Stokes case medians")
+        isempty(set) || scatter!(p, [c.xm for c in set], [c.lm for c in set];
+                 ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
+                 label = "Ekman case medians (✕), equilibrated")
+        # For the cases that have not equilibrated, the bar spans the median of l
+        # over the first quarter of the averaging window to the median over the
+        # last: the range the value actually moved through, drawn not asserted.
+        for (i, c) in enumerate(uns)
+            plot!(p, [c.xm, c.xm], [c.lq1, c.lq4]; color = :black, lw = 2.5,
+                  label = i == 1 ? "not equilibrated: range l moved through, ▼ = latest" : "")
+            scatter!(p, [c.xm], [c.lq4]; ms = 5, msw = 0, marker = :dtriangle,
+                     color = :black, label = "")
+        end
+        isempty(uns) || scatter!(p, [c.xm for c in uns], [c.lm for c in uns];
+                 ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black, label = "")
+    end
+
+    # One colour key, drawn as invisible series so the N labels appear once.
+    for sv in SVALS
+        scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv),
+                 label = @sprintf("N/ω = N/f = %g", sv))
+    end
+
+    mkpath(FIGDIR)
+    f = joinpath(FIGDIR, style == "cloud" ? "l_vs_q_over_N_ath_T10_combined.png" :
+                                            "l_vs_q_over_N_ath_T10_combined_errorbars.png")
+    savefig(p, f)
+    say("wrote $f")
 end
-for c in ekman
-    scatter!(p, c.x, c.l; ms = 2.6, msw = 0.6, alpha = 0.55, marker = :xcross,
-             color = ramp_colour(c.r), msc = ramp_colour(c.r), label = "")
-end
 
-xs = reduce(vcat, ([c.x for c in stokes]..., [c.x for c in ekman]...))
-lo, hi = minimum(xs), maximum(xs)
-plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash, label = "l = √TKE/N  (1:1)")
-slo = minimum(c.xm for c in stokes); shi = maximum(c.xm for c in stokes)
-xin = exp.(range(log(slo), log(shi); length = 300))
-plot!(p, xin, L∞ .* (1 .- exp.(-xin ./ x0)); color = :black, lw = 2.5,
-      label = @sprintf("Stokes fit: l = L∞(1 − e^(−x/x₀)), L∞ = %.2f m, x₀ = %.2f m", L∞, x0))
-xou = exp.(range(log(shi), log(hi); length = 300))
-plot!(p, xou, L∞ .* (1 .- exp.(-xou ./ x0)); color = :black, lw = 1.4, ls = :dashdot,
-      label = "Stokes fit, extrapolated past the fitted range")
-hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
-       label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
-
-if isfinite(eL)
-    elo = minimum(c.xm for c in ek_fit); ehi = maximum(c.xm for c in ek_fit)
-    xe = exp.(range(log(elo), log(ehi); length = 300))
-    plot!(p, xe, eL .* (1 .- exp.(-xe ./ ex0)); color = :grey30, lw = 2.5, ls = :dash,
-          label = @sprintf("Ekman fit (settled cases): L∞ = %.2f m, x₀ = %.2f m", eL, ex0))
-end
-
-# Only meaningful while the Ekman side lacks its subgrid flux.
-if !FULL_K
-    scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
-             ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
-             label = "Stokes medians, resolved K_T only (Ekman-comparable)")
-end
-
-# Medians last, so they sit on top of their clouds.
-scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
-         ms = 7, msw = 1.5, mc = :white, msc = :black,
-         label = "Stokes case medians")
-set = filter(c -> c.settled, ekman); uns = filter(c -> !c.settled, ekman)
-isempty(set) || scatter!(p, [c.xm for c in set], [c.lm for c in set];
-         ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
-         label = "Ekman case medians (✕), equilibrated")
-# For the cases that have not equilibrated, the bar spans the median of l over
-# the first quarter of the averaging window to the median over the last: the
-# range the value actually moved through, drawn rather than asserted.
-for (i, c) in enumerate(uns)
-    plot!(p, [c.xm, c.xm], [c.lq1, c.lq4]; color = :black, lw = 2.5,
-          label = i == 1 ? "not equilibrated: range l moved through, ▼ = latest" : "")
-    scatter!(p, [c.xm], [c.lq4]; ms = 5, msw = 0, marker = :dtriangle,
-             color = :black, label = "")
-end
-isempty(uns) || scatter!(p, [c.xm for c in uns], [c.lm for c in uns];
-         ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black, label = "")
-
-# One colour key, drawn as invisible series so the N labels appear once.
-for s in SVALS
-    scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(s),
-             label = @sprintf("N/ω = N/f = %g", s))
-end
-
-mkpath(FIGDIR)
-f = joinpath(FIGDIR, "l_vs_q_over_N_ath_T10_combined.png")
-savefig(p, f)
 say("")
-say("wrote $f")
+if !isempty(ekman)
+    say("interquartile ranges — the bars in the errorbar figure")
+    say("  case          x: q25    med    q75  |  l: q25    med    q75")
+    for c in stokes
+        say(@sprintf("  Stokes %-5g %7.4f %6.4f %6.4f  | %7.4f %6.4f %6.4f",
+                     c.s, qlo(c.x), c.xm, qhi(c.x), qlo(c.l), c.lm, qhi(c.l)))
+    end
+    for c in ekman
+        say(@sprintf("  Ekman  %-5g %7.4f %6.4f %6.4f  | %7.4f %6.4f %6.4f",
+                     c.r, qlo(c.x), c.xm, qhi(c.x), qlo(c.l), c.lm, qhi(c.l)))
+    end
+    say("")
+end
+
+for st in (STYLE == "both" ? ("cloud", "errorbars") : (STYLE,))
+    draw(st)
+end
 
 mkpath(joinpath(HERE, "logs"))
 open(joinpath(HERE, "logs", "plot_l_vs_qN_T10_combined.log"), "w") do io

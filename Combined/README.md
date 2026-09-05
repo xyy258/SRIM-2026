@@ -17,7 +17,7 @@ GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl # seconds
 |---|---|
 | `reduce_ekman_moments_T10.jl` | **current**: reduces the moment files under `Data/Ekman_moments/4/r=*, T=10.0/` to `h(t)`, `K_at_h(t)`, `TKE_at_h(t)`, with `K_T` from the whole flux |
 | `reduce_ekman_T10.jl` | superseded: the same reduction from the old slice output under `Data/Ekman/4/`, resolved flux only. Kept because it is the only thing that reads those runs |
-| `plot_l_vs_qN_T10_combined.jl` | draws `figures/l_vs_q_over_N_ath_T10_combined.png`; prefers the moments reduction and falls back to the old one |
+| `plot_l_vs_qN_T10_combined.jl` | draws both figures below; prefers the moments reduction and falls back to the old one |
 | `mixed_layer_height.jl` | copy of `Stokes/3D/mixed_layer_height.jl`, unmodified |
 | `Project.toml`, `Manifest.toml` | copies of `Stokes/3D`'s, the environment known to work |
 | `Data/ekman_lengthscales_T10_moments.jld2` | the current reduction's output, ~300 kB |
@@ -27,6 +27,25 @@ GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl # seconds
 
 Nothing under `Ekman/` is read for code and nothing there is modified. The
 Ekman side is read only as `.jld2` data under `Data/`.
+
+### Two versions of the figure
+
+`STYLE` selects them; the default `both` writes both in one run.
+
+| `STYLE` | file | what it shows |
+|---|---|---|
+| `cloud` | `figures/l_vs_q_over_N_ath_T10_combined.png` | every retained time sample, medians on top |
+| `errorbars` | `figures/l_vs_q_over_N_ath_T10_combined_errorbars.png` | medians only, with the interquartile range in both `x` and `l` |
+
+Neither summarises the other. The clouds are worth keeping because they are
+*trajectories*, not scatter — the loops are the forcing cycle — and that is
+invisible once the case is reduced to a bar.
+
+**The bars are not error bars in the usual sense.** They are quartiles of a
+strongly autocorrelated time series, so they say what range each case visits
+over a forcing cycle, not how uncertain its median is. The uncertainty on the
+median is much smaller than the bar; the honest caveat on these points is the
+non-equilibration below, not the spread.
 
 ### Both sides use the same definitions
 
