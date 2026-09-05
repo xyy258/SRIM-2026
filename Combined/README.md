@@ -302,3 +302,67 @@ discarded for counter-gradient flux, `K_T ≤ 0`. That exclusion is inherent to
 the existing Stokes reduction, not new here, but it biases those two medians
 upward. The mean shear never vanishes at `z = h` in either flow, so `1/S` needs
 no such exclusion.
+
+
+## Fits, and the weighted length scale
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_shear_scales_T10.jl    # ~3 min, also writes the cache
+GKSwstype=100 julia --project=. plot_Lc_candidates_T10.jl   # seconds, reads the cache
+```
+
+`plot_shear_scales_T10.jl` writes `Data/shear_scales_T10.jld2`, the per-sample
+`L_K`, `L_N`, `L_s` for every case, so the candidate search does not have to
+walk 1601 Stokes snapshots per case again.
+
+### τ_K against the two candidate times
+
+Fitted to the case medians, per flow and to both together. Two families are
+tried and the better one is drawn per panel — never a pinned one.
+
+| x | set | power law | saturating |
+|---|---|---|---|
+| `τ_N` | Stokes | b = 0.81, rms 17.0 % | Y∞ = 2156 s, x₀ = 5328 s, **rms 11.4 %** |
+| `τ_N` | Ekman | b = 0.86, rms 12.4 % | Y∞ = 4013 s, x₀ = 12593 s, **rms 9.1 %** |
+| `τ_N` | both | b = 0.83, rms 16.1 % | Y∞ = 3359 s, x₀ = 9645 s, **rms 14.0 %** |
+| `τ_s` | Stokes | **b = 2.30, rms 47.0 %** | pinned |
+| `τ_s` | Ekman | **b = 0.94, rms 18.8 %** | rms 20.4 % |
+| `τ_s` | both | **b = 1.04, rms 52.5 %** | pinned |
+
+Against `τ_s` the saturating form pins: there is no knee in that data, so `x₀`
+runs off the top of its grid and the curve degenerates into a straight line with
+two redundant parameters. Better rms, no meaning — hence the pinned check.
+
+The exponents say it plainly. Against `τ_N` the two flows agree, b = 0.81 and
+0.86. Against `τ_s` they do not: 2.30 against 0.94.
+
+### Candidate weighted scales
+
+All formed per sample, then reduced to a case median. Free parameters chosen on
+both flows together, since a scale needing a different weight per flow has
+unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_c`,
+which is the form a closure would want; `b` free is the same fit with the
+exponent released, as the honesty check.
+
+| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_c`, both** |
+|---|---|---|---|---|
+| `L_N` alone | — | 29.5 % | 0.83 | 14.9 % |
+| `L_s` alone | — | 51.7 % | 1.08 | 51.7 % |
+| `min(L_N, L_s)` | — | 25.6 % | 0.85 | **10.2 %** |
+| harmonic, equal | — | 18.3 % | 0.91 | **10.4 %** |
+| harmonic, weighted | β = 1.40 | 17.5 % | 0.92 | 11.7 % |
+| p-norm | p = 0.60 | 17.2 % | 0.93 | 11.9 % |
+| geometric | α = 0.65 | 17.6 % | 0.94 | 13.2 % |
+
+**No candidate makes `L_K` proportional to `L_c`.** The best `b = 1` fit is
+17.2 %, and every combined scale still has a natural exponent near 0.9. The
+curvature that the saturating form captures is real and no reweighting removes
+it.
+
+**But combining the scales does unify the two flows, once the saturating form is
+kept.** One curve through all thirteen cases goes from 14.9 % on `L_N` alone to
+10.2 % on `min(L_N, L_s)` and 10.4 % on the equal-weight harmonic — close to the
+7.5 % that a single flow reaches on its own. The equal-weight harmonic is the
+one to prefer: it ties the minimum to within noise, is smooth rather than kinked,
+and has no free parameter to justify.
