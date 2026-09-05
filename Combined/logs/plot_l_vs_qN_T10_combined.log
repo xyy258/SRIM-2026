@@ -1,16 +1,18 @@
 Ekman side: ekman_lengthscales_T10_moments.jld2
   flux = resolved + subgrid — F_b = (<wb> - <w><b>) + F_sgs
 
-Stokes fit (unchanged): L∞ = 0.598 m, x₀ = 1.475 m, rms 7.5 % in l
-Ekman fit: not attempted — only 3 of 7 cases have equilibrated, too few to constrain L∞ and x₀
+Stokes fit:                  L∞ = 0.600 m, x₀ = 1.480 m, rms 7.5 % in l   (6 cases)
+Ekman fit:                   L∞ = 1.790 m, x₀ = 5.400 m, rms 7.5 % in l   (7 cases)
+Overall fit (both):          L∞ = 1.455 m, x₀ = 4.170 m, rms 14.9 % in l   (13 cases)
+
 
 Ekman medians against the Stokes fit  (ratio > 1 means Ekman mixes more)
-  N/f = 0.5    l = 1.4755 m   Stokes fit 0.5972 m   ratio  2.47   h drift  +7.2 %   l drift  -10.1 %   (upper bound — l still falling)
-  N/f = 1      l = 1.0565 m   Stokes fit 0.5712 m   ratio  1.85   h drift  +7.4 %   l drift  -11.4 %   (upper bound — l still falling)
-  N/f = 2      l = 0.7771 m   Stokes fit 0.5176 m   ratio  1.50   h drift  +6.7 %   l drift  -13.9 %   (upper bound — l still falling)
-  N/f = 5      l = 0.4252 m   Stokes fit 0.3740 m   ratio  1.14   h drift  +8.1 %   l drift  -20.8 %   (upper bound — l still falling)
-  N/f = 10     l = 0.2381 m   Stokes fit 0.2622 m   ratio  0.91   h drift  +4.1 %   l drift   +3.1 %
-  N/f = 25     l = 0.1092 m   Stokes fit 0.1346 m   ratio  0.81   h drift  +0.9 %   l drift   -4.4 %
+  N/f = 0.5    l = 1.4755 m   Stokes fit 0.5992 m   ratio  2.46   h drift  +7.2 %   l drift  -10.1 %
+  N/f = 1      l = 1.0565 m   Stokes fit 0.5728 m   ratio  1.84   h drift  +7.4 %   l drift  -11.4 %
+  N/f = 2      l = 0.7771 m   Stokes fit 0.5188 m   ratio  1.50   h drift  +6.7 %   l drift  -13.9 %
+  N/f = 5      l = 0.4252 m   Stokes fit 0.3745 m   ratio  1.14   h drift  +8.1 %   l drift  -20.8 %
+  N/f = 10     l = 0.2381 m   Stokes fit 0.2624 m   ratio  0.91   h drift  +4.1 %   l drift   +3.1 %
+  N/f = 25     l = 0.1092 m   Stokes fit 0.1347 m   ratio  0.81   h drift  +0.9 %   l drift   -4.4 %
   N/f = 50     l = 0.0640 m   Stokes fit 0.0655 m   ratio  0.98   h drift  -1.4 %   l drift   +0.3 %
 
 case medians — x = √TKE/N (m), l = K_T/√TKE (m)

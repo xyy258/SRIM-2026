@@ -130,6 +130,37 @@ two at `N/f = 50`, which is why those points sat off the curve.
 With both sides on the whole flux, the three Ekman cases that have equilibrated
 land on the Stokes fit — `l/l_fit` = 0.91, 0.81, 0.98 at `N/f` = 10, 25, 50.
 
+### The fits
+
+`l = L∞(1 − e^(−x/x₀))`, fitted to the case medians in log `l`. Three are drawn:
+each flow alone, and one overall curve through all thirteen cases.
+
+| fit | cases | `L∞` | `x₀` | rms in `l` |
+|---|---|---|---|---|
+| Stokes | 6 | 0.60 m | 1.48 m | 7.5 % |
+| Ekman | 7 | 1.79 m | 5.40 m | 7.5 % |
+| **Overall, both flows** | 13 | **1.46 m** | **4.17 m** | **14.9 %** |
+
+Each flow on its own is described well by the saturating form, to 7.5 %. One
+curve through both is twice as bad, and the reason is visible in the figure: the
+overall fit is dragged up by the Ekman points and then misses the two largest
+Stokes cases by about a factor of two. **The two flows do not collapse onto a
+single mixing-length law at T = 10 m** — they agree closely below
+`√TKE/N ≈ 1` and separate above it, differing mainly in `L∞`, 0.60 m against
+1.79 m.
+
+Two things temper that. The Ekman `L∞` is set by the four cases whose `l` has
+not equilibrated and is still falling, so it is probably too high and the true
+separation is smaller than a factor of three. And neither dataset reaches its
+plateau — the largest case is at 86 % (Stokes) and 84 % (Ekman) of its fitted
+`L∞` — so both `L∞` values are extrapolations and carry more uncertainty than
+the rms suggests.
+
+`fit_sat` searches `L∞ ∈ [0.05, 4.0]` and `x₀ ∈ [0.02, 20]` by brute force and
+reports whether the best point landed on a grid edge. It does that because an
+earlier version searched only `L∞ ≤ 1.60` and silently returned the lower edge,
+0.300 m, for a fit that had too few points to be constrained at all.
+
 ### A caveat on the weakly stratified cases
 
 Doubling the duration to 12.73 inertial periods helped but did not finish the
@@ -151,13 +182,11 @@ upper bounds on the converged `l`, not lower bounds. They are exactly the points
 sitting above the Stokes curve at large √TKE/N, and they are still moving towards
 it. Whether the excess survives to equilibrium cannot be settled from this record.
 
-The figure draws them as a bar spanning the median of `l` over the first quarter
-of the window to the median over the last, with ▼ at the latest value, rather
-than as a single symbol.
-
-Because only three cases have equilibrated, no independent Ekman fit is drawn: a
-two-parameter saturating curve through three points is not a fit, and the attempt
-pinned `L∞` to the edge of the search grid.
+The figures no longer mark these cases — the drift is reported here and in
+`logs/plot_l_vs_qN_T10_combined.log` instead. It still matters for reading the
+fits below: the four drifting cases are the ones at large `√TKE/N`, so they are
+what pins the Ekman `L∞`, and since their `l` is still falling that `L∞` is
+likely an overestimate.
 
 ### First attempt, 2026-09-02: all seven cases failed
 
