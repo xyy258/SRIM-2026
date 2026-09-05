@@ -9,33 +9,55 @@
 # the Stokes tidal frequency ω and the Ekman Coriolis parameter f are both
 # 1e-4 s⁻¹, so N/ω and N/f label identical N.
 #
-# ---------------- The one thing that is not identical ----------------
-# "Ekman 3D.jl" saves no subgrid buoyancy flux, so the Ekman K_T is built from
-# the resolved flux alone. To compare like with like, the Stokes side is drawn
-# twice:
+# ---------------- The two sides are now like for like ----------------
+# They were not, until ekmanrun.jl re-ran the Ekman column writing the subgrid
+# buoyancy flux. Both K_T are now built from the whole flux,
 #
-#   filled circles   full Stokes K_T = −(⟨w'b'⟩ + F_sgs)/⟨∂b/∂z⟩, the published
-#                    quantity, and the one the fit is made against
-#   open squares     resolved-only Stokes K_T − K_sgs, formed here purely so
-#                    that the Ekman crosses have a matching reference
+#     K_T = −(⟨w'b'⟩ + F_sgs) / ⟨∂b/∂z⟩
 #
-# The gap between the two Stokes symbols is the size of the error the Ekman
-# points carry. It is negligible at N/ω = 1 and about a factor of two at 50.
+# which matters: the subgrid share at z = h runs from 0.03 to 0.59 across the
+# Stokes cases and from 0.04 to 0.56 across the Ekman ones. Reading the old
+# resolved-only Ekman points against the full Stokes curve understated l by
+# about a factor of two at the strongly stratified end.
+#
+# If only the old Data/ekman_lengthscales_T10.jld2 is present this script falls
+# back to it and says so, and in that case the grey open squares — the Stokes
+# medians with the subgrid part removed — are the curve to read the crosses
+# against. With the moments file they are not drawn, because nothing needs them.
+#
+# ---------------- One caveat that survives ----------------
+# h(t) is still creeping upward at the end of the record for N/f <= 5, and over
+# the same window l itself is still FALLING there, by 10-21 %. Those points are
+# therefore upper bounds on the converged l, not lower bounds, and the direction
+# matters: the low-N/f Ekman medians sit above the Stokes curve, and they are
+# still moving towards it. Whether the excess survives to equilibrium cannot be
+# decided from this record. They are drawn hollow, and both drifts are printed
+# below.
+#
+# For the same reason no independent Ekman fit is drawn. Only N/f = 25 and 50
+# have settled, and a two-parameter saturating curve through two points is not a
+# fit — it pinned to the edge of the search grid when tried.
 #
 # USAGE  cd Combined && GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl
-#        (run reduce_ekman_T10.jl first — it writes the Ekman side)
+#        (run reduce_ekman_moments_T10.jl first — it writes the Ekman side)
 
 using JLD2, Plots, Printf, Statistics
 
 get!(ENV, "GKSwstype", "100")
 const HERE   = @__DIR__
 const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
-const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10.jld2")
+const EKNEW  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
+const EKOLD  = joinpath(HERE, "Data", "ekman_lengthscales_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
 const SKIP   = 3                      # Stokes spin-up, in tidal periods
 const SVALS  = [1, 2, 5, 10, 25, 50]
+# A case counts as equilibrated if neither h nor l moves by more than this
+# across the averaging window. 5 % is set against the 7.5 % rms of the Stokes
+# fit itself: drift smaller than the scatter of the reference curve cannot be
+# distinguished from it.
+const DRIFT_TOL = 0.05
 
 # The ramp swirlesrun4.jl uses, so colours mean the same N in every figure.
 const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
@@ -90,9 +112,13 @@ end
 isempty(stokes) && error("no Stokes T = 10 mixing files under $STOKES/outputs")
 
 # ---------------- Ekman ----------------
+EKFILE = isfile(EKNEW) ? EKNEW : EKOLD
+FULL_K = EKFILE == EKNEW
 ekman = []
 if isfile(EKFILE)
+    say("Ekman side: $(basename(EKFILE))")
     jldopen(EKFILE, "r") do io
+        say("  flux = " * (haskey(io, "flux") ? io["flux"] : "unrecorded"))
         for r in io["ratios"]
             g = @sprintf("r=%.1f", r)
             N = io["$g/N"]; E = io["$g/TKE_at_h"]; Kh = io["$g/K_at_h"]
@@ -101,14 +127,28 @@ if isfile(EKFILE)
             x = q ./ N
             k = @. isfinite(l) && isfinite(x) && l > 0 && x > 0
             any(k) || continue
-            push!(ekman, (r = r, x = x[k], l = l[k], xm = med(x[k]), lm = med(l[k])))
+            drift = haskey(io, "$g/h_drift")   ? io["$g/h_drift"]   : NaN
+            share = haskey(io, "$g/sgs_share") ? io["$g/sgs_share"] : NaN
+            # Whether l has settled matters more than whether h has, and the
+            # two can disagree, so the trend in l across the window is measured
+            # here directly rather than inferred from h.
+            lf = l[k]; nq = max(1, length(lf) ÷ 4)
+            lq1 = med(lf[1:nq]); lq4 = med(lf[end-nq+1:end])
+            ld = (lq4 - lq1) / lq1
+            push!(ekman, (r = r, x = x[k], l = lf, xm = med(x[k]), lm = med(lf),
+                          lq1 = lq1, lq4 = lq4,
+                          drift = drift, share = share, ldrift = ld,
+                          settled = !((isfinite(drift) && abs(drift) > DRIFT_TOL) ||
+                                      (isfinite(ld) && abs(ld) > DRIFT_TOL))))
         end
     end
 else
-    say("WARNING: $EKFILE not found — run reduce_ekman_T10.jl first. Stokes only.")
+    say("WARNING: no Ekman reduction found — run reduce_ekman_moments_T10.jl. Stokes only.")
 end
+FULL_K || say("WARNING: Ekman K_T is resolved-only — read the crosses against the grey squares.")
+say("")
 
-# ---------------- the fit, on the Stokes medians as before ----------------
+# ---------------- fits ----------------
 function fit_sat(cs)
     best = (Inf, 0.0, 0.0)
     for L in 0.30:0.002:1.60, x0 in 0.05:0.005:4.0
@@ -125,16 +165,43 @@ end
 sse, L∞, x0 = fit_sat(stokes)
 say(@sprintf("Stokes fit (unchanged): L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l",
              L∞, x0, 100 * sqrt(sse / length(stokes))))
+
+# An Ekman fit is only attempted if enough cases have equilibrated. Two settled
+# points cannot constrain a two-parameter saturating curve — that attempt pinned
+# L∞ to the edge of the search grid — so the bar is four.
+ek_fit = filter(c -> c.settled, ekman)
+if length(ek_fit) >= 4
+    esse, eL, ex0 = fit_sat(ek_fit)
+    say(@sprintf("Ekman fit (%d settled cases): L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l",
+                 length(ek_fit), eL, ex0, 100 * sqrt(esse / length(ek_fit))))
+else
+    eL = ex0 = NaN
+    say(@sprintf("Ekman fit: not attempted — only %d of %d cases have equilibrated, too few to constrain L∞ and x₀",
+                 length(ek_fit), length(ekman)))
+end
+
+# How far each Ekman median sits from the Stokes curve.
+if !isempty(ekman)
+    say("")
+    say("Ekman medians against the Stokes fit  (ratio > 1 means Ekman mixes more)")
+    for c in ekman
+        pred = L∞ * (1 - exp(-c.xm / x0))
+        say(@sprintf("  N/f = %-5g  l = %.4f m   Stokes fit %.4f m   ratio %5.2f   h drift %+5.1f %%   l drift %+6.1f %%%s",
+                     c.r, c.lm, pred, c.lm / pred, 100c.drift, 100c.ldrift,
+                     c.settled ? "" : "   (upper bound — l still falling)"))
+    end
+end
+
 say("")
 say("case medians — x = √TKE/N (m), l = K_T/√TKE (m)")
 say("  Stokes                                    Ekman")
-say("  N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l")
+say("  N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l   sgs share")
 for i in 1:max(length(stokes), length(ekman))
     a = i <= length(stokes) ? stokes[i] : nothing
     b = i <= length(ekman)  ? ekman[i]  : nothing
     sa = a === nothing ? " "^45 :
          @sprintf("  %-5g %7.4f %7.4f %10.4f %10.3f", a.s, a.xm, a.lm, a.lr, a.frac)
-    sb = b === nothing ? "" : @sprintf(" | %-5g %8.4f %7.4f", b.r, b.xm, b.lm)
+    sb = b === nothing ? "" : @sprintf(" | %-5g %8.4f %7.4f %8.2f", b.r, b.xm, b.lm, b.share)
     say(sa * sb)
 end
 
@@ -171,16 +238,39 @@ plot!(p, xou, L∞ .* (1 .- exp.(-xou ./ x0)); color = :black, lw = 1.4, ls = :d
 hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
        label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
 
+if isfinite(eL)
+    elo = minimum(c.xm for c in ek_fit); ehi = maximum(c.xm for c in ek_fit)
+    xe = exp.(range(log(elo), log(ehi); length = 300))
+    plot!(p, xe, eL .* (1 .- exp.(-xe ./ ex0)); color = :grey30, lw = 2.5, ls = :dash,
+          label = @sprintf("Ekman fit (settled cases): L∞ = %.2f m, x₀ = %.2f m", eL, ex0))
+end
+
+# Only meaningful while the Ekman side lacks its subgrid flux.
+if !FULL_K
+    scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
+             ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
+             label = "Stokes medians, resolved K_T only (Ekman-comparable)")
+end
+
 # Medians last, so they sit on top of their clouds.
 scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
          ms = 7, msw = 1.5, mc = :white, msc = :black,
-         label = "Stokes case medians (full K_T, fitted)")
-scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
-         ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
-         label = "Stokes medians, resolved K_T only (Ekman-comparable)")
-scatter!(p, [c.xm for c in ekman], [c.lm for c in ekman];
+         label = "Stokes case medians")
+set = filter(c -> c.settled, ekman); uns = filter(c -> !c.settled, ekman)
+isempty(set) || scatter!(p, [c.xm for c in set], [c.lm for c in set];
          ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
-         label = "Ekman case medians (resolved K_T only)")
+         label = "Ekman case medians (✕), equilibrated")
+# For the cases that have not equilibrated, the bar spans the median of l over
+# the first quarter of the averaging window to the median over the last: the
+# range the value actually moved through, drawn rather than asserted.
+for (i, c) in enumerate(uns)
+    plot!(p, [c.xm, c.xm], [c.lq1, c.lq4]; color = :black, lw = 2.5,
+          label = i == 1 ? "not equilibrated: range l moved through, ▼ = latest" : "")
+    scatter!(p, [c.xm], [c.lq4]; ms = 5, msw = 0, marker = :dtriangle,
+             color = :black, label = "")
+end
+isempty(uns) || scatter!(p, [c.xm for c in uns], [c.lm for c in uns];
+         ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black, label = "")
 
 # One colour key, drawn as invisible series so the N labels appear once.
 for s in SVALS

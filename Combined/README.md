@@ -9,17 +9,19 @@ background with the pycnocline at T = 10 m.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. reduce_ekman_T10.jl          # ~25 min, reads ~10 GB
+GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl  # ~80 s, reads 845 MB
 GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl # seconds
 ```
 
 | file | what it is |
 |---|---|
-| `reduce_ekman_T10.jl` | reduces the Ekman runs under `Data/Ekman/4/r=*, T=10.0/` to `h(t)`, `K_at_h(t)`, `TKE_at_h(t)` |
-| `plot_l_vs_qN_T10_combined.jl` | draws `figures/l_vs_q_over_N_ath_T10_combined.png` |
+| `reduce_ekman_moments_T10.jl` | **current**: reduces the moment files under `Data/Ekman_moments/4/r=*, T=10.0/` to `h(t)`, `K_at_h(t)`, `TKE_at_h(t)`, with `K_T` from the whole flux |
+| `reduce_ekman_T10.jl` | superseded: the same reduction from the old slice output under `Data/Ekman/4/`, resolved flux only. Kept because it is the only thing that reads those runs |
+| `plot_l_vs_qN_T10_combined.jl` | draws `figures/l_vs_q_over_N_ath_T10_combined.png`; prefers the moments reduction and falls back to the old one |
 | `mixed_layer_height.jl` | copy of `Stokes/3D/mixed_layer_height.jl`, unmodified |
 | `Project.toml`, `Manifest.toml` | copies of `Stokes/3D`'s, the environment known to work |
-| `Data/ekman_lengthscales_T10.jld2` | the reduction's output, ~200 kB |
+| `Data/ekman_lengthscales_T10_moments.jld2` | the current reduction's output, ~300 kB |
+| `Data/ekman_lengthscales_T10.jld2` | the superseded one |
 | `ekmanrun.jl` | re-runs the Ekman T = 10 column with `F_sgs` saved — see below |
 | `swirles.sh` | the Slurm script that launches `ekmanrun.jl` on the cluster |
 
@@ -34,22 +36,20 @@ is formed, and a gradient floor of 0.05 N²_ref. The Stokes tidal frequency ω a
 the Ekman Coriolis parameter f are both 1e-4 s⁻¹, so N/ω and N/f label the same N
 and the colour ramp means the same thing on both sides.
 
-### The one asymmetry — read this before using the figure
+### The two asymmetries, and that they are now closed
+
+Until the 2026-09-04 re-run the two sides were not comparable, for two reasons.
 
 `Ekman 3D.jl` writes no subgrid buoyancy flux (its `diffusivity_fields` writer is
-commented out), so the Ekman `K_T` is built from the resolved flux `⟨w'b'⟩` alone,
-while the Stokes `K_T` uses `⟨w'b'⟩ + F_sgs`. On the Stokes side the subgrid share
-at z = h is 0.03 at N/ω = 1 and 0.59 at N/ω = 50, so the omission is negligible at
-weak stratification and a factor of two at the strong end.
+commented out), so the Ekman `K_T` was built from the resolved flux `⟨w'b'⟩` alone,
+while the Stokes `K_T` uses `⟨w'b'⟩ + F_sgs`. And `Velocity.jld2` / `Buoyancy.jld2`
+are written with `indices = (:, 1, :)`, so the Ekman averages were over 100 x
+points at one y rather than the full plane.
 
-The figure therefore carries the Stokes medians twice — full `K_T` (circles, what
-the fit is made against) and resolved-only `K_T − K_sgs` (squares). **The Ekman
-crosses should be read against the squares.**
-
-A second, smaller asymmetry: `Velocity.jld2` and `Buoyancy.jld2` are written with
-`indices = (:, 1, :)`, so the Ekman averages are over 100 x points at one y rather
-than the full plane. The means subtracted are the true horizontal averages from
-`Avg_vel.jld2` and `Avg_b.jld2`, so the fluctuations are unbiased, just noisier.
+`ekmanrun.jl` closed both at once by re-running the column with full-plane moments
+including `F_sgs`. The current figure uses the whole flux on both sides, so the
+crosses and the circles are the same quantity. The resolved-only Stokes medians
+are drawn only if the reduction falls back to the old data.
 
 ## Closing both asymmetries — `ekmanrun.jl`
 
@@ -88,29 +88,57 @@ there is no ordering to respect. Each case writes its own completion marker, so
 the serial and array modes are interchangeable and a re-submission runs only
 what is missing.
 
-Once the column is back, `reduce_ekman_T10.jl` should be pointed at the moments
-files instead of the slices — `TKE = ½(uu − U² + vv − V² + ww)` and
-`F_b = wb + F_sgs` straight from the file, which is what
-`Stokes/3D/MixedLayerDiffusivity.jl` already does — and the Ekman crosses then
-belong on the circles rather than the squares.
+This was done on 2026-09-04 and the column came back complete: 2548 samples per
+case over the full 12.73 inertial periods, no non-finite values anywhere, and
+`min κₑ ≈ 1e-7 m²/s` so the subgrid closure is live everywhere.
+`reduce_ekman_moments_T10.jl` reads it.
+
+### What the subgrid flux turned out to be worth
+
+The share of `K_T` at `z = h` that the subgrid flux carries, against the Stokes
+side measured the same way:
+
+| N/f = N/ω | 0.5 | 1 | 2 | 5 | 10 | 25 | 50 |
+|---|---|---|---|---|---|---|---|
+| Ekman | 0.04 | 0.05 | 0.06 | 0.10 | 0.17 | 0.32 | 0.56 |
+| Stokes | — | 0.03 | 0.03 | 0.06 | 0.10 | 0.30 | 0.59 |
+
+Two different flows, the same subgrid share as a function of stratification.
+This is what the re-run existed to establish: reading the old resolved-only
+Ekman `K_T` against the full Stokes curve understated `l` by about a factor of
+two at `N/f = 50`, which is why those points sat off the curve.
+
+With both sides on the whole flux, the three Ekman cases that have equilibrated
+land on the Stokes fit — `l/l_fit` = 0.91, 0.81, 0.98 at `N/f` = 10, 25, 50.
 
 ### A caveat on the weakly stratified cases
 
-`h(t)` from `Data/Ekman/4/r=*, T=10.0/Avg_grad_b.jld2`, crossing definition,
-over the full 6.37 inertial periods of the existing runs:
+Doubling the duration to 12.73 inertial periods helped but did not finish the
+job. Over the 4 T_f averaging window at the end of the record:
 
-| N/f | h at the end | settles to within 5 % of that from |
-|---|---|---|
-| 50 | 8.34 m | 1.16 T_f |
-| 10 | 11.83 m | 4.20 T_f |
-| 2 | 17.42 m | never — still growing at 6.37 T_f |
-| 0.5 | 15.79 m | never — still growing at 6.37 T_f |
+| N/f | h | drift in h | drift in l | |
+|---|---|---|---|---|
+| 50 | 6.24 m | −1.4 % | +0.3 % | equilibrated |
+| 25 | 8.31 m | +0.9 % | −4.4 % | equilibrated |
+| 10 | 11.45 m | +4.1 % | +3.1 % | equilibrated |
+| 5 | 14.46 m | +8.1 % | −20.8 % | not |
+| 2 | 18.66 m | +6.7 % | −13.9 % | not |
+| 1 | 20.66 m | +7.4 % | −11.4 % | not |
+| 0.5 | 20.52 m | +7.2 % | −10.1 % | not |
 
-So the run length cannot be cut to save time: at N/f ≤ 2 it is already too short.
-It also means the low-N/f Ekman crosses in the figure — the ones sitting well
-above the Stokes plateau at large √TKE/N — are measured on a layer that has not
-finished deepening, and should be read as a lower bound on `l` rather than as a
-converged value.
+**The direction matters and is the opposite of what was assumed here before.**
+`l` is *falling* in the four unconverged cases, not rising, so those points are
+upper bounds on the converged `l`, not lower bounds. They are exactly the points
+sitting above the Stokes curve at large √TKE/N, and they are still moving towards
+it. Whether the excess survives to equilibrium cannot be settled from this record.
+
+The figure draws them as a bar spanning the median of `l` over the first quarter
+of the window to the median over the last, with ▼ at the latest value, rather
+than as a single symbol.
+
+Because only three cases have equilibrated, no independent Ekman fit is drawn: a
+two-parameter saturating curve through three points is not a fit, and the attempt
+pinned `L∞` to the edge of the search grid.
 
 ### First attempt, 2026-09-02: all seven cases failed
 
