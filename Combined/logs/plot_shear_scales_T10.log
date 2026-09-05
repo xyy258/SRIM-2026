@@ -1,0 +1,54 @@
+Stokes N/ω = 1     med S at h = 1.4668e-04 s⁻¹
+Stokes N/ω = 2     med S at h = 1.2996e-04 s⁻¹
+Stokes N/ω = 5     med S at h = 1.5088e-04 s⁻¹
+Stokes N/ω = 10    med S at h = 2.2393e-04 s⁻¹
+Stokes N/ω = 25    med S at h = 4.3472e-04 s⁻¹
+Stokes N/ω = 50    med S at h = 3.0815e-04 s⁻¹
+Ekman  N/f = 0.5   med S at h = 3.9438e-05 s⁻¹
+Ekman  N/f = 1     med S at h = 3.4422e-05 s⁻¹
+Ekman  N/f = 2     med S at h = 5.5853e-05 s⁻¹
+Ekman  N/f = 5     med S at h = 1.5113e-04 s⁻¹
+Ekman  N/f = 10    med S at h = 2.8896e-04 s⁻¹
+Ekman  N/f = 25    med S at h = 7.9952e-04 s⁻¹
+Ekman  N/f = 50    med S at h = 1.7623e-03 s⁻¹
+
+retained samples, and why the rest went
+  flow    r      kept      K_T <= 0   S <= 0    (both conditions can hit one sample)
+  Stokes 1       719/1001       282         0   << counter-gradient a good part of the cycle
+  Stokes 2       709/1001       292         0   << counter-gradient a good part of the cycle
+  Stokes 5       872/1001       129         0
+  Stokes 10      918/1001        83         0
+  Stokes 25      891/1001       110         0
+  Stokes 50     1001/1001         0         0
+  Ekman  0.5     801/801          0         0
+  Ekman  1       801/801          0         0
+  Ekman  2       801/801          0         0
+  Ekman  5       801/801          0         0
+  Ekman  10      801/801          0         0
+  Ekman  25      801/801          0         0
+  Ekman  50      801/801          0         0
+
+medians at z = h.  L_K = K_T/√TKE,  L_N = √TKE/N,  L_s = √TKE/S
+  flow    r      L_K (m)   L_N (m)   L_s (m)   L_s/L_N   τ_K (s)   τ_N (s)   τ_s (s)
+  Stokes 1        0.4783    2.8956    2.1508     0.743    1626.2   10000.0    6931.0
+  Stokes 2        0.4229    1.4305    2.0805     1.454    1603.2    5000.0    7673.9
+  Stokes 5        0.1796    0.5113    1.8156     3.551     661.9    2000.0    6615.6
+  Stokes 10       0.0956    0.2815    1.3691     4.864     324.3    1000.0    4477.4
+  Stokes 25       0.0384    0.1026    0.6299     6.142     148.0     400.0    2280.2
+  Stokes 50       0.0183    0.0438    0.6851    15.624      85.2     200.0    3245.2
+  Ekman  0.5      1.4755    9.8465   12.5081     1.270    3028.9   20000.0   25356.5
+  Ekman  1        1.0565    4.5784   13.0374     2.848    2351.6   10000.0   29051.0
+  Ekman  2        0.7771    2.9600   10.6509     3.598    1294.2    5000.0   17904.2
+  Ekman  5        0.4252    1.4482    4.8474     3.347     577.1    2000.0    6616.7
+  Ekman  10       0.2381    0.8513    3.0476     3.580     272.8    1000.0    3460.7
+  Ekman  25       0.1092    0.3762    1.1874     3.156     115.3     400.0    1250.8
+  Ekman  50       0.0640    0.1710    0.4872     2.849      75.1     200.0     567.4
+
+how well does each scale line up with L_K, in log space?  (power law, no free shape)
+  set                 vs L_N            vs L_s            vs L_c = 1/(1/L_N + 1/L_s)
+  Stokes  slope  0.82 rms 15.8 %   slope  2.26 rms 35.8 %   slope  1.01 rms  9.1 %
+  Ekman   slope  0.82 rms 12.1 %   slope  0.92 rms 17.7 %   slope  0.87 rms  6.9 %
+  both    slope  0.83 rms 14.2 %   slope  1.08 rms 50.9 %   slope  0.91 rms 12.7 %
+
+wrote /home/tll46/SRIM-2026/Combined/figures/tau_K_vs_timescales_T10.png
+wrote /home/tll46/SRIM-2026/Combined/figures/L_N_L_s_vs_r_T10.png
