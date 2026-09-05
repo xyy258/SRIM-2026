@@ -214,3 +214,91 @@ marker.
 **The overflow is still in `Ekman 3D.jl`.** It affects every profile-4 run at the
 current domain height, at every `T` in the sweep (threshold `T + 118.3` m, and
 even `T = 50` stays below the 170 m top).
+
+
+## Is the mixing length set by stratification or by shear?
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_shear_scales_T10.jl   # ~3 min
+```
+
+Two length scales built from the same TKE at the same height `z = h`, and the
+mixing length itself:
+
+    L_K = K_T/√TKE      L_N = √TKE/N      L_s = √TKE/S
+
+with `N = rω` or `rf` the background stratification and
+`S = |∂⟨u_h⟩/∂z| = √((∂U/∂z)² + (∂V/∂z)²)` the mean shear. Dividing each by
+`√TKE` turns them into times — `τ_K = K_T/TKE`, `τ_N = 1/N`, `τ_s = 1/S` — which
+is the dimensionally honest way to plot them.
+
+Neither pipeline stored the shear. Both store plane-averaged `U` and `V`, so `S`
+is differenced from those: the Ekman side inside
+`reduce_ekman_moments_T10.jl`, the Stokes side inside `plot_shear_scales_T10.jl`
+from `TidalBL3D_*_moments.jld2`, with the same time boxcar in both cases.
+
+| figure | what it shows |
+|---|---|
+| `figures/tau_K_vs_timescales_T10.png` | `τ_K` against `τ_N` and against `τ_s` |
+| `figures/L_N_L_s_vs_r_T10.png` | `L_N` and `L_s` against `r`, and their ratio |
+
+No fit lines — this is for looking at before choosing a functional form.
+
+### What they show
+
+| flow | r | L_K (m) | L_N (m) | L_s (m) | L_s/L_N |
+|---|---|---|---|---|---|
+| Stokes | 1 | 0.478 | 2.896 | 2.151 | **0.74** |
+| Stokes | 2 | 0.423 | 1.431 | 2.081 | 1.45 |
+| Stokes | 5 | 0.180 | 0.511 | 1.816 | 3.55 |
+| Stokes | 10 | 0.096 | 0.282 | 1.369 | 4.86 |
+| Stokes | 25 | 0.038 | 0.103 | 0.630 | 6.14 |
+| Stokes | 50 | 0.018 | 0.044 | 0.685 | 15.62 |
+| Ekman | 0.5 | 1.476 | 9.847 | 12.508 | 1.27 |
+| Ekman | 1 | 1.057 | 4.578 | 13.037 | 2.85 |
+| Ekman | 2 | 0.777 | 2.960 | 10.651 | 3.60 |
+| Ekman | 5 | 0.425 | 1.448 | 4.847 | 3.35 |
+| Ekman | 10 | 0.238 | 0.851 | 3.048 | 3.58 |
+| Ekman | 25 | 0.109 | 0.376 | 1.187 | 3.16 |
+| Ekman | 50 | 0.064 | 0.171 | 0.487 | 2.85 |
+
+**`L_N` is the smaller scale nearly everywhere.** The one exception in the whole
+set is Stokes `r = 1`, at `L_s/L_N = 0.74`. So over the range covered these runs
+are stratification-limited, and the shear-limited regime the search was aimed at
+lies below `r ≈ 1` on the Stokes side and is not reached at all on the Ekman side.
+
+The two flows behave quite differently in the ratio. `L_s/L_N` climbs steeply
+with `r` for Stokes, 0.74 to 15.6, but is nearly flat for Ekman, 2.9 to 3.6 with
+no trend. In the Ekman runs the shear and the stratification scale together.
+
+`τ_K` follows `τ_N` closely and, in this normalisation, the two flows very nearly
+collapse onto one another — considerably better than `L_K` against `L_N` did.
+Against `τ_s` the same points scatter and the two flows separate.
+
+### The weighted scale
+
+Testing `L_c = 1/(1/L_N + 1/L_s)` with `c_N = c_s = 1`, so nothing is tuned.
+The numbers are the slope of `log L_K` against `log(scale)` and the rms residual
+about that straight line — a slope of 1 means straight proportionality:
+
+| set | vs `L_N` | vs `L_s` | vs `L_c` |
+|---|---|---|---|
+| Stokes | slope 0.82, rms 15.8 % | slope 2.26, rms 35.8 % | **slope 1.01, rms 9.1 %** |
+| Ekman | slope 0.82, rms 12.1 % | slope 0.92, rms 17.7 % | slope 0.87, rms 6.9 % |
+| both | slope 0.83, rms 14.2 % | slope 1.08, rms 50.9 % | slope 0.91, rms 12.7 % |
+
+The harmonic combination helps both flows, and for Stokes it takes the slope to
+1.01 — `L_K ∝ L_c` with no curvature left — while nearly halving the scatter.
+That is the result the weighted form was hoped to give.
+
+Three cautions before leaning on it. `L_c` is a monotone function of `L_N` and
+`L_s`, so some improvement from adding a second scale is expected with only six
+or seven points; the slope moving to 1 is stronger evidence than the rms falling.
+Combining both flows still does not work (12.7 %), so `L_c` does not unify them.
+And the Stokes `r = 1` and `r = 2` medians — the two that most influence the
+slope at the large-`L_N` end — are taken over samples with 28 % of the cycle
+discarded for counter-gradient flux, `K_T ≤ 0`. That exclusion is inherent to
+the existing Stokes reduction, not new here, but it biases those two medians
+upward. The mean shear never vanishes at `z = h` in either flow, so `1/S` needs
+no such exclusion.

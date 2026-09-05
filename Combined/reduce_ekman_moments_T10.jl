@@ -102,6 +102,21 @@ boxcar(A::AbstractMatrix, nh) =
 # with the actual node positions rather than a two-point average.
 centres_to_faces(fc, zc, zf) =
     [interp_at(zc, fc, clamp(zf[k], zc[1], zc[end])) for k in eachindex(zf)]
+
+# Magnitude of the mean shear, |∂⟨u_h⟩/∂z| = √((∂U/∂z)² + (∂V/∂z)²), on the
+# faces so that it sits alongside ∂b/∂z. Both components matter here: the Ekman
+# spiral turns the mean flow with height, so ∂V/∂z is not small. A face k lies
+# between centres k-1 and k, which is exact for a stretched grid; the two
+# boundary faces have no such pair and take their neighbour's value.
+function shear_on_faces(U, V, zc, zf)
+    S = similar(float(U), length(zf))
+    @inbounds for k in 2:length(zc)
+        dz = zc[k] - zc[k-1]
+        S[k] = hypot((U[k] - U[k-1]) / dz, (V[k] - V[k-1]) / dz)
+    end
+    S[1] = S[2]; S[end] = S[end-1]
+    return S
+end
 faces_to_centres(ff, zf, zc) =
     [interp_at(zf, ff, clamp(zc[k], zf[1], zf[end])) for k in eachindex(zc)]
 
@@ -129,6 +144,7 @@ function reduce_case(r)
     Fb_raw  = Array{Float64}(undef, length(zf), nt)
     Fr_raw  = Array{Float64}(undef, length(zf), nt)   # resolved part alone
     dBdz    = Array{Float64}(undef, length(zf), nt)
+    S_raw   = Array{Float64}(undef, length(zf), nt)
 
     col(v, n) = Float64.(Array(interior(S[v][n], 1, 1, :)))
 
@@ -151,6 +167,7 @@ function reduce_case(r)
         Fr_raw[:, i] = res
         Fb_raw[:, i] = res .+ col("F_sgs", n)
         dBdz[:, i]   = col("dBdz", n)
+        S_raw[:, i]  = shear_on_faces(U, V, zc, zf)
     end
 
     # --- reduce in time, then form the ratio (never the other way round) ---
@@ -160,6 +177,7 @@ function reduce_case(r)
     F_b = boxcar(Fb_raw, nh)
     F_r = boxcar(Fr_raw, nh)
     G   = boxcar(dBdz, nh)
+    S   = boxcar(S_raw, nh)
 
     floorv = GRAD_FLOOR * N²_ref
     mask(F) = [G[k, n] > floorv ? -F[k, n] / G[k, n] : NaN
@@ -171,6 +189,7 @@ function reduce_case(r)
     K_at_h   = [interp_at(zf, view(K_T, :, n), h[n]) for n in 1:nt]
     K_res_h  = [interp_at(zf, view(K_r, :, n), h[n]) for n in 1:nt]
     TKE_at_h = [interp_at(zc, view(TKE, :, n), h[n]) for n in 1:nt]
+    S_at_h   = [interp_at(zf, view(S, :, n), h[n]) for n in 1:nt]
 
     times = tv[sel]
     fin(v) = (w = filter(isfinite, v); isempty(w) ? NaN : median(w))
@@ -183,13 +202,14 @@ function reduce_case(r)
     sgs_share = fin([isfinite(K_at_h[i]) && K_at_h[i] != 0 ?
                      1 - K_res_h[i] / K_at_h[i] : NaN for i in 1:nt])
 
-    log(@sprintf("  r=%-5.1f N=%.2e  nt=%4d  med h=%6.3f m  drift %+5.1f %%  med K_at_h=%.3e  sgs share %5.2f  med TKE_at_h=%.3e  finite l: %d/%d",
+    log(@sprintf("  r=%-5.1f N=%.2e  nt=%4d  med h=%6.3f m  drift %+5.1f %%  med K_at_h=%.3e  sgs share %5.2f  med TKE_at_h=%.3e  med S_at_h=%.3e  finite l: %d/%d",
                  r, r * f₀, nt, fin(h), 100drift, fin(K_at_h), sgs_share, fin(TKE_at_h),
+                 fin(S_at_h),
                  count(i -> isfinite(K_at_h[i]) && isfinite(TKE_at_h[i]) &&
                             TKE_at_h[i] > 0 && K_at_h[i] > 0, 1:nt), nt))
     return (r = r, N = r * f₀, N2_ref = N²_ref, times = times, h = h,
             K_at_h = K_at_h, K_res_at_h = K_res_h, TKE_at_h = TKE_at_h,
-            h_drift = drift, sgs_share = sgs_share)
+            S_at_h = S_at_h, h_drift = drift, sgs_share = sgs_share)
 end
 
 # ---------------- run ----------------
@@ -213,7 +233,7 @@ jldopen(OUT, "w") do io
         io["$g/N"] = c.N; io["$g/N2_ref"] = c.N2_ref
         io["$g/times"] = c.times; io["$g/h"] = c.h
         io["$g/K_at_h"] = c.K_at_h; io["$g/K_res_at_h"] = c.K_res_at_h
-        io["$g/TKE_at_h"] = c.TKE_at_h
+        io["$g/TKE_at_h"] = c.TKE_at_h; io["$g/S_at_h"] = c.S_at_h
         io["$g/h_drift"] = c.h_drift; io["$g/sgs_share"] = c.sgs_share
     end
 end
