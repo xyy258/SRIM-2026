@@ -1,14 +1,27 @@
+Ekman side: ekman_lengthscales_T10_moments.jld2
+  flux = resolved + subgrid — F_b = (<wb> - <w><b>) + F_sgs
+
 Stokes fit (unchanged): L∞ = 0.598 m, x₀ = 1.475 m, rms 7.5 % in l
+Ekman fit: not attempted — only 3 of 7 cases have equilibrated, too few to constrain L∞ and x₀
+
+Ekman medians against the Stokes fit  (ratio > 1 means Ekman mixes more)
+  N/f = 0.5    l = 1.4755 m   Stokes fit 0.5972 m   ratio  2.47   h drift  +7.2 %   l drift  -10.1 %   (upper bound — l still falling)
+  N/f = 1      l = 1.0565 m   Stokes fit 0.5712 m   ratio  1.85   h drift  +7.4 %   l drift  -11.4 %   (upper bound — l still falling)
+  N/f = 2      l = 0.7771 m   Stokes fit 0.5176 m   ratio  1.50   h drift  +6.7 %   l drift  -13.9 %   (upper bound — l still falling)
+  N/f = 5      l = 0.4252 m   Stokes fit 0.3740 m   ratio  1.14   h drift  +8.1 %   l drift  -20.8 %   (upper bound — l still falling)
+  N/f = 10     l = 0.2381 m   Stokes fit 0.2622 m   ratio  0.91   h drift  +4.1 %   l drift   +3.1 %
+  N/f = 25     l = 0.1092 m   Stokes fit 0.1346 m   ratio  0.81   h drift  +0.9 %   l drift   -4.4 %
+  N/f = 50     l = 0.0640 m   Stokes fit 0.0655 m   ratio  0.98   h drift  -1.4 %   l drift   +0.3 %
 
 case medians — x = √TKE/N (m), l = K_T/√TKE (m)
   Stokes                                    Ekman
-  N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l
-  1      2.8956  0.4783     0.4648      0.031 | 0.5    29.5635  1.1848
-  2      1.4305  0.4229     0.4153      0.028 | 1      11.6206  1.4865
-  5      0.5113  0.1796     0.1693      0.060 | 2       5.6859  1.2144
-  10     0.2815  0.0956     0.0861      0.102 | 5       2.2670  0.6113
-  25     0.1026  0.0384     0.0282      0.295 | 10      1.1712  0.2801
-  50     0.0438  0.0183     0.0076      0.592 | 25      0.4499  0.0914
-                                              | 50      0.2031  0.0316
+  N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l   sgs share
+  1      2.8956  0.4783     0.4648      0.031 | 0.5     9.8465  1.4755     0.04
+  2      1.4305  0.4229     0.4153      0.028 | 1       4.5784  1.0565     0.05
+  5      0.5113  0.1796     0.1693      0.060 | 2       2.9600  0.7771     0.06
+  10     0.2815  0.0956     0.0861      0.102 | 5       1.4482  0.4252     0.10
+  25     0.1026  0.0384     0.0282      0.295 | 10      0.8513  0.2381     0.17
+  50     0.0438  0.0183     0.0076      0.592 | 25      0.3762  0.1092     0.32
+                                              | 50      0.1710  0.0640     0.56
 
 wrote /home/tll46/SRIM-2026/Combined/figures/l_vs_q_over_N_ath_T10_combined.png
