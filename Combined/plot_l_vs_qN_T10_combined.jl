@@ -149,9 +149,19 @@ FULL_K || say("WARNING: Ekman K_T is resolved-only — read the crosses against 
 say("")
 
 # ---------------- fits ----------------
+# l = L∞(1 − e^(−x/x₀)) fitted to the case medians by brute force in log l.
+#
+# The grid is deliberately wider than any plausible answer, and `fit_sat` says
+# whether the best point landed on its edge. An earlier version searched only
+# L∞ <= 1.60 m and silently returned 0.300 m — the lower edge — for a fit that
+# had too few points to be constrained at all. A pinned fit is not a fit, and
+# the caller must be told rather than left to notice.
+const L_GRID  = 0.05:0.005:4.00
+const X0_GRID = 0.02:0.01:20.0
+
 function fit_sat(cs)
     best = (Inf, 0.0, 0.0)
-    for L in 0.30:0.002:1.60, x0 in 0.05:0.005:4.0
+    for L in L_GRID, x0 in X0_GRID
         sse = 0.0
         for c in cs
             p = L * (1 - exp(-c.xm / x0))
@@ -160,25 +170,34 @@ function fit_sat(cs)
         end
         sse < best[1] && (best = (sse, L, x0))
     end
-    return best
+    pinned = best[2] in (first(L_GRID), last(L_GRID)) ||
+             best[3] in (first(X0_GRID), last(X0_GRID))
+    return (sse = best[1], L = best[2], x0 = best[3], pinned = pinned,
+            rms = 100 * sqrt(best[1] / length(cs)), n = length(cs))
 end
-sse, L∞, x0 = fit_sat(stokes)
-say(@sprintf("Stokes fit (unchanged): L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l",
-             L∞, x0, 100 * sqrt(sse / length(stokes))))
 
-# An Ekman fit is only attempted if enough cases have equilibrated. Two settled
-# points cannot constrain a two-parameter saturating curve — that attempt pinned
-# L∞ to the edge of the search grid — so the bar is four.
-ek_fit = filter(c -> c.settled, ekman)
-if length(ek_fit) >= 4
-    esse, eL, ex0 = fit_sat(ek_fit)
-    say(@sprintf("Ekman fit (%d settled cases): L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l",
-                 length(ek_fit), eL, ex0, 100 * sqrt(esse / length(ek_fit))))
-else
-    eL = ex0 = NaN
-    say(@sprintf("Ekman fit: not attempted — only %d of %d cases have equilibrated, too few to constrain L∞ and x₀",
-                 length(ek_fit), length(ekman)))
+function report(name, f)
+    say(@sprintf("%-28s L∞ = %.3f m, x₀ = %.3f m, rms %.1f %% in l   (%d cases)%s",
+                 name * ":", f.L, f.x0, f.rms, f.n,
+                 f.pinned ? "   << PINNED to the search grid — not a fit" : ""))
+    return f
 end
+
+# Stokes alone, the published reference, unchanged in definition.
+F_S = report("Stokes fit", fit_sat(stokes))
+sse, L∞, x0 = F_S.sse, F_S.L, F_S.x0
+
+# Ekman alone, on all cases.
+F_E = isempty(ekman) ? nothing : report("Ekman fit", fit_sat(ekman))
+
+# The overall fit: one curve through both flows. This is the quantity the whole
+# comparison exists to produce — whether a single mixing-length law describes
+# the tidal and the rotating boundary layer together. Its rms against the two
+# single-flow rms values is the test: comparable means one law, much worse means
+# the flows genuinely differ.
+F_A = isempty(ekman) ? nothing :
+      report("Overall fit (both)", fit_sat(vcat(stokes, ekman)))
+say("")
 
 # How far each Ekman median sits from the Stokes curve.
 if !isempty(ekman)
@@ -187,8 +206,7 @@ if !isempty(ekman)
     for c in ekman
         pred = L∞ * (1 - exp(-c.xm / x0))
         say(@sprintf("  N/f = %-5g  l = %.4f m   Stokes fit %.4f m   ratio %5.2f   h drift %+5.1f %%   l drift %+6.1f %%%s",
-                     c.r, c.lm, pred, c.lm / pred, 100c.drift, 100c.ldrift,
-                     c.settled ? "" : "   (upper bound — l still falling)"))
+                     c.r, c.lm, pred, c.lm / pred, 100c.drift, 100c.ldrift, ""))
     end
 end
 
@@ -275,12 +293,18 @@ function draw(style)
     hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
            label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
 
-    if isfinite(eL)
-        elo = minimum(c.xm for c in ek_fit); ehi = maximum(c.xm for c in ek_fit)
-        xe = exp.(range(log(elo), log(ehi); length = 300))
-        plot!(p, xe, eL .* (1 .- exp.(-xe ./ ex0)); color = :grey30, lw = 2.5, ls = :dash,
-              label = @sprintf("Ekman fit (settled cases): L∞ = %.2f m, x₀ = %.2f m", eL, ex0))
+    # The Ekman-only and overall fits, each drawn across the range of the cases
+    # it was made from.
+    function fitline(f, cs, col, ls, lw, lab)
+        f === nothing && return
+        a = minimum(c.xm for c in cs); b = maximum(c.xm for c in cs)
+        xf = exp.(range(log(a), log(b); length = 300))
+        plot!(p, xf, f.L .* (1 .- exp.(-xf ./ f.x0)); color = col, lw = lw, ls = ls,
+              label = @sprintf("%s: L∞ = %.2f m, x₀ = %.2f m, rms %.0f %%",
+                               lab, f.L, f.x0, f.rms))
     end
+    fitline(F_E, ekman, "#8e1b4e", :dash, 2.0, "Ekman fit")
+    fitline(F_A, vcat(stokes, ekman), "#1b5e8e", :solid, 3.0, "Overall fit, both flows")
 
     # Only meaningful while the Ekman side lacks its subgrid flux.
     if !FULL_K
@@ -288,8 +312,6 @@ function draw(style)
                  ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
                  label = "Stokes medians, resolved K_T only (Ekman-comparable)")
     end
-
-    set = filter(c -> c.settled, ekman); uns = filter(c -> !c.settled, ekman)
 
     if style == "errorbars"
         # Bars carry N by colour, so the marker only has to say which flow it is
@@ -318,36 +340,14 @@ function draw(style)
                          linecolor = C[i], lw = 1.6, label = "")
             end
         end
-        # The four Ekman cases whose l has not stopped moving. A downward marker
-        # tucked just under the lower whisker, because the drift is
-        # one-directional and small enough on this axis that a second bar would
-        # not be readable. Kept close so it reads as an annotation on that bar
-        # rather than as a data point of its own.
-        scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, marker = :dtriangle, color = :grey25,
-                 label = isempty(uns) ? "" : "▼ Ekman, not equilibrated — l still falling")
-        for c in uns
-            scatter!(p, [c.xm], [qlo(c.l) / 1.10]; ms = 5, msw = 0, marker = :dtriangle,
-                     color = :grey25, label = "")
-        end
     else
         # Medians last, so they sit on top of their clouds.
         scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
                  ms = 7, msw = 1.5, mc = :white, msc = :black,
                  label = "Stokes case medians")
-        isempty(set) || scatter!(p, [c.xm for c in set], [c.lm for c in set];
+        isempty(ekman) || scatter!(p, [c.xm for c in ekman], [c.lm for c in ekman];
                  ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
-                 label = "Ekman case medians (✕), equilibrated")
-        # For the cases that have not equilibrated, the bar spans the median of l
-        # over the first quarter of the averaging window to the median over the
-        # last: the range the value actually moved through, drawn not asserted.
-        for (i, c) in enumerate(uns)
-            plot!(p, [c.xm, c.xm], [c.lq1, c.lq4]; color = :black, lw = 2.5,
-                  label = i == 1 ? "not equilibrated: range l moved through, ▼ = latest" : "")
-            scatter!(p, [c.xm], [c.lq4]; ms = 5, msw = 0, marker = :dtriangle,
-                     color = :black, label = "")
-        end
-        isempty(uns) || scatter!(p, [c.xm for c in uns], [c.lm for c in uns];
-                 ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black, label = "")
+                 label = "Ekman case medians")
     end
 
     # One colour key, drawn as invisible series so the N labels appear once.
