@@ -67,6 +67,9 @@ const T_tide = 2π / ω
 const SKIP   = 3                      # Stokes spin-up, in tidal periods
 const SVALS  = [1, 2, 5, 10, 25, 50]
 
+const C_STOK = "#1b3a6b"
+const C_EKMA = "#8e1b4e"
+
 const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
               (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
               (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
@@ -168,7 +171,51 @@ jldopen(EKFILE, "r") do io
     end
 end
 
-# ---------------- the derived scales ----------------
+# ---------------- fitting ----------------
+# Two families, both fitted in log y so that a 10 % error counts the same at
+# every magnitude, and both by brute force on a log-spaced grid so there is no
+# initial guess to get wrong.
+#
+#   power       y = A·x^b            two parameters, straight on log-log
+#   saturating  y = Y∞(1 − e^(−x/x₀))  two parameters, the house form
+#
+# `pinned` reports whether the best point sat on the edge of its grid, for the
+# same reason it does in plot_l_vs_qN_T10_combined.jl: a fit that ran out of
+# grid is not a fit and must say so rather than return the edge silently.
+function powfit(x, y)
+    lx = log.(x); ly = log.(y); n = length(x)
+    mx = mean(lx); my = mean(ly)
+    b = sum((lx .- mx) .* (ly .- my)) / sum((lx .- mx) .^ 2)
+    a = my - b * mx
+    res = ly .- (a .+ b .* lx)
+    return (A = exp(a), b = b, rms = 100 * sqrt(sum(res .^ 2) / n),
+            n = n, pinned = false,
+            f = t -> exp(a) * t ^ b,
+            lab = @sprintf("power: y = %.3g x^%.2f", exp(a), b))
+end
+
+function satfit(x, y)
+    ygrid = exp.(range(log(0.2minimum(y)), log(50maximum(y)); length = 260))
+    xgrid = exp.(range(log(0.02minimum(x)), log(200maximum(x)); length = 260))
+    best = (Inf, 0.0, 0.0)
+    for Y in ygrid, x0 in xgrid
+        sse = 0.0
+        for i in eachindex(x)
+            p = Y * (1 - exp(-x[i] / x0))
+            p > 0 || (sse = Inf; break)
+            sse += (log(y[i]) - log(p))^2
+        end
+        sse < best[1] && (best = (sse, Y, x0))
+    end
+    Y, x0 = best[2], best[3]
+    pin = Y <= ygrid[2] || Y >= ygrid[end-1] || x0 <= xgrid[2] || x0 >= xgrid[end-1]
+    return (Y = Y, x0 = x0, rms = 100 * sqrt(best[1] / length(x)),
+            n = length(x), pinned = pin,
+            f = t -> Y * (1 - exp(-t / x0)),
+            lab = @sprintf("saturating: y = %.3g(1 − e^(−x/%.3g))", Y, x0))
+end
+
+
 # Formed per time sample, then reduced. The other order would divide medians by
 # medians, which is not the same thing for quantities this correlated.
 function scales(c)
@@ -237,6 +284,61 @@ for (nm, cs) in (("Stokes", S), ("Ekman ", E), ("both  ", vcat(S, E)))
                  nm, a.slope, a.rms, b.slope, b.rms, c.slope, c.rms))
 end
 
+# ---------------- the fits on the two candidate times ----------------
+# Fitted to the case medians, per flow and to both together. Both families are
+# reported; the figure draws whichever fits the two flows together better, and
+# says which it drew.
+tk(cs) = [med(c.τ_K) for c in cs]
+tn(cs) = [med(c.τ_N) for c in cs]
+tsh(cs) = [med(c.τ_s) for c in cs]
+
+say("")
+say("fits of τ_K against each candidate time, on the case medians")
+say("  x       set      power law                        saturating")
+FITS = Dict{Tuple{Symbol,Symbol},Any}()
+for (xk, xf) in ((:τ_N, tn), (:τ_s, tsh))
+    for (nm, cs) in ((:stokes, S), (:ekman, E), (:both, vcat(S, E)))
+        pf = powfit(xf(cs), tk(cs)); sf = satfit(xf(cs), tk(cs))
+        FITS[(xk, nm)] = (pow = pf, sat = sf)
+        say(@sprintf("  %-6s  %-7s  b = %5.2f, rms %5.1f %%          Y∞ = %7.0f s, x₀ = %8.0f s, rms %5.1f %%%s",
+                     string(xk), string(nm), pf.b, pf.rms, sf.Y, sf.x0, sf.rms,
+                     sf.pinned ? "   << PINNED" : ""))
+    end
+end
+# The family is chosen per panel, on the combined set, and a pinned fit is never
+# chosen however good its rms looks. Against τ_s the data have no visible knee,
+# so the saturating form sends x₀ off the top of its grid and degenerates into a
+# straight line with two redundant parameters — better rms, no meaning.
+function choose(xk)
+    sat = FITS[(xk, :both)].sat; pow = FITS[(xk, :both)].pow
+    sat.pinned && return :pow
+    pow.pinned && return :sat
+    return sat.rms <= pow.rms ? :sat : :pow
+end
+const FAM = Dict(xk => choose(xk) for xk in (:τ_N, :τ_s))
+for xk in (:τ_N, :τ_s)
+    say(@sprintf("  %-6s → drawing the %s family%s", string(xk),
+                 FAM[xk] == :sat ? "saturating" : "power-law",
+                 FITS[(xk, :both)].sat.pinned ?
+                     "   (the saturating form pinned here — no knee in the data)" : ""))
+end
+
+# ---------------- cache, so the candidate search need not re-read ----------------
+# Building the Stokes shear means walking 1601 snapshots per case; the weighted
+# scale search wants to iterate quickly over the result, so it is written out.
+CACHE = joinpath(HERE, "Data", "shear_scales_T10.jld2")
+jldopen(CACHE, "w") do io
+    io["note"] = "per-sample L_K, L_N, L_s at z = h; written by plot_shear_scales_T10.jl"
+    for (nm, cs) in (("stokes", S), ("ekman", E))
+        io["$nm/ratios"] = [c.r for c in cs]
+        for c in cs
+            g = @sprintf("%s/r=%.1f", nm, c.r)
+            io["$g/L_K"] = c.L_K; io["$g/L_N"] = c.L_N; io["$g/L_s"] = c.L_s
+        end
+    end
+end
+say("wrote $CACHE")
+
 # ---------------- figures ----------------
 mkpath(FIGDIR)
 
@@ -266,7 +368,7 @@ function keys!(p)
 end
 
 # ---- figure 1: the mixing time against the two candidate times ----
-function panel(xf, xlab, ttl; oneone = true)
+function panel(xf, xlab, ttl; oneone = true, xkey = :τ_N)
     ps = [pt(c, xf, c -> c.τ_K) for c in S]
     pe = [pt(c, xf, c -> c.τ_K) for c in E]
     p = plot(xscale = :log10, yscale = :log10, xlabel = xlab,
@@ -280,11 +382,22 @@ function panel(xf, xlab, ttl; oneone = true)
         plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.0, ls = :dash,
               label = "1:1")
     end
+    # Each fit is drawn only across the range of the cases it was made from.
+    for (key, cs, col, ls, lw) in ((:stokes, S, C_STOK, :dash, 1.8),
+                                   (:ekman,  E, C_EKMA, :dash, 1.8),
+                                   (:both, vcat(S, E), :black, :solid, 2.6))
+        f = getfield(FITS[(xkey, key)], FAM[xkey])
+        xv = [med(xf(c)) for c in cs]
+        xx = exp.(range(log(minimum(xv)), log(maximum(xv)); length = 300))
+        plot!(p, xx, f.f.(xx); color = col, ls = ls, lw = lw,
+              label = @sprintf("%s  %s, rms %.0f %%",
+                               key == :both ? "both" : string(key), f.lab, f.rms))
+    end
     bars!(p, ps, :circle, 7); bars!(p, pe, :xcross, 8)
     return p
 end
-p1 = panel(c -> c.τ_N, "τ_N = 1/N   (s)", "against the stratification time")
-p2 = panel(c -> c.τ_s, "τ_s = 1/S   (s)", "against the shear time")
+p1 = panel(c -> c.τ_N, "τ_N = 1/N   (s)", "against the stratification time"; xkey = :τ_N)
+p2 = panel(c -> c.τ_s, "τ_s = 1/S   (s)", "against the shear time"; xkey = :τ_s)
 keys!(p2)
 f1 = plot(p1, p2; layout = (1, 2), size = (1180, 560),
           plot_title = "T = 10 m, z = h:  the mixing time K_T/TKE against 1/N and 1/S",
@@ -297,9 +410,6 @@ savefig(f1, o1)
 # the N ramp so the two figures can be read against each other. Without the
 # first of those the Stokes and Ekman curves join into one and the eye reads a
 # single trend across a discontinuity that is not there.
-const C_STOK = "#1b3a6b"
-const C_EKMA = "#8e1b4e"
-
 p3 = plot(xscale = :log10, yscale = :log10, xlabel = "r = N/ω = N/f",
           ylabel = "length scale at z = h   (m)", title = "L_N and L_s",
           legend = :bottomleft, legendfontsize = 6,

@@ -50,5 +50,17 @@ how well does each scale line up with L_K, in log space?  (power law, no free sh
   Ekman   slope  0.82 rms 12.1 %   slope  0.92 rms 17.7 %   slope  0.87 rms  6.9 %
   both    slope  0.83 rms 14.2 %   slope  1.08 rms 50.9 %   slope  0.91 rms 12.7 %
 
+fits of τ_K against each candidate time, on the case medians
+  x       set      power law                        saturating
+  τ_N     stokes   b =  0.81, rms  17.0 %          Y∞ =    2156 s, x₀ =     5328 s, rms  11.4 %
+  τ_N     ekman    b =  0.86, rms  12.4 %          Y∞ =    4013 s, x₀ =    12593 s, rms   9.1 %
+  τ_N     both     b =  0.83, rms  16.1 %          Y∞ =    3359 s, x₀ =     9645 s, rms  14.0 %
+  τ_s     stokes   b =  2.30, rms  47.0 %          Y∞ =   81309 s, x₀ =   873652 s, rms  74.3 %   << PINNED
+  τ_s     ekman    b =  0.94, rms  18.8 %          Y∞ =   14453 s, x₀ =   150337 s, rms  20.4 %
+  τ_s     both     b =  1.04, rms  52.5 %          Y∞ =  151446 s, x₀ =  1633452 s, rms  52.7 %   << PINNED
+  τ_N    → drawing the saturating family
+  τ_s    → drawing the power-law family   (the saturating form pinned here — no knee in the data)
+wrote /home/tll46/SRIM-2026/Combined/Data/shear_scales_T10.jld2
+
 wrote /home/tll46/SRIM-2026/Combined/figures/tau_K_vs_timescales_T10.png
 wrote /home/tll46/SRIM-2026/Combined/figures/L_N_L_s_vs_r_T10.png
