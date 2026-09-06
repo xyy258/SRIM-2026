@@ -366,3 +366,155 @@ kept.** One curve through all thirteen cases goes from 14.9 % on `L_N` alone to
 7.5 % that a single flow reaches on its own. The equal-weight harmonic is the
 one to prefer: it ties the minimum to within noise, is smooth rather than kinked,
 and has no free parameter to justify.
+
+
+## The one-figure summary
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_L_K_vs_Lc_T10.jl   # seconds, reads the cache
+```
+
+`figures/L_K_vs_Lc_T10.png` — the preferred candidate only, and the regime
+question, on one page.
+
+**Left**: `L_K` against `L_c = 1/(1/L_N + 1/L_s)` for all thirteen cases, with
+the saturating curve through both flows, `L_K = 2.18(1 − e^(−L_c/4.89))`, rms
+10.4 %. The pure proportionality `L_K = 0.398 L_c` (rms 18.3 %) is dotted
+alongside so the residual curvature is visible rather than asserted.
+
+**Right**: written as `1/L_c = 1/L_N + 1/L_s` the two terms are resistances in
+series and their shares add to one,
+
+    w_N = L_c/L_N       w_s = L_c/L_s       w_N + w_s = 1
+
+so `w_s` is the fraction of `1/L_c` the shear contributes. `w_s > 1/2` is
+shear-limited, `w_s < 1/2` stratification-limited, `w_s = 1/2` is `L_s = L_N`.
+Only `w_s` is drawn — `w_N` is `1 − w_s`. It is also what colours the markers on
+the left, so a point's colour there says which regime it came from. The weight
+is arithmetic on `L_N` and `L_s`, not a fitted quantity.
+
+| flow | r | 0.5 | 1 | 2 | 5 | 10 | 25 | 50 |
+|---|---|---|---|---|---|---|---|---|
+| Stokes | `w_s` | — | **0.59** | 0.40 | 0.23 | 0.18 | 0.15 | 0.06 |
+| Ekman | `w_s` | 0.44 | 0.26 | 0.22 | 0.23 | 0.22 | 0.24 | 0.26 |
+
+Exactly one case in the set is shear-limited, Stokes `r = 1`. The Stokes
+sequence marches monotonically into the stratification-limited corner as `N`
+rises, 0.59 → 0.06; the Ekman sequence does not march anywhere, sitting at
+0.22–0.26 for `r ≥ 1` and only creeping to 0.44 at the weakest stratification.
+So the shear-limited regime is approached from the Stokes side at low `N` and
+never reached on the Ekman side. The shear still earns its place in `L_c` at
+`w_s ≈ 0.25` — that is where the collapse of the two flows onto one curve comes
+from.
+
+## `LOG.txt`
+
+A running record of what this folder has been for, in order, in the comment
+style of `Ekman 3D.jl`: the questions, the two asymmetries and the re-run that
+closed them, the definitions and the two ordering rules, what each figure
+showed, the mistakes made and corrected, and what is still open. The README
+says where things stand; `LOG.txt` says how they got there. Newest entries at
+the bottom; append when something is learned, not when something is run.
+
+
+## l against the Corrsin shear length scale
+
+```
+cd Combined
+GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl   # ~2 min, now also does ε
+GKSwstype=100 julia --project=. plot_l_vs_corrsin_T10.jl      # ~4 min first time, then cached
+```
+
+Same figure as `l` against `√TKE/N`, same two styles, with the abscissa changed
+to the Corrsin scale
+
+    L_C = (ε/S³)^(1/2)
+
+the scale at which the eddy turnover rate matches the mean shear rate. It is
+the shear analogue of the Ozmidov scale, and a different question from
+`L_s = √TKE/S` — `L_s` is built from the energy, `L_C` from its flux.
+
+| file | what it shows |
+|---|---|
+| `figures/l_vs_corrsin_ath_T10_combined.png` | every retained sample, medians on top |
+| `figures/l_vs_corrsin_ath_T10_combined_errorbars.png` | medians with the interquartile range |
+
+### ε is not stored, and had to be estimated
+
+Neither pipeline wrote the dissipation rate, and like `F_sgs` it cannot be
+rebuilt from stored averages. What the moments do carry is every other term of
+the TKE budget, so ε comes from local equilibrium:
+
+    ε ≈ P + B      P = −⟨u′w′⟩ ∂U/∂z − ⟨v′w′⟩ ∂V/∂z + νₑ S²
+                   B = F_b = ⟨w′b′⟩ + F_sgs        (negative when stable)
+
+`reduce_ekman_moments_T10.jl` now writes `P_at_h` and `eps_at_h` alongside
+`S_at_h`; the Stokes side is built the same way inside the plot script and
+cached in `Data/corrsin_T10.jld2`. Three assumptions ride on the abscissa that
+do not ride on the ordinate: transport is dropped and cannot be checked (the
+worst of them, and it is exactly what dominates at the top of a mixed layer);
+storage is dropped, and is checked below; and `νₑ ≈ κₑ`, since only the
+buoyancy diffusivity was written.
+
+### Where it works, and where it does not
+
+**Local equilibrium fails at `z = h` itself.** The fraction of samples with
+`ε > 0`:
+
+| flow, r | 0.25h | 0.50h | 0.75h | 1.00h |
+|---|---|---|---|---|
+| Stokes 1 | 0.96 | 0.98 | 0.94 | 0.90 |
+| Stokes 5 | 0.99 | 0.96 | 0.97 | 0.60 |
+| Stokes 25 | 1.00 | 0.96 | 0.87 | 0.19 |
+| Stokes 50 | 0.99 | 0.97 | 0.83 | **0.03** |
+| Ekman, all r | 1.00 | 1.00 | 1.00 | 0.73–1.00 |
+
+Everywhere inside the layer the estimate is fine. It collapses only on the top
+face, and only for the strongly stratified Stokes cases, where `P ≈ 0` — the
+mean shear has nothing left to do at `z = h` — and the budget there is
+transport against buoyancy destruction, which is precisely the balance local
+equilibrium throws away. This is a statement about the height, not about the
+method.
+
+So three cases are unusable at `z = h`: Stokes `r` = 10, 25, 50, with `ε > 0`
+in 44 %, 19 % and 3 % of samples. They are drawn hollow and kept out of every
+fit — their surviving samples are selected on the sign of a budget residual,
+which is the kind of selection that manufactures a trend.
+
+### What the ten usable cases show
+
+| flow | r | ε (m²/s³) | S (1/s) | L_C (m) | l (m) | ε/(P+\|B\|) |
+|---|---|---|---|---|---|---|
+| Stokes | 1 | 1.66e−12 | 1.47e−04 | 0.790 | 0.473 | 0.88 |
+| Stokes | 2 | 1.01e−12 | 1.30e−04 | 0.676 | 0.432 | 0.61 |
+| Stokes | 5 | 4.30e−13 | 1.51e−04 | 0.509 | 0.189 | 0.21 |
+| Ekman | 0.5 | 1.07e−12 | 3.94e−05 | 4.132 | 1.483 | 0.73 |
+| Ekman | 1 | 4.28e−13 | 3.44e−05 | 3.128 | 1.002 | 0.33 |
+| Ekman | 2 | 1.09e−12 | 5.59e−05 | 2.729 | 0.752 | 0.23 |
+| Ekman | 5 | 7.07e−12 | 1.51e−04 | 1.444 | 0.426 | 0.35 |
+| Ekman | 10 | 1.56e−11 | 2.89e−04 | 0.840 | 0.239 | 0.28 |
+| Ekman | 25 | 5.02e−11 | 8.00e−04 | 0.310 | 0.109 | 0.28 |
+| Ekman | 50 | 1.10e−10 | 1.76e−03 | 0.144 | 0.064 | 0.29 |
+
+`ε/(P+|B|)` sits near 0.3, so ε is a healthy fraction of the budget rather than
+the small difference of two large terms — the failure mode that would have made
+this hopeless.
+
+| fit | form | rms |
+|---|---|---|
+| Ekman, 7 cases | `l = 0.331 L_C^0.92` | 12.4 % |
+| Stokes, 3 cases | `l = 0.874 L_C^2.19` | 10.9 % |
+| Overall, 10 cases | `l = 0.375 L_C^0.89` | 25.7 % |
+
+The saturating form pins on every set that has enough cases to try it: over
+this range `l` against `L_C` has no knee, so a power law is what gets drawn.
+
+**The Ekman column is close to `l ∝ L_C`** — exponent 0.92, and `l ≈ L_C/3`
+across a factor of thirty in `L_C`. That is a cleaner statement than anything
+`√TKE/N` gave on that side. **The two flows still do not share it**: the Stokes
+exponent is 2.19, and one line through both leaves 25.7 %. But the Stokes fit
+rests on three points spanning less than a factor of two in `L_C`, over exactly
+the part of the sweep where the `ε` estimate is starting to degrade (`ε/(P+|B|)`
+falling 0.88 → 0.21), so it is the weakest number in the table and should not be
+read as a contradiction of the Ekman result.

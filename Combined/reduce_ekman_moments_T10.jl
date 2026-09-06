@@ -4,9 +4,38 @@
 #     h(t)          mixed-layer height, crossing definition at 0.1 N²_ref
 #     K_at_h(t)     turbulent diffusivity at z = h
 #     TKE_at_h(t)   turbulent kinetic energy at z = h
+#     S_at_h(t)     magnitude of the mean shear at z = h
+#     eps_at_h(t)   dissipation rate at z = h, from local equilibrium
 #
 # from which l = K_at_h/√TKE_at_h and x = √TKE_at_h/N, exactly as in
 # Stokes/3D/plot_l_vs_qN_T10.jl.
+#
+# ---------------- ε, and why it is an estimate ----------------
+# Neither pipeline stores the dissipation rate, and it cannot be rebuilt from
+# stored averages: ε is an average of a product of fluctuating gradients. What
+# it CAN be got from is the TKE budget, whose other terms were stored. Dropping
+# storage and transport leaves local equilibrium,
+#
+#     ε ≈ P + B         P = −⟨u′w′⟩ ∂U/∂z − ⟨v′w′⟩ ∂V/∂z + νₑ S²
+#                       B = F_b = ⟨w′b′⟩ + F_sgs      (negative when stable)
+#
+# every term of which is on disk, on the faces, at the same nodes. Three things
+# this assumes, all of them worth remembering when reading a Corrsin scale
+# built from it:
+#
+#   1. Storage is dropped. ∂TKE/∂t is computable from the record and its size
+#      relative to ε is reported per case in the table below — it is the direct
+#      check on the assumption, and it is the one that bites in the oscillating
+#      Stokes case rather than here.
+#   2. Transport is dropped. ⟨w′e′⟩ and the pressure term were never stored, so
+#      unlike storage this one cannot be checked. At z = h, the top of the
+#      mixed layer, transport is not generally small — this is the weakest of
+#      the three.
+#   3. νₑ ≈ κₑ. Only the buoyancy diffusivity κₑ + κ₀ was written, so the
+#      subgrid production uses it in place of the eddy viscosity. AMD computes
+#      the two with the same coefficient but different numerators, so they are
+#      the same order, not equal. It matters only where the subgrid share is
+#      large, which is the high-N end.
 #
 # ---------------- Why this replaces reduce_ekman_T10.jl ----------------
 # The older script read Data/Ekman/4/, the runs "Ekman 3D.jl" produced with its
@@ -108,14 +137,20 @@ centres_to_faces(fc, zc, zf) =
 # spiral turns the mean flow with height, so ∂V/∂z is not small. A face k lies
 # between centres k-1 and k, which is exact for a stretched grid; the two
 # boundary faces have no such pair and take their neighbour's value.
-function shear_on_faces(U, V, zc, zf)
-    S = similar(float(U), length(zf))
+function shear_components(U, V, zc, zf)
+    dU = zeros(Float64, length(zf)); dV = zeros(Float64, length(zf))
     @inbounds for k in 2:length(zc)
         dz = zc[k] - zc[k-1]
-        S[k] = hypot((U[k] - U[k-1]) / dz, (V[k] - V[k-1]) / dz)
+        dU[k] = (U[k] - U[k-1]) / dz
+        dV[k] = (V[k] - V[k-1]) / dz
     end
-    S[1] = S[2]; S[end] = S[end-1]
-    return S
+    dU[1] = dU[2]; dU[end] = dU[end-1]
+    dV[1] = dV[2]; dV[end] = dV[end-1]
+    return dU, dV
+end
+function shear_on_faces(U, V, zc, zf)
+    dU, dV = shear_components(U, V, zc, zf)
+    return hypot.(dU, dV)
 end
 faces_to_centres(ff, zf, zc) =
     [interp_at(zf, ff, clamp(zc[k], zf[1], zf[end])) for k in eachindex(zc)]
@@ -128,7 +163,8 @@ function reduce_case(r)
 
     series(v) = FieldTimeSeries(file, v; backend = OnDisk())
     S = Dict(v => series(v) for v in
-             ("U", "V", "W", "B", "dBdz", "uu", "vv", "ww", "wb", "F_sgs"))
+             ("U", "V", "W", "B", "dBdz", "uu", "vv", "ww", "wb", "F_sgs",
+              "uw", "vw", "kappa_sgs"))
 
     grid = S["B"].grid
     zc = Array(znodes(grid, Center()))       # 400, where U V B uu vv ww live
@@ -145,6 +181,8 @@ function reduce_case(r)
     Fr_raw  = Array{Float64}(undef, length(zf), nt)   # resolved part alone
     dBdz    = Array{Float64}(undef, length(zf), nt)
     S_raw   = Array{Float64}(undef, length(zf), nt)
+    Pr_raw  = Array{Float64}(undef, length(zf), nt)   # resolved shear production
+    Ps_raw  = Array{Float64}(undef, length(zf), nt)   # subgrid shear production
 
     col(v, n) = Float64.(Array(interior(S[v][n], 1, 1, :)))
 
@@ -167,7 +205,21 @@ function reduce_case(r)
         Fr_raw[:, i] = res
         Fb_raw[:, i] = res .+ col("F_sgs", n)
         dBdz[:, i]   = col("dBdz", n)
-        S_raw[:, i]  = shear_on_faces(U, V, zc, zf)
+
+        # Shear production, on the faces where ⟨uw⟩ and ⟨vw⟩ already live.
+        # P = −⟨u′w′⟩ ∂U/∂z − ⟨v′w′⟩ ∂V/∂z, with the Reynolds decomposition
+        # ⟨u′w′⟩ = ⟨uw⟩ − ⟨u⟩⟨w⟩ done the same way it is for the buoyancy flux.
+        # ⟨w⟩ is ~1e-20 m/s so the correction is nominal, but it keeps the
+        # decomposition exact rather than nearly exact.
+        dU, dV = shear_components(U, V, zc, zf)
+        S_raw[:, i] = hypot.(dU, dV)
+        Uf = centres_to_faces(U, zc, zf); Vf = centres_to_faces(V, zc, zf)
+        Pr_raw[:, i] = .-(col("uw", n) .- Uf .* W) .* dU .-
+                        (col("vw", n) .- Vf .* W) .* dV
+        # The subgrid part of the same term, νₑ S². Only the buoyancy
+        # diffusivity κₑ + κ₀ was stored, so this takes νₑ ≈ κₑ — see the
+        # header. It matters where the subgrid share is large, i.e. at high N.
+        Ps_raw[:, i] = col("kappa_sgs", n) .* (dU .^ 2 .+ dV .^ 2)
     end
 
     # --- reduce in time, then form the ratio (never the other way round) ---
@@ -178,6 +230,21 @@ function reduce_case(r)
     F_r = boxcar(Fr_raw, nh)
     G   = boxcar(dBdz, nh)
     S   = boxcar(S_raw, nh)
+    P_r = boxcar(Pr_raw, nh)
+    P_s = boxcar(Ps_raw, nh)
+    # Local-equilibrium dissipation: ε = P + B, with B = F_b the buoyancy flux
+    # (negative under stable stratification, so it is a sink). Storage and
+    # transport are dropped; how big the storage term is, is reported below.
+    EPS = P_r .+ P_s .+ F_b
+    # ∂TKE/∂t at fixed z, central in time, so that the storage term can be both
+    # reported and optionally kept. Taking it on the profile and interpolating
+    # afterwards keeps it a pure tendency; differencing TKE_at_h(t) instead
+    # would fold in the motion of h itself.
+    dEdt = fill(NaN, size(TKE))
+    tsel = tv[sel]
+    @inbounds for k in axes(TKE, 1), n in 2:nt-1
+        dEdt[k, n] = (TKE[k, n+1] - TKE[k, n-1]) / (tsel[n+1] - tsel[n-1])
+    end
 
     floorv = GRAD_FLOOR * N²_ref
     mask(F) = [G[k, n] > floorv ? -F[k, n] / G[k, n] : NaN
@@ -190,6 +257,12 @@ function reduce_case(r)
     K_res_h  = [interp_at(zf, view(K_r, :, n), h[n]) for n in 1:nt]
     TKE_at_h = [interp_at(zc, view(TKE, :, n), h[n]) for n in 1:nt]
     S_at_h   = [interp_at(zf, view(S, :, n), h[n]) for n in 1:nt]
+    P_at_h   = [interp_at(zf, view(P_r, :, n), h[n]) + interp_at(zf, view(P_s, :, n), h[n])
+                for n in 1:nt]
+    Pr_at_h  = [interp_at(zf, view(P_r, :, n), h[n]) for n in 1:nt]
+    eps_at_h = [interp_at(zf, view(EPS, :, n), h[n]) for n in 1:nt]
+    Fb_at_h  = [interp_at(zf, view(F_b, :, n), h[n]) for n in 1:nt]
+    dEdt_at_h = [interp_at(zc, view(dEdt, :, n), h[n]) for n in 1:nt]
 
     times = tv[sel]
     fin(v) = (w = filter(isfinite, v); isempty(w) ? NaN : median(w))
@@ -202,14 +275,36 @@ function reduce_case(r)
     sgs_share = fin([isfinite(K_at_h[i]) && K_at_h[i] != 0 ?
                      1 - K_res_h[i] / K_at_h[i] : NaN for i in 1:nt])
 
-    log(@sprintf("  r=%-5.1f N=%.2e  nt=%4d  med h=%6.3f m  drift %+5.1f %%  med K_at_h=%.3e  sgs share %5.2f  med TKE_at_h=%.3e  med S_at_h=%.3e  finite l: %d/%d",
+    # Two checks on the local-equilibrium assumption, both reported per case.
+    # `store` is |∂TKE/∂t|/ε — how much of the budget the dropped storage term
+    # is. `cancel` is ε/(P + |B|) — how much of a residual ε is between two
+    # larger terms; when that is small, ε is the difference of two nearly equal
+    # numbers and the estimate is fragile whatever the storage does.
+    store  = fin([abs(dEdt_at_h[n]) / abs(eps_at_h[n]) for n in 1:nt
+                  if isfinite(dEdt_at_h[n]) && isfinite(eps_at_h[n]) && eps_at_h[n] != 0])
+    cancel = fin([eps_at_h[n] / (abs(P_at_h[n]) + abs(Fb_at_h[n])) for n in 1:nt
+                  if isfinite(eps_at_h[n]) && isfinite(P_at_h[n]) && isfinite(Fb_at_h[n])])
+    eps_neg = count(x -> isfinite(x) && x <= 0, eps_at_h)
+    # Where in the layer does local equilibrium actually hold? The fraction of
+    # samples with ε > 0, at fractions of h. It is a diagnostic only — nothing
+    # downstream evaluates anywhere but z = h — but it says whether a failure
+    # at z = h is the method or the height.
+    zscan = [count(n -> (e = interp_at(zf, view(EPS, :, n), a * h[n]);
+                         isfinite(e) && e > 0), 1:nt) / nt
+             for a in (0.25, 0.5, 0.75, 1.0)]
+
+    log(@sprintf("  r=%-5.1f N=%.2e  nt=%4d  med h=%6.3f m  drift %+5.1f %%  med K_at_h=%.3e  sgs share %5.2f  med TKE_at_h=%.3e  med S_at_h=%.3e  med P=%.3e  med eps=%.3e  eps/(P+|B|)=%5.2f  |dTKE/dt|/eps=%6.2f  eps<=0: %3d  eps>0 at (0.25,0.5,0.75,1)h: %.2f %.2f %.2f %.2f  finite l: %d/%d",
                  r, r * f₀, nt, fin(h), 100drift, fin(K_at_h), sgs_share, fin(TKE_at_h),
-                 fin(S_at_h),
+                 fin(S_at_h), fin(P_at_h), fin(eps_at_h), cancel, store, eps_neg, zscan...,
                  count(i -> isfinite(K_at_h[i]) && isfinite(TKE_at_h[i]) &&
                             TKE_at_h[i] > 0 && K_at_h[i] > 0, 1:nt), nt))
     return (r = r, N = r * f₀, N2_ref = N²_ref, times = times, h = h,
             K_at_h = K_at_h, K_res_at_h = K_res_h, TKE_at_h = TKE_at_h,
-            S_at_h = S_at_h, h_drift = drift, sgs_share = sgs_share)
+            S_at_h = S_at_h, P_at_h = P_at_h, P_res_at_h = Pr_at_h,
+            eps_at_h = eps_at_h, Fb_at_h = Fb_at_h, dEdt_at_h = dEdt_at_h,
+            eps_store = store, eps_cancel = cancel, eps_neg = eps_neg,
+            eps_zscan = zscan,
+            h_drift = drift, sgs_share = sgs_share)
 end
 
 # ---------------- run ----------------
@@ -234,6 +329,11 @@ jldopen(OUT, "w") do io
         io["$g/times"] = c.times; io["$g/h"] = c.h
         io["$g/K_at_h"] = c.K_at_h; io["$g/K_res_at_h"] = c.K_res_at_h
         io["$g/TKE_at_h"] = c.TKE_at_h; io["$g/S_at_h"] = c.S_at_h
+        io["$g/P_at_h"] = c.P_at_h; io["$g/P_res_at_h"] = c.P_res_at_h
+        io["$g/eps_at_h"] = c.eps_at_h; io["$g/Fb_at_h"] = c.Fb_at_h
+        io["$g/dEdt_at_h"] = c.dEdt_at_h; io["$g/eps_cancel"] = c.eps_cancel
+        io["$g/eps_zscan"] = c.eps_zscan
+        io["$g/eps_store"] = c.eps_store; io["$g/eps_neg"] = c.eps_neg
         io["$g/h_drift"] = c.h_drift; io["$g/sgs_share"] = c.sgs_share
     end
 end

@@ -1,0 +1,68 @@
+walking the Stokes moment files — a few minutes
+Stokes N/ω = 1     1001 samples  med S = 1.467e-04  med eps = 1.660e-12
+Stokes N/ω = 2     1001 samples  med S = 1.300e-04  med eps = 1.005e-12
+Stokes N/ω = 5     1001 samples  med S = 1.509e-04  med eps = 4.302e-13
+Stokes N/ω = 10    1001 samples  med S = 2.239e-04  med eps = -5.059e-13
+Stokes N/ω = 25    1001 samples  med S = 4.347e-04  med eps = -4.238e-12
+Stokes N/ω = 50    1001 samples  med S = 3.081e-04  med eps = -8.710e-12
+wrote /home/tll46/SRIM-2026/Combined/Data/corrsin_T10.jld2
+
+retained samples, and why the rest went
+  flow    r      kept        K_T<=0   eps<=0    S<=0   eps>0 frac
+  Stokes 1       656/1001       282      100       0       0.90
+  Stokes 2       546/1001       292      217       0       0.78
+  Stokes 5       483/1001       129      406       0       0.59
+  Stokes 10      395/1001        83      560       0       0.44   << NOT USABLE, excluded from the fits
+  Stokes 25      174/1001       110      805       0       0.20   << NOT USABLE, excluded from the fits
+  Stokes 50       34/1001         0      967       0       0.03   << NOT USABLE, excluded from the fits
+  Ekman  0.5     741/801          0       60       0       0.93
+  Ekman  1       625/801          0      176       0       0.78
+  Ekman  2       588/801          0      213       0       0.73
+  Ekman  5       682/801          0      119       0       0.85
+  Ekman  10      704/801          0       97       0       0.88
+  Ekman  25      801/801          0        0       0       1.00
+  Ekman  50      801/801          0        0       0       1.00
+
+where in the layer does local equilibrium hold?  fraction of samples with
+ε > 0 at fractions of h.  A column that is fine at 0.5h and fails at h is
+telling us about the height, not about the method.
+  flow    r      0.25h  0.50h  0.75h  1.00h
+  Stokes 1       0.96   0.98   0.94   0.90
+  Stokes 2       0.97   0.93   0.98   0.78
+  Stokes 5       0.99   0.96   0.97   0.60
+  Stokes 10      0.96   0.99   0.91   0.44
+  Stokes 25      1.00   0.96   0.87   0.19
+  Stokes 50      0.99   0.97   0.83   0.03
+  Ekman  0.5     1.00   1.00   1.00   0.93
+  Ekman  1       1.00   1.00   1.00   0.78
+  Ekman  2       1.00   1.00   1.00   0.73
+  Ekman  5       1.00   1.00   1.00   0.85
+  Ekman  10      1.00   1.00   1.00   0.88
+  Ekman  25      1.00   1.00   1.00   1.00
+  Ekman  50      1.00   1.00   1.00   1.00
+
+medians at z = h.  L_C = (ε/S³)^(1/2);  ε/(P+|B|) says how much of a
+residual ε is between the two larger budget terms
+  flow    r        eps (m²/s³)   S (1/s)      L_C (m)     l (m)    eps/(P+|B|)
+  Stokes 1        1.6605e-12   1.4668e-04     0.7902    0.4726        0.88
+  Stokes 2        1.0051e-12   1.2996e-04     0.6764    0.4322        0.61
+  Stokes 5        4.3024e-13   1.5088e-04     0.5091    0.1886        0.21
+  Stokes 10      -5.0590e-13   2.2393e-04     0.3195    0.1002       -0.25
+  Stokes 25      -4.2383e-12   4.3472e-04     0.0541    0.0255       -0.60
+  Stokes 50      -8.7105e-12   3.0815e-04     0.0559    0.0175       -1.00
+  Ekman  0.5      1.0710e-12   3.9438e-05     4.1324    1.4829        0.73
+  Ekman  1        4.2828e-13   3.4422e-05     3.1278    1.0023        0.33
+  Ekman  2        1.0860e-12   5.5853e-05     2.7289    0.7524        0.23
+  Ekman  5        7.0682e-12   1.5113e-04     1.4439    0.4255        0.35
+  Ekman  10       1.5620e-11   2.8896e-04     0.8399    0.2389        0.28
+  Ekman  25       5.0193e-11   7.9952e-04     0.3104    0.1092        0.28
+  Ekman  50       1.1029e-10   1.7623e-03     0.1436    0.0640        0.29
+
+fits of l against L_C, on the case medians of the 10 usable cases of 13
+  set       saturating  l = L∞(1 − e^(−x/x₀))            power law  l = A x^b
+  Stokes  too few cases                                        A = 0.874, b =  2.19, rms  10.9 %
+  Ekman   L∞ =  4.00 m, x₀ = 11.25 m, rms  15.1 %  << PINNED, not a fit A = 0.331, b =  0.92, rms  12.4 %
+  both    L∞ =  2.27 m, x₀ =  5.27 m, rms  25.7 %              A = 0.375, b =  0.89, rms  25.7 %
+
+wrote /home/tll46/SRIM-2026/Combined/figures/l_vs_corrsin_ath_T10_combined.png
+wrote /home/tll46/SRIM-2026/Combined/figures/l_vs_corrsin_ath_T10_combined_errorbars.png

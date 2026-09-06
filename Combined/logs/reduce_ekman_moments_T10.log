@@ -1,12 +1,12 @@
 Ekman T = 10 m reduction from the plane-averaged moments — h = crossing at 0.1 N²_ref, K_T from resolved + subgrid flux,
 window = 4.0 inertial periods at the end, grad floor = 0.05 N²_ref
-started 2026-09-05T17:46:14.852
-  r=0.5   N=5.00e-05  nt= 801  med h=20.521 m  drift  +7.2 %  med K_at_h=7.259e-04  sgs share  0.04  med TKE_at_h=2.424e-07  med S_at_h=3.944e-05  finite l: 801/801
-  r=1.0   N=1.00e-04  nt= 801  med h=20.663 m  drift  +7.4 %  med K_at_h=4.846e-04  sgs share  0.05  med TKE_at_h=2.096e-07  med S_at_h=3.442e-05  finite l: 801/801
-  r=2.0   N=2.00e-04  nt= 801  med h=18.664 m  drift  +6.7 %  med K_at_h=4.466e-04  sgs share  0.06  med TKE_at_h=3.505e-07  med S_at_h=5.585e-05  finite l: 801/801
-  r=5.0   N=5.00e-04  nt= 801  med h=14.458 m  drift  +8.1 %  med K_at_h=3.223e-04  sgs share  0.10  med TKE_at_h=5.243e-07  med S_at_h=1.511e-04  finite l: 801/801
-  r=10.0  N=1.00e-03  nt= 801  med h=11.450 m  drift  +4.1 %  med K_at_h=1.995e-04  sgs share  0.17  med TKE_at_h=7.247e-07  med S_at_h=2.890e-04  finite l: 801/801
-  r=25.0  N=2.50e-03  nt= 801  med h= 8.309 m  drift  +0.9 %  med K_at_h=1.034e-04  sgs share  0.32  med TKE_at_h=8.846e-07  med S_at_h=7.995e-04  finite l: 801/801
-  r=50.0  N=5.00e-03  nt= 801  med h= 6.240 m  drift  -1.4 %  med K_at_h=5.453e-05  sgs share  0.56  med TKE_at_h=7.310e-07  med S_at_h=1.762e-03  finite l: 801/801
+started 2026-09-06T23:45:57.664
+  r=0.5   N=5.00e-05  nt= 801  med h=20.521 m  drift  +7.2 %  med K_at_h=7.259e-04  sgs share  0.04  med TKE_at_h=2.424e-07  med S_at_h=3.944e-05  med P=1.266e-12  med eps=1.071e-12  eps/(P+|B|)= 0.73  |dTKE/dt|/eps=  3.78  eps<=0:  60  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.93  finite l: 801/801
+  r=1.0   N=1.00e-04  nt= 801  med h=20.663 m  drift  +7.4 %  med K_at_h=4.846e-04  sgs share  0.05  med TKE_at_h=2.096e-07  med S_at_h=3.442e-05  med P=8.802e-13  med eps=4.283e-13  eps/(P+|B|)= 0.33  |dTKE/dt|/eps=  5.85  eps<=0: 176  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.78  finite l: 801/801
+  r=2.0   N=2.00e-04  nt= 801  med h=18.664 m  drift  +6.7 %  med K_at_h=4.466e-04  sgs share  0.06  med TKE_at_h=3.505e-07  med S_at_h=5.585e-05  med P=2.748e-12  med eps=1.086e-12  eps/(P+|B|)= 0.23  |dTKE/dt|/eps=  4.94  eps<=0: 213  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.73  finite l: 801/801
+  r=5.0   N=5.00e-04  nt= 801  med h=14.458 m  drift  +8.1 %  med K_at_h=3.223e-04  sgs share  0.10  med TKE_at_h=5.243e-07  med S_at_h=1.511e-04  med P=1.388e-11  med eps=7.068e-12  eps/(P+|B|)= 0.35  |dTKE/dt|/eps=  1.60  eps<=0: 119  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.85  finite l: 801/801
+  r=10.0  N=1.00e-03  nt= 801  med h=11.450 m  drift  +4.1 %  med K_at_h=1.995e-04  sgs share  0.17  med TKE_at_h=7.247e-07  med S_at_h=2.890e-04  med P=3.698e-11  med eps=1.562e-11  eps/(P+|B|)= 0.28  |dTKE/dt|/eps=  1.01  eps<=0:  97  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.88  finite l: 801/801
+  r=25.0  N=2.50e-03  nt= 801  med h= 8.309 m  drift  +0.9 %  med K_at_h=1.034e-04  sgs share  0.32  med TKE_at_h=8.846e-07  med S_at_h=7.995e-04  med P=1.156e-10  med eps=5.019e-11  eps/(P+|B|)= 0.28  |dTKE/dt|/eps=  0.36  eps<=0:   0  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 1.00  finite l: 801/801
+  r=50.0  N=5.00e-03  nt= 801  med h= 6.240 m  drift  -1.4 %  med K_at_h=5.453e-05  sgs share  0.56  med TKE_at_h=7.310e-07  med S_at_h=1.762e-03  med P=2.468e-10  med eps=1.103e-10  eps/(P+|B|)= 0.29  |dTKE/dt|/eps=  0.17  eps<=0:   0  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 1.00  finite l: 801/801
 wrote /home/tll46/SRIM-2026/Combined/Data/ekman_lengthscales_T10_moments.jld2
-finished 2026-09-05T17:48:15.069
+finished 2026-09-06T23:48:18.937

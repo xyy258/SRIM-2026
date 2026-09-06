@@ -1,0 +1,567 @@
+# ============================================================================
+# Combined/ — working log
+#
+# What this file is: a running record of what the Combined folder has been for,
+# in the order it happened, kept in the comment style of `Ekman 3D.jl`. The
+# README states where things stand now; this file states how they got there,
+# including the things that were tried and abandoned and the things that were
+# got wrong and corrected. Newest entries at the bottom.
+#
+# Append to it when something is learned, not when something is merely run.
+# ============================================================================
+
+
+## Why this folder exists                                          (2026-08-28)
+
+# Two simulations of the same physics, run by two people:
+#
+#   Stokes   an oscillating (tidal) bottom boundary layer, forcing frequency
+#            ω = 1e-4 s⁻¹, in Stokes/3D
+#   Ekman    a steady rotating bottom boundary layer, f₀ = 1e-4 s⁻¹, in Ekman/
+#
+# Both sweep the initial buoyancy profile and ask the same question: what sets
+# the mixing in the bottom mixed layer, and is there a timescale or a length
+# scale that describes it across both flows? ω and f₀ are deliberately equal, so
+# the sweep parameter r means the same background N on both sides:
+#
+#   r = N/ω  (Stokes)   =   N/f  (Ekman)
+#
+# and a colour ramp in r means the same stratification in either.
+#
+# The standing rule for this folder, and the reason it is a separate folder:
+#
+#   *** Work in Combined/. Do not change any code in Ekman/. Anything that
+#       needs changing gets copied into Combined/ first. ***
+#
+# Ekman/ belongs to the collaborator working the rotating case. Nothing here
+# reads code from it. What is read from that side is `.jld2` output only, under
+# Combined/Data/. `git status --porcelain Ekman/` returns nothing, and should
+# keep returning nothing.
+#
+# Project.toml and Manifest.toml here are copies of Stokes/3D's — the
+# environment already known to run this post-processing. Run everything with
+# `--project=.` from inside Combined/; `--project=..` is an empty environment
+# and fails.
+
+
+## The quantity being compared                                     (2026-08-30)
+
+# Everything below is evaluated at one height, z = h, the top of the mixed
+# layer, and reduced to one number per case by taking a median over time.
+#
+#   h        mixed-layer height, from the crossing definition at 0.1 N²_ref
+#            (mixed_layer_height.jl, H_DEF="crossing", H_LEVEL=0.1)
+#   TKE      ½[(uu − U²) + (vv − V²) + (ww − W²)], from plane-averaged moments
+#   F_b      ⟨w′b′⟩ + F_sgs, the whole buoyancy flux
+#   K_T      −F_b / ⟨∂b/∂z⟩, an eddy diffusivity
+#   l = L_K  K_T/√TKE, a mixing length
+#
+# Two rules that are applied everywhere and matter more than they look:
+#
+#   1. A time boxcar of one twentieth of a forcing period is applied to the
+#      profiles BEFORE any ratio is formed. Ratios of noisy quantities are not
+#      the same as ratios of smoothed ones.
+#   2. Per-sample first, median second. Never the median of the numerator over
+#      the median of the denominator — these series are strongly correlated and
+#      the two orders give different answers.
+#
+# A gradient floor of 0.05 N²_ref guards the K_T division.
+#
+# The first comparison (commit 0788e20) put l against √TKE/N for both flows on
+# one axis at T = 10 m, and the Ekman points did not sit on the Stokes curve.
+# Two reasons were found, and neither was physics.
+
+
+## The two asymmetries                                             (2026-08-30)
+
+# (a) Ekman 3D.jl writes no subgrid buoyancy flux — its `diffusivity_fields`
+#     writer is commented out. So the Ekman K_T was built from the resolved
+#     flux ⟨w′b′⟩ alone while the Stokes K_T used ⟨w′b′⟩ + F_sgs.
+#
+# (b) Velocity.jld2 and Buoyancy.jld2 on the Ekman side are written with
+#     indices = (:, 1, :), so its "plane averages" were 100 x-points at a
+#     single y, not the full 100 × 100 plane.
+#
+# Neither is fixable after the fact. AMD sets κₑ from the full 3D gradient
+# tensor and F_sgs = −⟨(κₑ + κ₀)·∂b/∂z⟩ is an average of a product formed
+# inside the run; with only a y slice on disk there is nothing to rebuild
+# either quantity from. The column had to be re-run.
+
+
+## ekmanrun.jl — the re-run that closes both                       (2026-09-02)
+
+# Combined/ekmanrun.jl re-runs the seven-case T = 10 m column with identical
+# physics and writes the same thirteen plane-averaged profiles that
+# Stokes/3D/Moments.jl writes:
+#
+#   U V W B dBdz   uu vv ww   uw vw wb   kappa_sgs F_sgs
+#
+# Full-plane averages, so (b) goes with (a). It `include`s
+# `Ekman/3D Simulation/Parameters.jl` rather than copying it, so the two
+# parameter sets cannot drift apart — that include is a read, which the standing
+# rule allows; nothing in Ekman/ is written.
+#
+# Cost, measured rather than guessed: ~0.4 h a case, ~3 h for all seven in one
+# 12 h job (swirles.sh). Output is free — all thirteen moments plus the four
+# Avg_* writers came to 0.4320 s/step against 0.4294 s/step for the moments
+# alone, A/B'd on the same card minutes apart. Do not calibrate from the
+# desktop GPU: the same case runs ~10× slower there, and it is shared.
+# Data goes to Data/Ekman_moments/, a sibling of the collaborator's 90 GB
+# Data/Ekman/, which stays untouched.
+
+
+## First attempt failed, silently                                  (2026-09-02)
+
+# All seven cases wrote their t = 0 snapshot, stopped at iteration 100 with
+# `NaN found in field u`, exited 0, and were stamped complete.
+#
+# Cause: the profile-4 softplus in Ekman 3D.jl is written naively as
+#
+#     log(1 + exp(sharp*(z − T)))
+#
+# which overflows Float64 to Inf above z = T + 709.78/sharp = 128.3 m for
+# T = 10, sharp = 6. Commit e278f55 ("Updated Ekman", 2026-09-01) took Lz from
+# 100 to 150, so the grid top H = Lz + S went from 120 m — just under that
+# threshold — to 170 m, just over. On the real grid the naive form is
+# non-finite in 28 of 400 cells, first at z = 129.2 m. dBdz and κₑ go NaN with
+# it and the NaN reaches u through the sponge target.
+#
+# Two fixes, both in Combined/ only:
+#   - ekmanrun.jl uses max(x,0) + log1p(exp(−|x|)), which agrees with the naive
+#     form to 1.7e-21 wherever that is finite and tends to N²(z − T) above it;
+#   - the driver no longer trusts a clean exit. It checks that the moments file
+#     reached the stop time with finite values before writing a marker.
+#
+# *** The overflow is still present in Ekman 3D.jl (line ~253). *** It affects
+# every profile-4 run at the current domain height, at every T in the sweep
+# (threshold T + 118.3 m; even T = 50 stays below the 170 m top). It is the
+# collaborator's file to fix and has deliberately not been touched here.
+
+
+## The re-run, confirmed                                           (2026-09-05)
+
+# Seven of seven cases, 2548 samples each, t_end = 7.998e5 s = 12.73 inertial
+# periods, no non-finite value anywhere, min κₑ ≈ 1e-7 m²/s so the subgrid
+# closure is live everywhere, max|⟨w⟩_xy| ~ 3e-20 m/s as it should be for a
+# full-plane average. Markers stamped 100x100x400_drag.
+#
+# reduce_ekman_moments_T10.jl reduces it to h(t), K_at_h, K_res_at_h, TKE_at_h,
+# S_at_h in Data/ekman_lengthscales_T10_moments.jld2 (~300 kB, ~80 s).
+#
+# What the subgrid flux was worth — its share of K_T at z = h:
+#
+#   N/f = N/ω     0.5    1     2     5     10    25    50
+#   Ekman        0.04  0.05  0.06  0.10  0.17  0.32  0.56
+#   Stokes         —   0.03  0.03  0.06  0.10  0.30  0.59
+#
+# Two different flows, the same subgrid share as a function of stratification.
+# That is the result the re-run existed to get. Reading the old resolved-only
+# Ekman K_T against the full Stokes curve understated l by about a factor of
+# two at N/f = 50, which is exactly why those points sat off the curve.
+#
+# Note on geometry: the new column is Lz = 150, Nz = 400, t_end 8e5 s, while
+# the older Data/Ekman/4 slice runs are Lz = 100, Nz = 500, t_end 4e5 s. They
+# are not comparable and the figures use only the new runs.
+# reduce_ekman_T10.jl is kept solely because it is the only reader of the old
+# ones.
+
+
+## l against √TKE/N, and the fits                                  (2026-09-05)
+
+# plot_l_vs_qN_T10_combined.jl, two styles selected by STYLE (default writes
+# both):
+#
+#   cloud       every retained time sample, medians on top. Worth keeping —
+#               the clouds are trajectories, not scatter; the loops are the
+#               forcing cycle, and that is invisible once reduced to a bar.
+#   errorbars   medians only, with the interquartile range in both axes.
+#
+# Fitted form l = L∞(1 − e^(−x/x₀)), on the case medians, in log l:
+#
+#   Stokes    6 cases   L∞ 0.60 m   x₀ 1.48 m   rms  7.5 %
+#   Ekman     7 cases   L∞ 1.79 m   x₀ 5.40 m   rms  7.5 %
+#   both     13 cases   L∞ 1.46 m   x₀ 4.17 m   rms 14.9 %
+#
+# Each flow alone is described well. One curve through both is twice as bad:
+# it is dragged up by the Ekman points and then misses the two largest Stokes
+# cases by about a factor of two. *** The two flows do not collapse onto a
+# single mixing-length law in √TKE/N at T = 10 m. *** They agree below
+# √TKE/N ≈ 1 and separate above it, differing mainly in L∞.
+#
+# Neither dataset reaches its plateau — the largest case is at 86 % (Stokes)
+# and 84 % (Ekman) of its fitted L∞ — so both L∞ are extrapolations and carry
+# more uncertainty than the rms suggests.
+
+
+## What the error bars are, and are not                            (2026-09-05)
+
+# Every bar in every figure here is the 25th–75th percentile of the retained
+# time samples, computed independently for each axis, with the marker at the
+# median. They are NOT standard errors.
+#
+# The samples are strongly autocorrelated — 801 Ekman samples over 4 inertial
+# periods, up to 1001 Stokes samples after a 3-tidal-period spin-up — so only a
+# handful are independent. The bar says what range a case *visits* over a
+# forcing cycle. The uncertainty on the median is much smaller than the bar.
+#
+# One thing the bars hide: quartiles are taken over the retained subset, and on
+# the Stokes side samples with K_T ≤ 0 are dropped because a log axis cannot
+# show counter-gradient flux. That is 28 % of the cycle at r = 1 and r = 2 —
+# the two cases that most influence the large-L_N end — so those medians are
+# biased upward. The exclusion is inherent to the existing Stokes reduction,
+# not introduced here. The mean shear never vanishes at z = h in either flow,
+# so 1/S needs no such exclusion.
+
+
+## Equilibration, and a correction                                 (2026-09-05)
+
+# Doubling the Ekman duration to 12.73 inertial periods helped but did not
+# finish the job. Drift over the last 4 T_f:
+#
+#   N/f     h        drift h    drift l
+#   50     6.24 m     −1.4 %     +0.3 %    equilibrated
+#   25     8.31 m     +0.9 %     −4.4 %    equilibrated
+#   10    11.45 m     +4.1 %     +3.1 %    equilibrated
+#    5    14.46 m     +8.1 %    −20.8 %    not
+#    2    18.66 m     +6.7 %    −13.9 %    not
+#    1    20.66 m     +7.4 %    −11.4 %    not
+#  0.5    20.52 m     +7.2 %    −10.1 %    not
+#
+# *** Correction to what was being said before this was measured. *** The four
+# unconverged cases had been described as lower bounds on l. They are not: l is
+# *falling* in all four, so they are upper bounds. They are exactly the points
+# sitting above the Stokes curve at large √TKE/N, and they are still moving
+# towards it. Since they are also the points that pin the Ekman L∞, that L∞ is
+# likely an overestimate and the true separation between the flows is smaller
+# than a factor of three. Whether the excess survives to equilibrium cannot be
+# settled from this record.
+#
+# The figures no longer mark these cases; the drift is reported in the README
+# and in logs/plot_l_vs_qN_T10_combined.log instead. DRIFT_TOL is 0.05, chosen
+# against the 7.5 % rms of the Stokes fit itself; at 0.03 it flagged 6 of 7.
+
+
+## Shear, and the second length scale                              (2026-09-05)
+
+# The saturating fit says the stratification controls l once L_N is small, but
+# says nothing about what sets the plateau. The natural candidate for the other
+# limit is the mean shear. Two scales from the same TKE at the same z = h:
+#
+#   L_N = √TKE/N        N = rω or rf, the background stratification
+#   L_s = √TKE/S        S = |∂⟨u_h⟩/∂z| = √((∂U/∂z)² + (∂V/∂z)²)
+#
+# and dividing each by √TKE turns all three into times, which is the
+# dimensionally honest way to plot them: τ_K = K_T/TKE, τ_N = 1/N, τ_s = 1/S.
+#
+# --- How S is computed, in full. It is the MEAN shear. ---
+#
+# U and V are plane averages over all 100 × 100 columns, written by the run as
+# Field(Average(u, dims=(1,2))). So S is the shear of the mean profile,
+# |∂⟨u_h⟩/∂z|, and NOT the mean of the local shear ⟨|∂u/∂z|⟩. Those differ a
+# lot; the second is dominated by turbulent fluctuations and is far larger. The
+# first is the right partner for N, which is also a mean-profile quantity, and
+# it is what a gradient Richardson number uses.
+#
+# Both components are kept, combined in quadrature (hypot). Using ∂U/∂z alone
+# would be wrong in both flows: the Ekman spiral turns the mean flow with
+# height and the tidal ellipse does the same, so ∂V/∂z is not small.
+#
+# U, V live at cell centres; the derivative is placed on the faces —
+#
+#     S[k] = hypot((U[k] − U[k−1])/dz, (V[k] − V[k−1])/dz),  dz = zc[k] − zc[k−1]
+#
+# so face k sits between centres k−1 and k. This puts S on the same nodes as
+# ∂b/∂z, so L_N and L_s are evaluated at exactly the same points, and it is the
+# same operator Oceananigans uses for ∂z — consistent with how the stored dBdz
+# was formed inside the run. Caveat worth knowing: the grid is stretched
+# (Δz ≈ 0.24 m at the bottom), so a face is not the midpoint of its two
+# neighbouring centres and the difference quotient is formally first-order
+# there rather than second. It is the standard staggered-grid derivative and it
+# matches dBdz, so both scales carry the same discretisation error, but it is
+# not a second-order estimate. The two boundary faces copy their neighbour;
+# z = h is 6–21 m up in a 170 m domain so that never matters.
+#
+# Then, in order: boxcar in time over one twentieth of a forcing period, linear
+# interpolation onto z = h, L_s = √TKE/S formed per sample, then the median.
+#
+# Neither pipeline had stored S. Both store plane-averaged U and V, so it is
+# differenced from those — the Ekman side inside reduce_ekman_moments_T10.jl,
+# the Stokes side inside plot_shear_scales_T10.jl from
+# TidalBL3D_*_moments.jld2, because the Stokes mixing files predate the
+# question. Same shear_on_faces on both sides.
+
+
+## What the shear scale showed                                     (2026-09-05)
+
+# L_N is the smaller scale nearly everywhere. The one exception in the whole
+# set is Stokes r = 1, at L_s/L_N = 0.74. Over the range covered these runs are
+# stratification-limited, and the shear-limited regime the search was aimed at
+# lies below r ≈ 1 on the Stokes side and is not reached at all on the Ekman
+# side.
+#
+# The two flows behave quite differently in the ratio. L_s/L_N climbs steeply
+# with r for Stokes, 0.74 → 15.6, but is nearly flat for Ekman, 2.85 → 3.60
+# with no trend: in the rotating runs the shear and the stratification scale
+# together.
+#
+# τ_K follows τ_N closely and in that normalisation the two flows very nearly
+# collapse — considerably better than L_K against L_N did. Against τ_s the same
+# points scatter and the flows separate. Fitted on the case medians:
+#
+#   τ_N  Stokes  b = 0.81, rms 17.0 %  |  saturating Y∞ 2156 s, x₀  5328 s, 11.4 %
+#   τ_N  Ekman   b = 0.86, rms 12.4 %  |  saturating Y∞ 4013 s, x₀ 12593 s,  9.1 %
+#   τ_N  both    b = 0.83, rms 16.1 %  |  saturating Y∞ 3359 s, x₀  9645 s, 14.0 %
+#   τ_s  Stokes  b = 2.30, rms 47.0 %  |  pinned
+#   τ_s  Ekman   b = 0.94, rms 18.8 %  |  20.4 %
+#   τ_s  both    b = 1.04, rms 52.5 %  |  pinned
+#
+# The exponents say it plainly: against τ_N the flows agree (0.81 vs 0.86),
+# against τ_s they do not (2.30 vs 0.94).
+#
+# "Pinned" means the best point of a brute-force fit landed on the edge of its
+# search grid. Against τ_s there is no knee in the data, so x₀ runs off the top
+# of its grid and the saturating form degenerates into a straight line with two
+# redundant parameters — better rms, no meaning. A pinned fit is never drawn.
+# The check exists because an earlier version of fit_sat searched only
+# L∞ ≤ 1.60 m and silently returned its lower edge, 0.300 m, for a fit that had
+# too few points to be constrained at all.
+
+
+## Weighted combinations of the two scales                         (2026-09-05)
+
+# The aim: a single L_c such that L_K = f(L_c) for both flows, with
+# 1/L_c = c_N/L_N + c_s/L_s or some other weighted form. Seven candidates,
+# formed per sample then reduced, free parameters chosen on both flows together
+# (a scale needing a different weight per flow has unified nothing):
+#
+#   candidate            param       b=1 rms   b free slope   saturating on L_c
+#   L_N alone            —            29.5 %       0.83            14.9 %
+#   L_s alone            —            51.7 %       1.08            51.7 %
+#   min(L_N, L_s)        —            25.6 %       0.85            10.2 %
+#   harmonic, equal      —            18.3 %       0.91            10.4 %
+#   harmonic, weighted   β = 1.40     17.5 %       0.92            11.7 %
+#   p-norm               p = 0.60     17.2 %       0.93            11.9 %
+#   geometric            α = 0.65     17.6 %       0.94            13.2 %
+#
+# b = 1 is the one-parameter proportionality L_K = A·L_c, which is the form a
+# closure would want. Forcing b = 1 is the whole point: any monotone scale can
+# be made to fit with a free exponent, so a good rms with b free proves
+# nothing. b free is reported only as the honesty check.
+#
+# Two results:
+#
+#   *** No candidate makes L_K proportional to L_c. *** Best b = 1 fit is
+#   17.2 %, and every combined scale keeps a natural exponent near 0.9.
+#   Reweighting moves the slope from 0.83 toward 0.93 but never to 1. The
+#   curvature is real and a proportionality cannot bend.
+#
+#   *** But combining does unify the two flows, once the saturating form is
+#   kept. *** One curve through all thirteen cases goes from 14.9 % on L_N
+#   alone to 10.2 % (min) and 10.4 % (equal-weight harmonic), approaching the
+#   7.5 % a single flow reaches by itself. That is the payoff: L_c is what makes
+#   Stokes and Ekman share a curve, which L_N alone did not.
+#
+# The equal-weight harmonic 1/L_c = 1/L_N + 1/L_s is the one to prefer. It ties
+# the minimum to within noise, is smooth rather than kinked, and has no free
+# parameter to justify. Note that the tuned variants (β = 1.40, p = 0.60) are
+# *worse* on the saturating fit despite having a free parameter — they were
+# optimised for the proportionality, which turned out to be the wrong target.
+#
+# Standing caution: L_c is a monotone function of L_N and L_s, so some
+# improvement from adding a second scale is expected with only six or seven
+# points per flow. The slope moving toward 1 is stronger evidence than the rms
+# falling.
+
+
+## The summary figure                                              (2026-09-06)
+
+# plot_L_K_vs_Lc_T10.jl → figures/L_K_vs_Lc_T10.png. The best candidate only,
+# and next to it the regime question, on one page.
+#
+# Left: L_K against L_c for all thirteen cases, with the saturating curve
+# through both flows (L_K = 2.18(1 − e^(−L_c/4.89)), rms 10.4 %) and the pure
+# proportionality (L_K = 0.398 L_c, rms 18.3 %) dotted for comparison, so the
+# residual curvature is visible rather than asserted. Markers carry the case r
+# as a small label.
+#
+# Right: written as 1/L_c = 1/L_N + 1/L_s the two terms are resistances in
+# series and their shares add to one,
+#
+#     w_N = L_c/L_N        w_s = L_c/L_s        w_N + w_s = 1
+#
+# so w_s is the fraction of 1/L_c contributed by the shear. w_s > 1/2 is
+# shear-limited, w_s < 1/2 is stratification-limited, w_s = 1/2 is L_s = L_N.
+# Only w_s is drawn — w_N is 1 − w_s and would carry the same information
+# twice. It is the same number that colours the markers in the left panel, so a
+# point's colour there says which regime it came from. The weight is arithmetic
+# on L_N and L_s, not a fitted quantity, so the right panel is data.
+#
+#   flow      r     L_N      L_s      L_c      L_K      w_N     w_s
+#   Stokes    1    2.896    2.151    1.201    0.478    0.409   0.591  shear-limited
+#   Stokes    2    1.431    2.081    0.791    0.423    0.605   0.395
+#   Stokes    5    0.511    1.816    0.391    0.180    0.768   0.232
+#   Stokes   10    0.282    1.369    0.225    0.096    0.817   0.183
+#   Stokes   25    0.103    0.630    0.088    0.038    0.851   0.149
+#   Stokes   50    0.044    0.685    0.041    0.018    0.942   0.058
+#   Ekman   0.5    9.847   12.508    5.490    1.476    0.559   0.441
+#   Ekman     1    4.578   13.037    3.305    1.057    0.744   0.256
+#   Ekman     2    2.960   10.651    2.267    0.777    0.782   0.218
+#   Ekman     5    1.448    4.847    1.128    0.425    0.768   0.232
+#   Ekman    10    0.851    3.048    0.673    0.238    0.776   0.224
+#   Ekman    25    0.376    1.187    0.285    0.109    0.758   0.242
+#   Ekman    50    0.171    0.487    0.127    0.064    0.739   0.261
+#
+# What it shows: exactly one case in the set is shear-limited, Stokes r = 1 at
+# w_s = 0.59, and the Stokes sequence marches monotonically into the
+# stratification-limited corner (w_s 0.59 → 0.06) as N rises. The Ekman
+# sequence does not march anywhere — w_s sits at 0.22–0.26 for r ≥ 1 and only
+# creeps up to 0.44 at the weakest stratification. So the shear-limited regime
+# is approached from the Stokes side at low N and is never reached on the Ekman
+# side, and the two flows are in that sense not sampling the same corner of
+# parameter space. The shear still earns its place in L_c even at w_s ≈ 0.25:
+# that is where the collapse of the two flows onto one curve comes from.
+
+
+## The Corrsin shear scale                                        (2026-09-06)
+
+# plot_l_vs_corrsin_T10.jl → figures/l_vs_corrsin_ath_T10_combined.png and
+# ..._errorbars.png. The same l-vs-x figure again, with
+#
+#     L_C = (ε/S³)^(1/2)
+#
+# on the abscissa: the scale at which the eddy turnover rate matches the mean
+# shear rate. Shear analogue of the Ozmidov scale, and a different question
+# from L_s = √TKE/S — L_s is built from the energy, L_C from its flux.
+#
+# --- ε is not on disk, in either pipeline ---
+#
+# And it cannot be rebuilt from stored averages, for the same reason F_sgs
+# could not be: it is an average of a product of fluctuating gradients, and
+# only plane averages survived to disk. What DID survive is every other term of
+# the TKE budget, so ε is taken from local equilibrium,
+#
+#     ε ≈ P + B     P = −⟨u′w′⟩ ∂U/∂z − ⟨v′w′⟩ ∂V/∂z + νₑ S²
+#                   B = F_b = ⟨w′b′⟩ + F_sgs
+#
+# with ⟨uw⟩, ⟨vw⟩, ⟨wb⟩, F_sgs and kappa_sgs all stored on the faces, the same
+# nodes as S. reduce_ekman_moments_T10.jl now writes P_at_h and eps_at_h;
+# the Stokes side is built identically inside the plot script and cached in
+# Data/corrsin_T10.jld2. *** The abscissa of this figure carries an assumption
+# the ordinate does not, and should be read that way. *** Three of them:
+#
+#   1. Transport is dropped and CANNOT be checked — ⟨w′e′⟩ and the pressure
+#      term were never stored. Worst of the three.
+#   2. Storage is dropped, and CAN be checked: |∂TKE/∂t|/ε is 0.17-0.36 at the
+#      strongly stratified end and 4-6 at the weakly stratified end. Both flows
+#      are statistically steady over the window, so it is a zero-mean term that
+#      scatters the per-sample ε rather than biasing the median.
+#   3. νₑ ≈ κₑ. Only the buoyancy diffusivity was written. AMD builds the two
+#      with the same coefficient and different numerators — same order, not
+#      equal. Matters only where the subgrid share is large, the high-N end.
+#
+# --- The result that matters: it fails AT z = h, and only there ---
+#
+# Fraction of samples with ε > 0, at fractions of h:
+#
+#   flow, r        0.25h  0.50h  0.75h  1.00h
+#   Stokes  1       0.96   0.98   0.94   0.90
+#   Stokes  5       0.99   0.96   0.97   0.60
+#   Stokes 25       1.00   0.96   0.87   0.19
+#   Stokes 50       0.99   0.97   0.83   0.03
+#   Ekman, all r    1.00   1.00   1.00   0.73-1.00
+#
+# The estimate is sound everywhere inside the layer and collapses only on the
+# top face, and only for the strongly stratified Stokes cases. The reason is
+# visible in the terms: P ≈ 0 there — at z = h the mean shear has nothing left
+# to do — so the budget is transport against buoyancy destruction, which is
+# exactly the balance local equilibrium discards. A statement about the height,
+# not about the method. Worth remembering for anything else evaluated at z = h:
+# the top of the mixed layer is maintained from below, not locally.
+#
+# So three cases are unusable: Stokes r = 10, 25, 50. Drawn hollow, excluded
+# from every fit — their surviving samples are selected on the sign of a budget
+# residual, which is the kind of selection that manufactures a trend.
+#
+# ε/(P+|B|) is also reported per case and sits near 0.3, so ε is a healthy
+# fraction of the budget rather than the small difference of two large numbers.
+# That was the failure mode that would have made the whole thing hopeless, and
+# it did not happen.
+#
+# --- The ten usable cases ---
+#
+#   flow      r     eps (m²/s³)   S (1/s)     L_C (m)   l (m)   eps/(P+|B|)
+#   Stokes    1      1.66e-12    1.47e-04     0.790    0.473      0.88
+#   Stokes    2      1.01e-12    1.30e-04     0.676    0.432      0.61
+#   Stokes    5      4.30e-13    1.51e-04     0.509    0.189      0.21
+#   Ekman   0.5      1.07e-12    3.94e-05     4.132    1.483      0.73
+#   Ekman     1      4.28e-13    3.44e-05     3.128    1.002      0.33
+#   Ekman     2      1.09e-12    5.59e-05     2.729    0.752      0.23
+#   Ekman     5      7.07e-12    1.51e-04     1.444    0.426      0.35
+#   Ekman    10      1.56e-11    2.89e-04     0.840    0.239      0.28
+#   Ekman    25      5.02e-11    8.00e-04     0.310    0.109      0.28
+#   Ekman    50      1.10e-10    1.76e-03     0.144    0.064      0.29
+#
+#   Ekman,   7 cases   l = 0.331 L_C^0.92   rms 12.4 %
+#   Stokes,  3 cases   l = 0.874 L_C^2.19   rms 10.9 %
+#   overall, 10 cases  l = 0.375 L_C^0.89   rms 25.7 %
+#
+# The saturating form pins wherever there are enough cases to try it — over
+# this range l against L_C has no knee — so a power law is drawn.
+#
+# *** The Ekman column is close to l ∝ L_C: exponent 0.92, l ≈ L_C/3 held
+# across a factor of thirty in L_C. *** That is a cleaner statement than
+# √TKE/N ever gave on that side, and it is the reason this scale is worth
+# pursuing. The two flows still do not share it — the Stokes exponent is 2.19
+# and one line through both leaves 25.7 % — but the Stokes fit is three points
+# spanning less than a factor of two in L_C, sitting exactly where the ε
+# estimate begins to degrade (ε/(P+|B|) falling 0.88 → 0.21). It is the weakest
+# number in the table, not a contradiction of the Ekman result.
+
+
+## Mistakes made here, so they are not made again
+
+# - h(t) computed twice wrongly before it was computed right. First a broken
+#   findlast returned index 401, the top face, for every case; then a redo
+#   assumed uniform dz = 0.425 m when the grid is vertically stretched. Correct
+#   values only came from the proper reduction using real znodes(grid, ...).
+#   Both grids are stretched: Ekman Nz = 400 to zf[end] = 170.0 with
+#   zc[1] = 0.1182; Stokes Nz = 300 to zf[end] = 60.0.
+# - The unconverged Ekman cases were called lower bounds on l for some time.
+#   They are upper bounds; see the equilibration section.
+# - A brute-force fit returned a grid edge silently. Every brute-force fit here
+#   now reports `pinned` and a pinned fit is never drawn.
+# - A dropped-sample diagnostic was labelled "S is zero or non-finite" when
+#   every drop was in fact K_T ≤ 0 and badS was zero everywhere. badK and badS
+#   are counted separately now.
+# - Figure lines merged the two flows into one apparent trend across a
+#   discontinuity that is not there. Convention since: line COLOUR says which
+#   flow (Stokes #1b3a6b, Ekman #8e1b4e), line STYLE says which quantity.
+# - `head` on a Julia pipeline SIGPIPE-kills the process before it writes its
+#   figures, which leaves old PNG timestamps and looks like the edits did not
+#   take. Use tail or sed -n.
+# - @sprintf will not accept a format string built with `*`. Fold it into one
+#   literal.
+
+
+## Open
+
+# - Whether the excess l in the four unconverged Ekman cases survives to
+#   equilibrium. Not answerable from the present record; needs a longer run.
+# - The shear-limited regime is barely sampled: one case out of thirteen. To
+#   test whether L_c is right rather than merely better, the Stokes sweep would
+#   want cases below r = 1.
+# - The Stokes r = 1 and r = 2 medians discard 28 % of the tidal cycle to
+#   counter-gradient flux, and they are the two points that most influence the
+#   large-L_N end of every fit here.
+# - Only T = 10 m has been done. T = 15, 20 exist on the Stokes side.
+# - ε is not stored by either pipeline, so every Corrsin-scale result rests on
+#   a local-equilibrium estimate whose transport term cannot be checked. If the
+#   Corrsin scale turns out to matter, that is the case for writing ε directly
+#   in the next run — it is one extra plane-averaged profile.
+# - The Stokes L_C fit is three points. Whether l ∝ L_C holds for the tidal
+#   flow as it does for the rotating one is not settled by this figure, and
+#   cannot be settled at z = h. Evaluating at 0.5h, where the estimate is good
+#   in every case, would settle it — at the cost of leaving the z = h
+#   convention every other figure here uses.
+# - The softplus overflow in Ekman 3D.jl is unfixed, by design — it is the
+#   collaborator's file.
