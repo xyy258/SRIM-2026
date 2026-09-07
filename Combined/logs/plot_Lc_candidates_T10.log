@@ -1,0 +1,19 @@
+6 Stokes and 7 Ekman cases from shear_scales_T10.jld2
+
+L_K against each candidate scale.  b = 1 is the one-parameter proportionality
+L_K = A·L_c; b free is the same fit with the exponent released, as a check.
+
+  candidate              param      b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_c: both  Stokes  Ekman
+  L_N alone              —              29.5 %   30.2 %   26.3 % |   0.83    14.2 % |        14.9 %    7.5 %    7.6 %
+  L_s alone              —              51.7 %   72.8 %   20.3 % |   1.08    50.9 % |        51.7 %   72.9 %   19.6 %
+  min(L_N, L_s)          —              25.6 %   17.2 %   25.4 % |   0.85    12.0 % |        10.2 %    7.9 %    7.5 %
+  harmonic, equal        —              18.3 %    9.1 %   17.8 % |   0.91    12.7 % |        10.4 %    9.1 %    8.9 %
+  harmonic, weighted     β = 1.40       17.5 %    9.7 %   16.5 % |   0.92    14.0 % |        11.7 %   10.0 %    9.4 %
+  p-norm                 p = 0.60       17.2 %   11.4 %   16.9 % |   0.93    14.4 % |        11.9 %   11.7 %    9.5 %
+  geometric              α = 0.65       17.6 %   15.3 %   18.0 % |   0.94    15.6 % |        13.2 %   15.4 %    9.5 %
+
+best proportionality on both flows: p-norm (p = 0.60), L_K = 0.586 · L_c, rms 17.2 % (slope 0.93 with b free)
+best saturating curve on both flows: min(L_N, L_s), L_K = 1.608(1 − e^(−L_c/4.571)), rms 10.2 %
+  for comparison, the saturating curve on L_N alone: rms 14.9 % on both flows
+
+wrote /home/tll46/SRIM-2026/Combined/figures/L_K_vs_Lc_candidates_T10.png
