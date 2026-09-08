@@ -329,12 +329,12 @@
 
 ## Weighted combinations of the two scales                         (2026-09-05)
 
-# The aim: a single L_c such that L_K = f(L_c) for both flows, with
-# 1/L_c = c_N/L_N + c_s/L_s or some other weighted form. Seven candidates,
+# The aim: a single L_comb such that L_K = f(L_comb) for both flows, with
+# 1/L_comb = c_N/L_N + c_s/L_s or some other weighted form. Seven candidates,
 # formed per sample then reduced, free parameters chosen on both flows together
 # (a scale needing a different weight per flow has unified nothing):
 #
-#   candidate            param       b=1 rms   b free slope   saturating on L_c
+#   candidate            param       b=1 rms   b free slope   saturating on L_comb
 #   L_N alone            —            29.5 %       0.83            14.9 %
 #   L_s alone            —            51.7 %       1.08            51.7 %
 #   min(L_N, L_s)        —            25.6 %       0.85            10.2 %
@@ -343,14 +343,14 @@
 #   p-norm               p = 0.60     17.2 %       0.93            11.9 %
 #   geometric            α = 0.65     17.6 %       0.94            13.2 %
 #
-# b = 1 is the one-parameter proportionality L_K = A·L_c, which is the form a
+# b = 1 is the one-parameter proportionality L_K = A·L_comb, which is the form a
 # closure would want. Forcing b = 1 is the whole point: any monotone scale can
 # be made to fit with a free exponent, so a good rms with b free proves
 # nothing. b free is reported only as the honesty check.
 #
 # Two results:
 #
-#   *** No candidate makes L_K proportional to L_c. *** Best b = 1 fit is
+#   *** No candidate makes L_K proportional to L_comb. *** Best b = 1 fit is
 #   17.2 %, and every combined scale keeps a natural exponent near 0.9.
 #   Reweighting moves the slope from 0.83 toward 0.93 but never to 1. The
 #   curvature is real and a proportionality cannot bend.
@@ -358,16 +358,16 @@
 #   *** But combining does unify the two flows, once the saturating form is
 #   kept. *** One curve through all thirteen cases goes from 14.9 % on L_N
 #   alone to 10.2 % (min) and 10.4 % (equal-weight harmonic), approaching the
-#   7.5 % a single flow reaches by itself. That is the payoff: L_c is what makes
+#   7.5 % a single flow reaches by itself. That is the payoff: L_comb is what makes
 #   Stokes and Ekman share a curve, which L_N alone did not.
 #
-# The equal-weight harmonic 1/L_c = 1/L_N + 1/L_s is the one to prefer. It ties
+# The equal-weight harmonic 1/L_comb = 1/L_N + 1/L_s is the one to prefer. It ties
 # the minimum to within noise, is smooth rather than kinked, and has no free
 # parameter to justify. Note that the tuned variants (β = 1.40, p = 0.60) are
 # *worse* on the saturating fit despite having a free parameter — they were
 # optimised for the proportionality, which turned out to be the wrong target.
 #
-# Standing caution: L_c is a monotone function of L_N and L_s, so some
+# Standing caution: L_comb is a monotone function of L_N and L_s, so some
 # improvement from adding a second scale is expected with only six or seven
 # points per flow. The slope moving toward 1 is stronger evidence than the rms
 # falling.
@@ -375,28 +375,28 @@
 
 ## The summary figure                                              (2026-09-06)
 
-# plot_L_K_vs_Lc_T10.jl → figures/L_K_vs_Lc_T10.png. The best candidate only,
+# plot_L_K_vs_Lharm_T10.jl → figures/L_K_vs_Lharm_T10.png. The best candidate only,
 # and next to it the regime question, on one page.
 #
-# Left: L_K against L_c for all thirteen cases, with the saturating curve
-# through both flows (L_K = 2.18(1 − e^(−L_c/4.89)), rms 10.4 %) and the pure
-# proportionality (L_K = 0.398 L_c, rms 18.3 %) dotted for comparison, so the
+# Left: L_K against L_harm for all thirteen cases, with the saturating curve
+# through both flows (L_K = 2.18(1 − e^(−L_harm/4.89)), rms 10.4 %) and the pure
+# proportionality (L_K = 0.398 L_harm, rms 18.3 %) dotted for comparison, so the
 # residual curvature is visible rather than asserted. Markers carry the case r
 # as a small label.
 #
-# Right: written as 1/L_c = 1/L_N + 1/L_s the two terms are resistances in
+# Right: written as 1/L_harm = 1/L_N + 1/L_s the two terms are resistances in
 # series and their shares add to one,
 #
-#     w_N = L_c/L_N        w_s = L_c/L_s        w_N + w_s = 1
+#     w_N = L_harm/L_N        w_s = L_harm/L_s        w_N + w_s = 1
 #
-# so w_s is the fraction of 1/L_c contributed by the shear. w_s > 1/2 is
+# so w_s is the fraction of 1/L_harm contributed by the shear. w_s > 1/2 is
 # shear-limited, w_s < 1/2 is stratification-limited, w_s = 1/2 is L_s = L_N.
 # Only w_s is drawn — w_N is 1 − w_s and would carry the same information
 # twice. It is the same number that colours the markers in the left panel, so a
 # point's colour there says which regime it came from. The weight is arithmetic
 # on L_N and L_s, not a fitted quantity, so the right panel is data.
 #
-#   flow      r     L_N      L_s      L_c      L_K      w_N     w_s
+#   flow      r     L_N      L_s      L_harm      L_K      w_N     w_s
 #   Stokes    1    2.896    2.151    1.201    0.478    0.409   0.591  shear-limited
 #   Stokes    2    1.431    2.081    0.791    0.423    0.605   0.395
 #   Stokes    5    0.511    1.816    0.391    0.180    0.768   0.232
@@ -418,7 +418,7 @@
 # creeps up to 0.44 at the weakest stratification. So the shear-limited regime
 # is approached from the Stokes side at low N and is never reached on the Ekman
 # side, and the two flows are in that sense not sampling the same corner of
-# parameter space. The shear still earns its place in L_c even at w_s ≈ 0.25:
+# parameter space. The shear still earns its place in L_harm even at w_s ≈ 0.25:
 # that is where the collapse of the two flows onto one curve comes from.
 
 
@@ -518,6 +518,59 @@
 # number in the table, not a contradiction of the Ekman result.
 
 
+## Notation and figure style                                      (2026-09-07)
+
+# Two housekeeping changes, both worth recording because they touch every
+# figure in the folder.
+#
+# --- L_C is the Corrsin scale, and nothing else ---
+#
+# The combined stratification/shear scale had been written L_c since
+# 2026-09-05, and the Corrsin scale arrived on 2026-09-06 as L_C. One capital
+# letter apart, for two quite different quantities, in the same folder. The
+# combined scales are now
+#
+#     L_harm    1/L_harm = 1/L_N + 1/L_s          the equal-weight harmonic
+#     L_β       1/L_β    = 1/L_N + β/L_s          the weighted one
+#     L_comb    any candidate combination         generic, in the candidate figure
+#
+# and L_C is reserved. The scripts and figures were renamed to match:
+#
+#     plot_Lc_candidates_T10.jl  → plot_Lcomb_candidates_T10.jl
+#     plot_L_K_vs_Lc_T10.jl      → plot_L_K_vs_Lharm_T10.jl
+#     L_K_vs_Lc_candidates_T10.png → L_K_vs_Lcomb_candidates_T10.png
+#     L_K_vs_Lc_T10.png            → L_K_vs_Lharm_T10.png
+#
+# No numbers changed — the arithmetic is untouched, only the names.
+#
+# --- 600 dpi and LaTeX labels everywhere ---
+#
+# Every plotting script now opens with
+#
+#     default(dpi = 600, fontfamily = "DejaVu Sans")
+#
+# and writes axis labels, titles and legend entries as LaTeXStrings. LaTeXStrings
+# was added to Project.toml for this; it was already in the manifest as a
+# dependency of Plots, so nothing else moved.
+#
+# The maths is rendered by GR's own mathtext rather than a TeX installation, so
+# it follows the TeX shapes whatever fontfamily says; fontfamily governs the
+# text around it. Three limits of that engine, all met while doing this:
+#
+#   - no \text{...}, so a hyphen inside \mathrm{} is typeset as a minus sign.
+#     "shear-limited above" became "shear limits the mixing above".
+#   - no line break inside a label. The candidate panels used to carry the
+#     scale and the three rms numbers on two title lines; the numbers moved to
+#     an annotation inside the axes.
+#   - a space inside \mathrm{} is swallowed, like any space in maths mode, so
+#     interpolated words need \ between them. "Stokes (tidal)" came out as
+#     "Stokes(tidal)" until they were escaped.
+#
+# And %g inside a label prints "2.16e + 03", with the exponent's sign set as a
+# binary operator. texnum() in plot_shear_scales_T10.jl formats a number as a
+# plain decimal where that is readable and as m x 10^n otherwise.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed twice wrongly before it was computed right. First a broken
@@ -548,7 +601,7 @@
 # - Whether the excess l in the four unconverged Ekman cases survives to
 #   equilibrium. Not answerable from the present record; needs a longer run.
 # - The shear-limited regime is barely sampled: one case out of thirteen. To
-#   test whether L_c is right rather than merely better, the Stokes sweep would
+#   test whether L_comb is right rather than merely better, the Stokes sweep would
 #   want cases below r = 1.
 # - The Stokes r = 1 and r = 2 medians discard 28 % of the tidal cycle to
 #   counter-gradient flux, and they are the two points that most influence the

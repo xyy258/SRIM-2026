@@ -3,16 +3,16 @@
 #
 # From plot_shear_scales_T10.jl: L_K = K_T/√TKE is close to proportional to
 # L_N = √TKE/N but with slope 0.82 rather than 1, and L_s = √TKE/S alone does
-# much worse. The question here is whether some weighted combination L_c of the
-# two gives L_K = A·L_c — a straight proportionality with a single constant,
+# much worse. The question here is whether some weighted combination L_comb of the
+# two gives L_K = A·L_comb — a straight proportionality with a single constant,
 # which is what a mixing-length closure would want.
 #
 # ---------------- What is being fitted, and why b = 1 ----------------
 # For each candidate the target is the ONE-parameter fit
 #
-#     L_K = A · L_c            (b = 1 forced)
+#     L_K = A · L_comb            (b = 1 forced)
 #
-# not the two-parameter power law L_K = A·L_c^b. Forcing b = 1 is the whole
+# not the two-parameter power law L_K = A·L_comb^b. Forcing b = 1 is the whole
 # point: any monotone scale can be made to fit with a free exponent, so a good
 # rms with b free proves nothing. A candidate earns its keep only if L_K is
 # proportional to it. The free-b slope is reported alongside as a check — a
@@ -25,11 +25,11 @@
 # ---------------- The candidates ----------------
 #   L_N, L_s                      each alone, as the baselines
 #   min(L_N, L_s)                 the crude limiter: whichever is smaller
-#   harmonic, equal weights       1/L_c = 1/L_N + 1/L_s
-#   harmonic, weighted            1/L_c = 1/L_N + β/L_s          β free
-#   p-norm                        L_c = (L_N^−p + L_s^−p)^(−1/p) p free
+#   harmonic, equal weights       1/L_harm = 1/L_N + 1/L_s
+#   harmonic, weighted            1/L_β    = 1/L_N + β/L_s          β free
+#   p-norm                        L_comb = (L_N^−p + L_s^−p)^(−1/p) p free
 #                                 p = 1 is the harmonic, p → ∞ is the min
-#   geometric                     L_c = L_N^α · L_s^(1−α)        α free
+#   geometric                     L_comb = L_N^α · L_s^(1−α)        α free
 #
 # All are formed per time sample and then reduced to a case median, never the
 # other way round.
@@ -37,9 +37,13 @@
 # USAGE  cd Combined && GKSwstype=100 julia --project=. plot_Lc_candidates_T10.jl
 #        (run plot_shear_scales_T10.jl first — it writes the cache)
 
-using JLD2, Plots, Printf, Statistics
+using JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
+# Publication defaults: 600 dpi, and one font for every figure in this folder.
+# LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
+# surrounding text and the maths follows the TeX shapes either way.
+default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
 const CACHE  = joinpath(HERE, "Data", "shear_scales_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
@@ -83,7 +87,7 @@ say(@sprintf("%d Stokes and %d Ekman cases from %s", length(stokes), length(ekma
 
 # ---------------- the fits ----------------
 # b = 1 forced: the only freedom is the constant, so A is the geometric mean of
-# L_K/L_c and the rms is the spread of that ratio in log space.
+# L_K/L_comb and the rms is the spread of that ratio in log space.
 function propfit(cs, sc)
     lr = [log(med(c.L_K)) - log(med(sc(c))) for c in cs]
     keep = filter(isfinite, lr)
@@ -107,7 +111,7 @@ end
 # The third fit: the saturating house form on the combined scale. Several
 # candidates have a natural slope near 0.9 rather than 1, and no choice of
 # weight can fix that — a proportionality cannot bend. If the curvature is real
-# then the right question is whether L_c straightens the two flows onto ONE
+# then the right question is whether L_comb straightens the two flows onto ONE
 # saturating curve, which a proportionality fit would never reveal.
 function satfit(cs, sc)
     x = [med(sc(c)) for c in cs]; y = [med(c.L_K) for c in cs]
@@ -135,20 +139,33 @@ harmonic(β) = c -> 1 ./ (1 ./ c.L_N .+ β ./ c.L_s)
 pnorm(p)    = c -> (c.L_N .^ (-p) .+ c.L_s .^ (-p)) .^ (-1 / p)
 geometric(α) = c -> c.L_N .^ α .* c.L_s .^ (1 - α)
 
+# `name` is for the log, `tex` for the panel title, `pname`/`ptex` likewise for
+# the free parameter. The generic combined scale is L_comb; the equal-weight
+# harmonic is L_harm and the weighted one L_β, so that L_C stays reserved for
+# the Corrsin scale in plot_l_vs_corrsin_T10.jl.
 struct Cand
     name::String
+    tex::String              # LaTeX body, no delimiters
     build::Function          # parameter -> (case -> vector)
     grid                     # parameter values, or nothing
     pname::String
+    ptex::String
 end
 CANDS = [
-    Cand("L_N alone",            _ -> (c -> c.L_N),                   nothing, ""),
-    Cand("L_s alone",            _ -> (c -> c.L_s),                   nothing, ""),
-    Cand("min(L_N, L_s)",        _ -> (c -> min.(c.L_N, c.L_s)),      nothing, ""),
-    Cand("harmonic, equal",      _ -> harmonic(1.0),                  nothing, ""),
-    Cand("harmonic, weighted",   harmonic,        0.0:0.02:8.0,       "β"),
-    Cand("p-norm",               pnorm,           0.1:0.02:8.0,       "p"),
-    Cand("geometric",            geometric,      -0.5:0.01:1.5,       "α"),
+    Cand("L_N alone", "L_N\\ \\mathrm{alone}",
+         _ -> (c -> c.L_N),              nothing, "", ""),
+    Cand("L_s alone", "L_s\\ \\mathrm{alone}",
+         _ -> (c -> c.L_s),              nothing, "", ""),
+    Cand("min(L_N, L_s)", "L_{\\mathrm{comb}} = \\min(L_N, L_s)",
+         _ -> (c -> min.(c.L_N, c.L_s)), nothing, "", ""),
+    Cand("harmonic, equal", "1/L_{\\mathrm{harm}} = 1/L_N + 1/L_s",
+         _ -> harmonic(1.0),             nothing, "", ""),
+    Cand("harmonic, weighted", "1/L_\\beta = 1/L_N + \\beta/L_s",
+         harmonic,   0.0:0.02:8.0, "β", "\\beta"),
+    Cand("p-norm", "L_{\\mathrm{comb}} = (L_N^{-p} + L_s^{-p})^{-1/p}",
+         pnorm,      0.1:0.02:8.0, "p", "p"),
+    Cand("geometric", "L_{\\mathrm{comb}} = L_N^{\\alpha} L_s^{1-\\alpha}",
+         geometric, -0.5:0.01:1.5, "α", "\\alpha"),
 ]
 
 # The free parameter is chosen on both flows together: a scale needing a
@@ -168,9 +185,9 @@ end
 
 say("")
 say("L_K against each candidate scale.  b = 1 is the one-parameter proportionality")
-say("L_K = A·L_c; b free is the same fit with the exponent released, as a check.")
+say("L_K = A·L_comb; b free is the same fit with the exponent released, as a check.")
 say("")
-say("  candidate              param      b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_c: both  Stokes  Ekman")
+say("  candidate              param      b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_comb: both  Stokes  Ekman")
 results = []
 for cd in CANDS
     rv = resolve(cd)
@@ -190,10 +207,10 @@ end
 best = results[argmin([r.rms for r in results])]
 bsat = results[argmin([r.sat.rms for r in results])]
 say("")
-say(@sprintf("best proportionality on both flows: %s%s, L_K = %.3f · L_c, rms %.1f %% (slope %.2f with b free)",
+say(@sprintf("best proportionality on both flows: %s%s, L_K = %.3f · L_comb, rms %.1f %% (slope %.2f with b free)",
              best.cd.name, isnan(best.par) ? "" : @sprintf(" (%s = %.2f)", best.cd.pname, best.par),
              best.A, best.rms, best.b))
-say(@sprintf("best saturating curve on both flows: %s%s, L_K = %.3f(1 − e^(−L_c/%.3f)), rms %.1f %%",
+say(@sprintf("best saturating curve on both flows: %s%s, L_K = %.3f(1 − e^(−L_comb/%.3f)), rms %.1f %%",
              bsat.cd.name, isnan(bsat.par) ? "" : @sprintf(" (%s = %.2f)", bsat.cd.pname, bsat.par),
              bsat.sat.L, bsat.sat.x0, bsat.sat.rms))
 say(@sprintf("  for comparison, the saturating curve on L_N alone: rms %.1f %% on both flows",
@@ -203,14 +220,21 @@ say(@sprintf("  for comparison, the saturating curve on L_N alone: rms %.1f %% o
 mkpath(FIGDIR)
 function panel(rz)
     p = plot(xscale = :log10, yscale = :log10, legend = false,
-             xlabel = "L_c   (m)", ylabel = "L_K = K_T/√TKE   (m)",
+             xlabel = L"L_{\mathrm{comb}} \ \ (\mathrm{m})",
+             ylabel = L"L_K = K_T/\sqrt{\mathrm{TKE}} \ \ (\mathrm{m})",
              titlefontsize = 8, guidefontsize = 7, tickfontsize = 6,
-             title = @sprintf("%s%s\nb=1 rms %.1f %%  (b free %.2f)   sat rms %.1f %%", rz.cd.name,
-                              isnan(rz.par) ? "" : @sprintf("   %s = %.2f", rz.cd.pname, rz.par),
-                              rz.rms, rz.b, rz.sat.rms))
+             title = latexstring(@sprintf("%s%s", rz.cd.tex,
+                        isnan(rz.par) ? "" : @sprintf(",\\ \\ %s = %.2f", rz.cd.ptex, rz.par))))
     xs = vcat([med(rz.sc(c)) for c in BOTH]...)
     lo, hi = minimum(xs) / 1.6, maximum(xs) * 1.6
     xx = exp.(range(log(lo), log(hi); length = 200))
+    # The title carries the scale, so the three rms numbers go inside the axes
+    # rather than into a second title line — GR renders a LaTeX label as one
+    # line of maths and has nowhere to put a break.
+    ys = [med(c.L_K) for c in BOTH]
+    annotate!(p, lo * 1.25, maximum(ys) * 1.15,
+              text(latexstring(@sprintf("b{=}1\\!:\\ %.0f\\,\\%%, \\ \\ b\\ \\mathrm{free}\\!:\\ %.2f, \\ \\ \\mathrm{sat}\\!:\\ %.0f\\,\\%%",
+                                        rz.rms, rz.b, rz.sat.rms)), 6, :grey25, :left))
     plot!(p, xx, rz.A .* xx; color = :black, lw = 2.0)
     rz.sat.pinned || plot!(p, xx, rz.sat.L .* (1 .- exp.(-xx ./ rz.sat.x0));
                            color = "#c46a1f", lw = 1.8, ls = :dash)
@@ -227,27 +251,28 @@ panels = [panel(r) for r in results]
 pk = plot(framestyle = :none, legend = :left, legendfontsize = 7,
           foreground_color_legend = nothing)
 scatter!(pk, [NaN], [NaN]; marker = :circle, ms = 6, msw = 1.4, mc = :grey70,
-         msc = C_STOK, label = "Stokes (tidal)")
+         msc = C_STOK, label = L"\mathrm{Stokes\ (tidal)}")
 scatter!(pk, [NaN], [NaN]; marker = :xcross, ms = 7, msw = 1.4, mc = :grey70,
-         msc = C_EKMA, label = "Ekman (rotating)")
-plot!(pk, [NaN], [NaN]; color = :black, lw = 2.0, label = "L_K = A·L_c   (proportionality)")
+         msc = C_EKMA, label = L"\mathrm{Ekman\ (rotating)}")
+plot!(pk, [NaN], [NaN]; color = :black, lw = 2.0,
+      label = L"L_K = A\,L_{\mathrm{comb}} \ \ (\mathrm{proportionality})")
 plot!(pk, [NaN], [NaN]; color = "#c46a1f", lw = 1.8, ls = :dash,
-      label = "L_K = L∞(1 − e^(−L_c/x₀))   (saturating)")
+      label = L"L_K = L_\infty(1 - e^{-L_{\mathrm{comb}}/x_0}) \ \ (\mathrm{saturating})")
 for sv in SVALS
     scatter!(pk, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv),
-             label = @sprintf("N/ω = N/f = %g", sv))
+             label = latexstring(@sprintf("N/\\omega = N/f = %g", sv)))
 end
 push!(panels, pk)
 
 f = plot(panels...; layout = (2, 4), size = (1500, 760),
-         plot_title = "T = 10 m, z = h:  L_K against candidate combinations of L_N and L_s",
+         plot_title = L"T = 10\,\mathrm{m},\ z = h:\ \ L_K\ \mathrm{against\ candidate\ combinations\ of}\ L_N\ \mathrm{and}\ L_s",
          left_margin = 5Plots.mm, bottom_margin = 5Plots.mm, top_margin = 2Plots.mm)
-o = joinpath(FIGDIR, "L_K_vs_Lc_candidates_T10.png")
+o = joinpath(FIGDIR, "L_K_vs_Lcomb_candidates_T10.png")
 savefig(f, o)
 say("")
 say("wrote $o")
 
 mkpath(joinpath(HERE, "logs"))
-open(joinpath(HERE, "logs", "plot_Lc_candidates_T10.log"), "w") do io
+open(joinpath(HERE, "logs", "plot_Lcomb_candidates_T10.log"), "w") do io
     foreach(l -> println(io, l), logl)
 end

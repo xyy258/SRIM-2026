@@ -1,15 +1,15 @@
 6 Stokes and 7 Ekman cases from shear_scales_T10.jld2
 
-L_c = 1/(1/L_N + 1/L_s), on all 13 cases
-  proportionality  L_K = 0.398 L_c                 rms 18.3 %
-  power law        L_K = 0.375 L_c^0.91            rms 12.7 %
-  saturating       L_K = 2.183(1 − e^(−L_c/4.887))  rms 10.4 %
+L_harm = 1/(1/L_N + 1/L_s), on all 13 cases
+  proportionality  L_K = 0.398 L_harm                 rms 18.3 %
+  power law        L_K = 0.375 L_harm^0.91            rms 12.7 %
+  saturating       L_K = 2.183(1 − e^(−L_harm/4.887))  rms 10.4 %
   Stokes alone, saturating:                       rms 9.1 %
   Ekman  alone, saturating:                       rms 8.9 %
 
-the shear's share of 1/L_c, w_s = L_c/L_s.  w_s > 1/2 means the shear scale
+the shear's share of 1/L_harm, w_s = L_harm/L_s.  w_s > 1/2 means the shear scale
 is the smaller of the two and the mixing is shear-limited
-  flow    r       L_N (m)   L_s (m)   L_c (m)   L_K (m)     w_N     w_s
+  flow    r       L_N (m)   L_s (m)   L_harm (m)   L_K (m)     w_N     w_s
   Stokes 1        2.8956    2.1508    1.2013    0.4783   0.409   0.591   << shear-limited
   Stokes 2        1.4305    2.0805    0.7913    0.4229   0.605   0.395
   Stokes 5        0.5113    1.8156    0.3909    0.1796   0.768   0.232
@@ -24,4 +24,4 @@ is the smaller of the two and the mixing is shear-limited
   Ekman  25       0.3762    1.1874    0.2853    0.1092   0.758   0.242
   Ekman  50       0.1710    0.4872    0.1267    0.0640   0.739   0.261
 
-wrote /home/tll46/SRIM-2026/Combined/figures/L_K_vs_Lc_T10.png
+wrote /home/tll46/SRIM-2026/Combined/figures/L_K_vs_Lharm_T10.png

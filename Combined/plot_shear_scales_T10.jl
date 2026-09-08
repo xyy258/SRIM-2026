@@ -40,7 +40,7 @@
 #
 # USAGE  cd Combined && GKSwstype=100 julia --project=. plot_shear_scales_T10.jl
 
-using Oceananigans, JLD2, Plots, Printf, Statistics
+using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 # Plots labels a log axis as 10^0.25 unless told otherwise, which is unreadable
 # for a quantity that only spans one decade. Decades get 10^n, everything else
@@ -57,7 +57,25 @@ function logticks(lo, hi)
     return (vals, labs)
 end
 
+# `%g` inside a LaTeX label prints "2.16e + 03", with the exponent's sign set as
+# a binary operator. Numbers in labels go through here instead.
+function texnum(v)
+    (isfinite(v) && v != 0) || return @sprintf("%.3g", v)
+    e = floor(Int, log10(abs(v)))
+    if -3 <= e <= 4                      # plain decimal, four significant digits
+        d = clamp(3 - e, 0, 6)
+        s = Printf.format(Printf.Format("%.$(d)f"), v)
+        occursin('.', s) && (s = replace(replace(s, r"0+$" => ""), r"\.$" => ""))
+        return s
+    end
+    return @sprintf("%.3g \\times 10^{%d}", v / 10.0^e, e)   # scientific, set as maths
+end
+
 get!(ENV, "GKSwstype", "100")
+# Publication defaults: 600 dpi, and one font for every figure in this folder.
+# LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
+# surrounding text and the maths follows the TeX shapes either way.
+default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
 const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
 const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
@@ -191,7 +209,7 @@ function powfit(x, y)
     return (A = exp(a), b = b, rms = 100 * sqrt(sum(res .^ 2) / n),
             n = n, pinned = false,
             f = t -> exp(a) * t ^ b,
-            lab = @sprintf("power: y = %.3g x^%.2f", exp(a), b))
+            lab = @sprintf("\\mathrm{power}\\!: \\ y = %s\\,x^{%.2f}", texnum(exp(a)), b))
 end
 
 function satfit(x, y)
@@ -212,7 +230,7 @@ function satfit(x, y)
     return (Y = Y, x0 = x0, rms = 100 * sqrt(best[1] / length(x)),
             n = length(x), pinned = pin,
             f = t -> Y * (1 - exp(-t / x0)),
-            lab = @sprintf("saturating: y = %.3g(1 − e^(−x/%.3g))", Y, x0))
+            lab = @sprintf("\\mathrm{saturating}\\!: \\ y = %s(1 - e^{-x/%s})", texnum(Y), texnum(x0)))
 end
 
 
@@ -258,7 +276,7 @@ for (nm, cs) in (("Stokes", S), ("Ekman ", E)), c in cs
                  med(c.L_s) / med(c.L_N), med(c.τ_K), med(c.τ_N), med(c.τ_s)))
 end
 
-# ---------------- does a combined scale do better? ----------------
+# ---------------- does the combined scale do better? ----------------
 # Not a fit — just the question the harmonic combination is meant to answer,
 # asked with c_N = c_s = 1 so nothing is tuned. The number reported is the
 # scatter of log(L_K) about a straight line in log space, which is what a
@@ -272,14 +290,15 @@ function collapse(cs, key)
     res = y .- (a .+ b .* x)
     return (slope = b, rms = 100 * sqrt(sum(res .^ 2) / n))
 end
-harm(c) = (Lc = 1 ./ (1 ./ c.L_N .+ 1 ./ c.L_s);
-           (r = c.r, L_K = c.L_K, L_N = c.L_N, L_s = c.L_s, L_c = Lc))
+# The equal-weight harmonic. Named L_harm, not L_c: L_C is the Corrsin scale.
+harm(c) = (Lh = 1 ./ (1 ./ c.L_N .+ 1 ./ c.L_s);
+           (r = c.r, L_K = c.L_K, L_N = c.L_N, L_s = c.L_s, L_harm = Lh))
 say("")
 say("how well does each scale line up with L_K, in log space?  (power law, no free shape)")
-say("  set                 vs L_N            vs L_s            vs L_c = 1/(1/L_N + 1/L_s)")
+say("  set                 vs L_N            vs L_s            vs L_harm = 1/(1/L_N + 1/L_s)")
 for (nm, cs) in (("Stokes", S), ("Ekman ", E), ("both  ", vcat(S, E)))
     hs = [harm(c) for c in cs]
-    a = collapse(cs, :L_N); b = collapse(cs, :L_s); c = collapse(hs, :L_c)
+    a = collapse(cs, :L_N); b = collapse(cs, :L_s); c = collapse(hs, :L_harm)
     say(@sprintf("  %s  slope %5.2f rms %4.1f %%   slope %5.2f rms %4.1f %%   slope %5.2f rms %4.1f %%",
                  nm, a.slope, a.rms, b.slope, b.rms, c.slope, c.rms))
 end
@@ -358,12 +377,12 @@ pt(c, xf, yf) = (r = c.r, x = med(xf(c)), xlo = qlo(xf(c)), xhi = qhi(xf(c)),
 
 function keys!(p)
     scatter!(p, [NaN], [NaN]; marker = :circle, ms = 7, msw = 1.6, mc = :grey70,
-             msc = :black, label = "Stokes (tidal)")
+             msc = :black, label = L"\mathrm{Stokes\ (tidal)}")
     scatter!(p, [NaN], [NaN]; marker = :xcross, ms = 8, msw = 1.6, mc = :grey70,
-             msc = :black, label = "Ekman (rotating)")
+             msc = :black, label = L"\mathrm{Ekman\ (rotating)}")
     for sv in SVALS
         scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv),
-                 label = @sprintf("N/ω = N/f = %g", sv))
+                 label = latexstring(@sprintf("N/\\omega = N/f = %g", sv)))
     end
 end
 
@@ -372,7 +391,7 @@ function panel(xf, xlab, ttl; oneone = true, xkey = :τ_N)
     ps = [pt(c, xf, c -> c.τ_K) for c in S]
     pe = [pt(c, xf, c -> c.τ_K) for c in E]
     p = plot(xscale = :log10, yscale = :log10, xlabel = xlab,
-             ylabel = "τ_K = K_T / TKE   (s)", title = ttl,
+             ylabel = L"\tau_K = K_T/\mathrm{TKE} \ \ (\mathrm{s})", title = ttl,
              legend = :topleft, legendfontsize = 6,
              foreground_color_legend = nothing)
     if oneone
@@ -380,7 +399,7 @@ function panel(xf, xlab, ttl; oneone = true, xkey = :τ_N)
                  [q.y for q in ps], [q.y for q in pe])
         lo, hi = minimum(v), maximum(v)
         plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.0, ls = :dash,
-              label = "1:1")
+              label = L"1{:}1")
     end
     # Each fit is drawn only across the range of the cases it was made from.
     for (key, cs, col, ls, lw) in ((:stokes, S, C_STOK, :dash, 1.8),
@@ -390,17 +409,19 @@ function panel(xf, xlab, ttl; oneone = true, xkey = :τ_N)
         xv = [med(xf(c)) for c in cs]
         xx = exp.(range(log(minimum(xv)), log(maximum(xv)); length = 300))
         plot!(p, xx, f.f.(xx); color = col, ls = ls, lw = lw,
-              label = @sprintf("%s  %s, rms %.0f %%",
-                               key == :both ? "both" : string(key), f.lab, f.rms))
+              label = latexstring(@sprintf("\\mathrm{%s}\\!: \\ %s, \\ \\mathrm{rms}\\ %.0f\\,\\%%",
+                                           key == :both ? "both" : string(key), f.lab, f.rms)))
     end
     bars!(p, ps, :circle, 7); bars!(p, pe, :xcross, 8)
     return p
 end
-p1 = panel(c -> c.τ_N, "τ_N = 1/N   (s)", "against the stratification time"; xkey = :τ_N)
-p2 = panel(c -> c.τ_s, "τ_s = 1/S   (s)", "against the shear time"; xkey = :τ_s)
+p1 = panel(c -> c.τ_N, L"\tau_N = 1/N \ \ (\mathrm{s})",
+           L"\mathrm{against\ the\ stratification\ time}"; xkey = :τ_N)
+p2 = panel(c -> c.τ_s, L"\tau_s = 1/S \ \ (\mathrm{s})",
+           L"\mathrm{against\ the\ shear\ time}"; xkey = :τ_s)
 keys!(p2)
 f1 = plot(p1, p2; layout = (1, 2), size = (1180, 560),
-          plot_title = "T = 10 m, z = h:  the mixing time K_T/TKE against 1/N and 1/S",
+          plot_title = L"T = 10\,\mathrm{m},\ z = h:\ \ \mathrm{the\ mixing\ time}\ K_T/\mathrm{TKE}\ \mathrm{against}\ 1/N\ \mathrm{and}\ 1/S",
           left_margin = 6Plots.mm, bottom_margin = 6Plots.mm, top_margin = 3Plots.mm)
 o1 = joinpath(FIGDIR, "tau_K_vs_timescales_T10.png")
 savefig(f1, o1)
@@ -410,17 +431,19 @@ savefig(f1, o1)
 # the N ramp so the two figures can be read against each other. Without the
 # first of those the Stokes and Ekman curves join into one and the eye reads a
 # single trend across a discontinuity that is not there.
-p3 = plot(xscale = :log10, yscale = :log10, xlabel = "r = N/ω = N/f",
-          ylabel = "length scale at z = h   (m)", title = "L_N and L_s",
+p3 = plot(xscale = :log10, yscale = :log10, xlabel = L"r = N/\omega = N/f",
+          ylabel = L"\mathrm{length\ scale\ at}\ z = h \ \ (\mathrm{m})",
+          title = L"L_N\ \mathrm{and}\ L_s",
           legend = :bottomleft, legendfontsize = 6,
           foreground_color_legend = nothing)
 for (cs, mk, ms, lc, fl) in ((S, :circle, 7, C_STOK, "Stokes"),
                              (E, :xcross, 8, C_EKMA, "Ekman"))
-    for (key, ls, nm) in ((:L_N, :solid, "L_N = √TKE/N"), (:L_s, :dash, "L_s = √TKE/S"))
+    for (key, ls, nm) in ((:L_N, :solid, "L_N = \\sqrt{\\mathrm{TKE}}/N"),
+                          (:L_s, :dash,  "L_s = \\sqrt{\\mathrm{TKE}}/S"))
         xs = [c.r for c in cs]; ys = [med(getfield(c, key)) for c in cs]
         o = sortperm(xs)
         plot!(p3, xs[o], ys[o]; color = lc, ls = ls, lw = 1.8,
-              label = "$fl  $nm")
+              label = latexstring("\\mathrm{$fl}\\!: \\ $nm"))
         scatter!(p3, xs, ys; marker = mk, ms = ms, msw = 1.6,
                  mc = [ramp_colour(r) for r in xs], msc = lc, label = "")
     end
@@ -434,18 +457,18 @@ for sv in SVALS
              label = @sprintf("N/ω = N/f = %g", sv))
 end
 
-p4 = plot(xscale = :log10, yscale = :log10, xlabel = "r = N/ω = N/f",
-          ylabel = "L_s / L_N  =  N / S", title = "which scale is the smaller",
+p4 = plot(xscale = :log10, yscale = :log10, xlabel = L"r = N/\omega = N/f",
+          ylabel = L"L_s/L_N = N/S", title = L"\mathrm{which\ scale\ is\ the\ smaller}",
           legend = :topleft, legendfontsize = 6,
           foreground_color_legend = nothing)
 hline!(p4, [1.0]; color = :black, lw = 1.4, ls = :dash,
-       label = "L_s = L_N   (below this the shear scale is the smaller)")
+       label = L"L_s = L_N \ \ (\mathrm{below\ this\ the\ shear\ scale\ is\ the\ smaller})")
 for (cs, mk, ms, lc, fl) in ((S, :circle, 7, C_STOK, "Stokes"),
                              (E, :xcross, 8, C_EKMA, "Ekman"))
     xs = [c.r for c in cs]
     ys = [med(c.L_s) / med(c.L_N) for c in cs]
     o = sortperm(xs)
-    plot!(p4, xs[o], ys[o]; color = lc, lw = 1.8, label = fl)
+    plot!(p4, xs[o], ys[o]; color = lc, lw = 1.8, label = latexstring("\\mathrm{$fl}"))
     scatter!(p4, xs, ys; marker = mk, ms = ms, msw = 1.6,
              mc = [ramp_colour(r) for r in xs], msc = lc, label = "")
 end
@@ -454,7 +477,7 @@ let v = vcat([med(c.L_s) / med(c.L_N) for c in S], [med(c.L_s) / med(c.L_N) for 
 end
 
 f2 = plot(p3, p4; layout = (1, 2), size = (1180, 560),
-          plot_title = "T = 10 m, z = h:  the stratification and shear length scales against r",
+          plot_title = L"T = 10\,\mathrm{m},\ z = h:\ \ \mathrm{the\ stratification\ and\ shear\ length\ scales\ against}\ r",
           left_margin = 6Plots.mm, bottom_margin = 6Plots.mm, top_margin = 3Plots.mm)
 o2 = joinpath(FIGDIR, "L_N_L_s_vs_r_T10.png")
 savefig(f2, o2)

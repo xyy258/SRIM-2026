@@ -41,9 +41,13 @@
 # USAGE  cd Combined && GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl
 #        (run reduce_ekman_moments_T10.jl first — it writes the Ekman side)
 
-using JLD2, Plots, Printf, Statistics
+using JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
+# Publication defaults: 600 dpi, and one font for every figure in this folder.
+# LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
+# surrounding text and the maths follows the TeX shapes either way.
+default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
 const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
 const EKNEW  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
@@ -258,8 +262,9 @@ function draw(style)
     end
 
     p = plot(xscale = :log10, yscale = :log10, legend = :bottomright, ylims = (ylo, yhi),
-             xlabel = "√TKE / N   (buoyancy scale, m)", ylabel = "l = K_T/√TKE   (m)",
-             title = "T = 10 m:  l against √TKE/N at z = h  —  Stokes (tidal) and Ekman",
+             xlabel = L"\sqrt{\mathrm{TKE}}/N \ \ \mathrm{(buoyancy\ scale,\ m)}",
+             ylabel = L"\ell = K_T/\sqrt{\mathrm{TKE}} \ \ (\mathrm{m})",
+             title = L"T = 10\,\mathrm{m}:\ \ \ell\ \mathrm{against}\ \sqrt{\mathrm{TKE}}/N\ \mathrm{at}\ z = h\ \ (\mathrm{Stokes\ and\ Ekman})",
              size = (980, 720), left_margin = 5Plots.mm, bottom_margin = 5Plots.mm,
              legendfontsize = 7, foreground_color_legend = nothing)
 
@@ -282,16 +287,16 @@ function draw(style)
         hi = maximum(vcat([qhi(c.x) for c in stokes], [qhi(c.x) for c in ekman]))
     end
     plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash,
-          label = "l = √TKE/N  (1:1)")
+          label = L"\ell = \sqrt{\mathrm{TKE}}/N \ \ (1{:}1)")
     slo = minimum(c.xm for c in stokes); shi = maximum(c.xm for c in stokes)
     xin = exp.(range(log(slo), log(shi); length = 300))
     plot!(p, xin, L∞ .* (1 .- exp.(-xin ./ x0)); color = :black, lw = 2.5,
-          label = @sprintf("Stokes fit: l = L∞(1 − e^(−x/x₀)), L∞ = %.2f m, x₀ = %.2f m", L∞, x0))
+          label = latexstring(@sprintf("\\mathrm{Stokes\\ fit}\\!: \\ \\ell = L_\\infty(1 - e^{-x/x_0}), \\ L_\\infty = %.2f\\,\\mathrm{m}, \\ x_0 = %.2f\\,\\mathrm{m}", L∞, x0)))
     xou = exp.(range(log(shi), log(hi); length = 300))
     hi > shi && plot!(p, xou, L∞ .* (1 .- exp.(-xou ./ x0)); color = :black, lw = 1.4,
-          ls = :dashdot, label = "Stokes fit, extrapolated past the fitted range")
+          ls = :dashdot, label = L"\mathrm{Stokes\ fit,\ extrapolated\ past\ the\ fitted\ range}")
     hline!(p, [L∞]; color = :black, lw = 1, ls = :dot,
-           label = @sprintf("Stokes plateau L∞ = %.2f m", L∞))
+           label = latexstring(@sprintf("\\mathrm{Stokes\\ plateau}\\ L_\\infty = %.2f\\,\\mathrm{m}", L∞)))
 
     # The Ekman-only and overall fits, each drawn across the range of the cases
     # it was made from.
@@ -300,17 +305,17 @@ function draw(style)
         a = minimum(c.xm for c in cs); b = maximum(c.xm for c in cs)
         xf = exp.(range(log(a), log(b); length = 300))
         plot!(p, xf, f.L .* (1 .- exp.(-xf ./ f.x0)); color = col, lw = lw, ls = ls,
-              label = @sprintf("%s: L∞ = %.2f m, x₀ = %.2f m, rms %.0f %%",
-                               lab, f.L, f.x0, f.rms))
+              label = latexstring(@sprintf("%s\\!: \\ L_\\infty = %.2f\\,\\mathrm{m}, \\ x_0 = %.2f\\,\\mathrm{m}, \\ \\mathrm{rms}\\ %.0f\\,\\%%",
+                                           lab, f.L, f.x0, f.rms)))
     end
-    fitline(F_E, ekman, "#8e1b4e", :dash, 2.0, "Ekman fit")
-    fitline(F_A, vcat(stokes, ekman), "#1b5e8e", :solid, 3.0, "Overall fit, both flows")
+    fitline(F_E, ekman, "#8e1b4e", :dash, 2.0, "\\mathrm{Ekman\\ fit}")
+    fitline(F_A, vcat(stokes, ekman), "#1b5e8e", :solid, 3.0, "\\mathrm{Overall\\ fit,\\ both\\ flows}")
 
     # Only meaningful while the Ekman side lacks its subgrid flux.
     if !FULL_K
         scatter!(p, [c.xr for c in stokes], [c.lr for c in stokes];
                  ms = 7, msw = 1.5, marker = :square, mc = :white, msc = :grey40,
-                 label = "Stokes medians, resolved K_T only (Ekman-comparable)")
+                 label = L"\mathrm{Stokes\ medians,\ resolved}\ K_T\ \mathrm{only}")
     end
 
     if style == "errorbars"
@@ -322,8 +327,9 @@ function draw(style)
             ([c.xm - qlo(c.x) for c in cs], [qhi(c.x) - c.xm for c in cs]),
             ([c.lm - qlo(c.l) for c in cs], [qhi(c.l) - c.lm for c in cs]),
             [ramp_colour(getfield(c, key)) for c in cs])
-        for (cs, key, mk, ms, lab) in ((stokes, :s, :circle, 7, "Stokes case medians (●)"),
-                                       (ekman,  :r, :xcross, 8, "Ekman case medians (✕)"))
+        for (cs, key, mk, ms, lab) in
+                ((stokes, :s, :circle, 7, L"\mathrm{Stokes\ case\ medians}"),
+                 (ekman,  :r, :xcross, 8, L"\mathrm{Ekman\ case\ medians}"))
             isempty(cs) && continue
             X, Y, XE, YE, C = bars(cs, key)
             # The legend entry is a neutral grey key drawn off-plot, so that the
@@ -344,16 +350,16 @@ function draw(style)
         # Medians last, so they sit on top of their clouds.
         scatter!(p, [c.xm for c in stokes], [c.lm for c in stokes];
                  ms = 7, msw = 1.5, mc = :white, msc = :black,
-                 label = "Stokes case medians")
+                 label = L"\mathrm{Stokes\ case\ medians}")
         isempty(ekman) || scatter!(p, [c.xm for c in ekman], [c.lm for c in ekman];
                  ms = 8, msw = 2.0, marker = :xcross, msc = :black, mc = :black,
-                 label = "Ekman case medians")
+                 label = L"\mathrm{Ekman\ case\ medians}")
     end
 
     # One colour key, drawn as invisible series so the N labels appear once.
     for sv in SVALS
         scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv),
-                 label = @sprintf("N/ω = N/f = %g", sv))
+                 label = latexstring(@sprintf("N/\\omega = N/f = %g", sv)))
     end
 
     mkpath(FIGDIR)

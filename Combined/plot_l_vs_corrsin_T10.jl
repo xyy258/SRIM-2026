@@ -58,9 +58,13 @@
 # ENV    STYLE   cloud | errorbars | both   (default both)
 #        REBUILD 1 to re-walk the Stokes moment files instead of using the cache
 
-using Oceananigans, JLD2, Plots, Printf, Statistics
+using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
+# Publication defaults: 600 dpi, and one font for every figure in this folder.
+# LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
+# surrounding text and the maths follows the TeX shapes either way.
+default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
 const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
 const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
@@ -375,9 +379,9 @@ function draw(style)
     end
 
     p = plot(xscale = :log10, yscale = :log10, legend = :bottomright, ylims = (ylo, yhi),
-             xlabel = "L_C = (ε/S³)^(1/2)   (Corrsin shear scale, m)",
-             ylabel = "l = K_T/√TKE   (m)",
-             title = "T = 10 m:  l against the Corrsin scale at z = h  —  Stokes (tidal) and Ekman",
+             xlabel = L"L_C = (\varepsilon/S^3)^{1/2} \ \ (\mathrm{Corrsin\ shear\ scale,\ m})",
+             ylabel = L"\ell = K_T/\sqrt{\mathrm{TKE}} \ \ (\mathrm{m})",
+             title = L"T = 10\,\mathrm{m}:\ \ \ell\ \mathrm{against\ the\ Corrsin\ scale\ at}\ z = h\ \ (\mathrm{Stokes\ and\ Ekman})",
              size = (980, 720), left_margin = 5Plots.mm, bottom_margin = 5Plots.mm,
              legendfontsize = 7, foreground_color_legend = nothing)
 
@@ -398,7 +402,8 @@ function draw(style)
         lo = minimum(vcat([qlo(c.x) for c in S], [qlo(c.x) for c in E]))
         hi = maximum(vcat([qhi(c.x) for c in S], [qhi(c.x) for c in E]))
     end
-    plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash, label = "l = L_C  (1:1)")
+    plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.2, ls = :dash,
+          label = L"\ell = L_C \ \ (1{:}1)")
 
     # Each fit across the range of the cases it was made from. The family drawn
     # per set is whichever fitted better and did not pin.
@@ -409,22 +414,25 @@ function draw(style)
         usesat = fs !== nothing && !fs.pinned && fs.rms <= fp.rms
         if usesat
             plot!(p, xx, fs.L .* (1 .- exp.(-xx ./ fs.x0)); color = col, ls = ls, lw = lw,
-                  label = @sprintf("%s: l = %.2f(1 − e^(−x/%.2f)), rms %.0f %%", nm, fs.L, fs.x0, fs.rms))
+                  label = latexstring(@sprintf("%s\\!: \\ \\ell = %.2f(1 - e^{-L_C/%.2f}), \\ \\mathrm{rms}\\ %.0f\\,\\%%",
+                                               nm, fs.L, fs.x0, fs.rms)))
         else
             plot!(p, xx, fp.A .* xx .^ fp.b; color = col, ls = ls, lw = lw,
-                  label = @sprintf("%s: l = %.3f x^%.2f, rms %.0f %%", nm, fp.A, fp.b, fp.rms))
+                  label = latexstring(@sprintf("%s\\!: \\ \\ell = %.3f\\,L_C^{%.2f}, \\ \\mathrm{rms}\\ %.0f\\,\\%%",
+                                               nm, fp.A, fp.b, fp.rms)))
         end
     end
-    fitline(F_S, P_S, RS, "#1b3a6b", :dash, 2.0, "Stokes fit")
-    fitline(F_E, P_E, RE, "#8e1b4e", :dash, 2.0, "Ekman fit")
-    fitline(F_A, P_A, vcat(RS, RE), :black, :solid, 2.6, "overall fit")
+    fitline(F_S, P_S, RS, "#1b3a6b", :dash, 2.0, "\\mathrm{Stokes\\ fit}")
+    fitline(F_E, P_E, RE, "#8e1b4e", :dash, 2.0, "\\mathrm{Ekman\\ fit}")
+    fitline(F_A, P_A, vcat(RS, RE), :black, :solid, 2.6, "\\mathrm{overall\\ fit}")
 
     # Hollow means the ε estimate failed in most of that case's samples, so its
     # median is taken over a subset selected on the sign of a budget residual.
-    for (cs, mk, ms, nm, sym) in ((S, :circle, 8, "Stokes", "N/ω"),
+    for (cs, mk, ms, nm, sym) in ((S, :circle, 8, "Stokes", "N/\\omega"),
                                   (E, :diamond, 9, "Ekman", "N/f"))
         for c in cs
-            lab = @sprintf("%s %s = %g%s", nm, sym, c.r, c.reliable ? "" : "  (ε unusable)")
+            lab = latexstring(@sprintf("\\mathrm{%s}\\ \\ %s = %g%s", nm, sym, c.r,
+                        c.reliable ? "" : " \\ (\\varepsilon\\ \\mathrm{unusable})"))
             mc = c.reliable ? ramp_colour(c.r) : :white
             if style == "cloud"
                 scatter!(p, [c.xm], [c.lm]; marker = mk, ms = ms, msw = 1.6,

@@ -2,6 +2,39 @@
 
 We combine the results of both simulations for each model.
 
+## Notation, and how the figures are drawn
+
+Length scales, all evaluated at `z = h` and formed per time sample before any
+median is taken:
+
+| symbol | definition | where |
+|---|---|---|
+| `ℓ`, `L_K` | `K_T/√TKE`, the mixing length | every figure |
+| `L_N` | `√TKE/N`, the stratification scale | |
+| `L_s` | `√TKE/S`, the shear scale | |
+| **`L_C`** | **`(ε/S³)^(1/2)`, the Corrsin shear scale** | `plot_l_vs_corrsin_T10.jl` only |
+| `L_harm` | `1/L_harm = 1/L_N + 1/L_s`, equal-weight harmonic | `plot_L_K_vs_Lharm_T10.jl` |
+| `L_β` | `1/L_β = 1/L_N + β/L_s`, weighted harmonic | `plot_Lcomb_candidates_T10.jl` |
+| `L_comb` | any candidate combination of `L_N` and `L_s` | `plot_Lcomb_candidates_T10.jl` |
+
+**`L_C` means the Corrsin scale and nothing else.** The combined scales were
+called `L_c` up to 2026-09-07, which collided with it; they are `L_harm`, `L_β`
+and `L_comb` now, and the scripts and figures were renamed to match.
+
+Every plotting script here opens with
+
+```julia
+default(dpi = 600, fontfamily = "DejaVu Sans")
+```
+
+and writes its axis labels, titles and legends as `LaTeXStrings`. The maths is
+set by GR's own mathtext, so it follows the TeX shapes whatever `fontfamily`
+says; `fontfamily` fixes the surrounding text. Two things GR's mathtext does not
+have, learned the hard way: `\text{...}` (so no hyphenated words inside
+`\mathrm`, they come out as minus signs), and a line break inside a label. And
+`%g` inside a label prints `2.16e + 03`, with the exponent's sign set as a
+binary operator — `texnum` in `plot_shear_scales_T10.jl` is there for that.
+
 ## l against √TKE/N at z = h, T = 10 m
 
 The Stokes (tidal) and Ekman (rotating) columns on one axis, for the softplus
@@ -278,24 +311,24 @@ Against `τ_s` the same points scatter and the two flows separate.
 
 ### The weighted scale
 
-Testing `L_c = 1/(1/L_N + 1/L_s)` with `c_N = c_s = 1`, so nothing is tuned.
+Testing `L_harm = 1/(1/L_N + 1/L_s)` with `c_N = c_s = 1`, so nothing is tuned.
 The numbers are the slope of `log L_K` against `log(scale)` and the rms residual
 about that straight line — a slope of 1 means straight proportionality:
 
-| set | vs `L_N` | vs `L_s` | vs `L_c` |
+| set | vs `L_N` | vs `L_s` | vs `L_harm` |
 |---|---|---|---|
 | Stokes | slope 0.82, rms 15.8 % | slope 2.26, rms 35.8 % | **slope 1.01, rms 9.1 %** |
 | Ekman | slope 0.82, rms 12.1 % | slope 0.92, rms 17.7 % | slope 0.87, rms 6.9 % |
 | both | slope 0.83, rms 14.2 % | slope 1.08, rms 50.9 % | slope 0.91, rms 12.7 % |
 
 The harmonic combination helps both flows, and for Stokes it takes the slope to
-1.01 — `L_K ∝ L_c` with no curvature left — while nearly halving the scatter.
+1.01 — `L_K ∝ L_harm` with no curvature left — while nearly halving the scatter.
 That is the result the weighted form was hoped to give.
 
-Three cautions before leaning on it. `L_c` is a monotone function of `L_N` and
+Three cautions before leaning on it. `L_harm` is a monotone function of `L_N` and
 `L_s`, so some improvement from adding a second scale is expected with only six
 or seven points; the slope moving to 1 is stronger evidence than the rms falling.
-Combining both flows still does not work (12.7 %), so `L_c` does not unify them.
+Combining both flows still does not work (12.7 %), so `L_harm` does not unify them.
 And the Stokes `r = 1` and `r = 2` medians — the two that most influence the
 slope at the large-`L_N` end — are taken over samples with 28 % of the cycle
 discarded for counter-gradient flux, `K_T ≤ 0`. That exclusion is inherent to
@@ -309,7 +342,7 @@ no such exclusion.
 ```
 cd Combined
 GKSwstype=100 julia --project=. plot_shear_scales_T10.jl    # ~3 min, also writes the cache
-GKSwstype=100 julia --project=. plot_Lc_candidates_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot_Lcomb_candidates_T10.jl   # seconds, reads the cache
 ```
 
 `plot_shear_scales_T10.jl` writes `Data/shear_scales_T10.jld2`, the per-sample
@@ -341,11 +374,11 @@ The exponents say it plainly. Against `τ_N` the two flows agree, b = 0.81 and
 
 All formed per sample, then reduced to a case median. Free parameters chosen on
 both flows together, since a scale needing a different weight per flow has
-unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_c`,
+unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_comb`,
 which is the form a closure would want; `b` free is the same fit with the
 exponent released, as the honesty check.
 
-| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_c`, both** |
+| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_comb`, both** |
 |---|---|---|---|---|
 | `L_N` alone | — | 29.5 % | 0.83 | 14.9 % |
 | `L_s` alone | — | 51.7 % | 1.08 | 51.7 % |
@@ -355,7 +388,7 @@ exponent released, as the honesty check.
 | p-norm | p = 0.60 | 17.2 % | 0.93 | 11.9 % |
 | geometric | α = 0.65 | 17.6 % | 0.94 | 13.2 % |
 
-**No candidate makes `L_K` proportional to `L_c`.** The best `b = 1` fit is
+**No candidate makes `L_K` proportional to `L_comb`.** The best `b = 1` fit is
 17.2 %, and every combined scale still has a natural exponent near 0.9. The
 curvature that the saturating form captures is real and no reweighting removes
 it.
@@ -372,23 +405,23 @@ and has no free parameter to justify.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_L_K_vs_Lc_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot_L_K_vs_Lharm_T10.jl   # seconds, reads the cache
 ```
 
-`figures/L_K_vs_Lc_T10.png` — the preferred candidate only, and the regime
+`figures/L_K_vs_Lharm_T10.png` — the preferred candidate only, and the regime
 question, on one page.
 
-**Left**: `L_K` against `L_c = 1/(1/L_N + 1/L_s)` for all thirteen cases, with
-the saturating curve through both flows, `L_K = 2.18(1 − e^(−L_c/4.89))`, rms
-10.4 %. The pure proportionality `L_K = 0.398 L_c` (rms 18.3 %) is dotted
+**Left**: `L_K` against `L_harm = 1/(1/L_N + 1/L_s)` for all thirteen cases, with
+the saturating curve through both flows, `L_K = 2.18(1 − e^(−L_harm/4.89))`, rms
+10.4 %. The pure proportionality `L_K = 0.398 L_harm` (rms 18.3 %) is dotted
 alongside so the residual curvature is visible rather than asserted.
 
-**Right**: written as `1/L_c = 1/L_N + 1/L_s` the two terms are resistances in
+**Right**: written as `1/L_harm = 1/L_N + 1/L_s` the two terms are resistances in
 series and their shares add to one,
 
-    w_N = L_c/L_N       w_s = L_c/L_s       w_N + w_s = 1
+    w_N = L_harm/L_N       w_s = L_harm/L_s       w_N + w_s = 1
 
-so `w_s` is the fraction of `1/L_c` the shear contributes. `w_s > 1/2` is
+so `w_s` is the fraction of `1/L_harm` the shear contributes. `w_s > 1/2` is
 shear-limited, `w_s < 1/2` stratification-limited, `w_s = 1/2` is `L_s = L_N`.
 Only `w_s` is drawn — `w_N` is `1 − w_s`. It is also what colours the markers on
 the left, so a point's colour there says which regime it came from. The weight
@@ -404,7 +437,7 @@ sequence marches monotonically into the stratification-limited corner as `N`
 rises, 0.59 → 0.06; the Ekman sequence does not march anywhere, sitting at
 0.22–0.26 for `r ≥ 1` and only creeping to 0.44 at the weakest stratification.
 So the shear-limited regime is approached from the Stokes side at low `N` and
-never reached on the Ekman side. The shear still earns its place in `L_c` at
+never reached on the Ekman side. The shear still earns its place in `L_harm` at
 `w_s ≈ 0.25` — that is where the collapse of the two flows onto one curve comes
 from.
 

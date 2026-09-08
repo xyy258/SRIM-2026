@@ -45,7 +45,7 @@ medians at z = h.  L_K = K_T/√TKE,  L_N = √TKE/N,  L_s = √TKE/S
   Ekman  50       0.0640    0.1710    0.4872     2.849      75.1     200.0     567.4
 
 how well does each scale line up with L_K, in log space?  (power law, no free shape)
-  set                 vs L_N            vs L_s            vs L_c = 1/(1/L_N + 1/L_s)
+  set                 vs L_N            vs L_s            vs L_harm = 1/(1/L_N + 1/L_s)
   Stokes  slope  0.82 rms 15.8 %   slope  2.26 rms 35.8 %   slope  1.01 rms  9.1 %
   Ekman   slope  0.82 rms 12.1 %   slope  0.92 rms 17.7 %   slope  0.87 rms  6.9 %
   both    slope  0.83 rms 14.2 %   slope  1.08 rms 50.9 %   slope  0.91 rms 12.7 %

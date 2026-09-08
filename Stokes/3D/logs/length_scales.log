@@ -35,10 +35,10 @@ P4_T10_sqrtRi10            10 |      +1.00     0.99   2001 |      0.300
 A candidate is THE scale only if slope ≈ 1 AND median l/L is the same
 across cases. Slope 1 with a case-dependent ratio means l is merely
 correlated with that scale, not set by it.
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_h.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_delta_s.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_ustar_over_omega.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_q_over_N.png
+wrote fig4/l_vs_h.png
+wrote fig4/l_vs_delta_s.png
+wrote fig4/l_vs_ustar_over_omega.png
+wrote fig4/l_vs_q_over_N.png
 ================================================================================================
 
 ================================================================================================
@@ -77,10 +77,10 @@ P4_T10_sqrtRi10            10 |      +1.00     0.99   2001 |      0.300
 A candidate is THE scale only if slope ≈ 1 AND median l/L is the same
 across cases. Slope 1 with a case-dependent ratio means l is merely
 correlated with that scale, not set by it.
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_h.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_delta_s.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_ustar_over_omega.png
-wrote ../../../../../tmp/claude-1002/-home-tll46-SRIM-2026/b98cc0ae-9b96-4dd2-94c0-4a511540b3f8/scratchpad/fig4/l_vs_q_over_N.png
+wrote fig4/l_vs_h.png
+wrote fig4/l_vs_delta_s.png
+wrote fig4/l_vs_ustar_over_omega.png
+wrote fig4/l_vs_q_over_N.png
 ================================================================================================
 
 ================================================================================================
