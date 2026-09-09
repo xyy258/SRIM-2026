@@ -443,12 +443,12 @@ from.
 
 ## `LOG.txt`
 
-A running record of what this folder has been for, in order, in the comment
-style of `Ekman 3D.jl`: the questions, the two asymmetries and the re-run that
-closed them, the definitions and the two ordering rules, what each figure
-showed, the mistakes made and corrected, and what is still open. The README
-says where things stand; `LOG.txt` says how they got there. Newest entries at
-the bottom; append when something is learned, not when something is run.
+A short chronological record of what this folder has been for, in the comment
+style of `Ekman 3D.jl` — one entry per episode, giving what was done and what
+came of it, plus the mistakes made and what is still open. **The detail and the
+reasoning live in this README; `LOG.txt` is the narrative.** Keep it that way
+when appending: newest entries at the bottom, and append when something is
+learned, not when something is run.
 
 
 ## l against the Corrsin shear length scale
@@ -551,3 +551,116 @@ rests on three points spanning less than a factor of two in `L_C`, over exactly
 the part of the sweep where the `ε` estimate is starting to degrade (`ε/(P+|B|)`
 falling 0.88 → 0.21), so it is the weakest number in the table and should not be
 read as a contradiction of the Ekman result.
+
+
+## The δ model: does a boundary-layer thickness explain the mixing?
+
+```
+cd Combined
+GKSwstype=100 julia --project=. reduce_profiles_T10.jl     # ~6 min, walks both columns
+GKSwstype=100 julia --project=. plot_delta_T10.jl          # stage 1
+GKSwstype=100 julia --project=. plot_tke_profiles_T10.jl   # stage 2
+GKSwstype=100 julia --project=. plot_KT_model_T10.jl       # stage 3
+```
+
+Testing
+
+    TKE(z) = A₁ exp(−A₂ z/δ)
+    K_T    = B₁ δ √TKE (B₂ + exp(B₃ L_harm/δ))
+
+Divided by `√TKE` the second is the saturating form already fitted, with one new
+claim: **that the plateau and the knee both scale with δ** instead of being
+fitted per flow. (As written the bracket only gives a saturating curve with
+`B₁ < 0, B₂ = −1, B₃ < 0`; everything below uses the equivalent
+`L_K/δ = C₁(1 − e^(−C₂ L_harm/δ))`.)
+
+### u_* is measured, not assumed
+
+`reduce_profiles_T10.jl` takes `u_*² = max over 0 < z ≤ h of |τ|` with
+`τ = (⟨uw⟩ − ⟨u⟩⟨w⟩) − νₑ ∂U/∂z` and `νₑ ≈ κₑ`, per sample then reduced.
+
+| | measured `u_*` | `√c_D·U∞` | `√(c_D·|U₁|²)` |
+|---|---|---|---|
+| Stokes | 1.11e−3 | 4.40e−3 | 1.00e−3 |
+| Ekman | 2.63e−3 | 3.81e−3 | 1.94e−3 |
+
+`u_*` is flat to under 3 % across each sweep — stratification does not change
+the bed stress. The free-stream estimate is **4× too large** for Stokes, so
+this was worth measuring rather than assuming.
+
+### Stage 1 — which δ tracks h
+
+`figures/delta_vs_h_T10.png`. The leading constant is not what is being
+tested — a later fit absorbs it — so a candidate is good if `h/δ` is **flat**.
+Ratio of max to min across each sweep:
+
+| δ | Stokes | Ekman |
+|---|---|---|
+| plain, no stratification | ×1.32 | ×3.22 |
+| Weatherly & Martin, `(1+N²/Ω²)^(−1/4)` | ×4.52 | ×2.09 |
+| **fitted exponent p** | **×1.05 (p = 0.040)** | **×1.13 (p = 0.155)** |
+| `u_*/√(ΩN)` | ×5.37 | ×3.13 |
+
+**This stage works.** The same functional form fits both flows, with different
+exponents:
+
+    h = 1.05 u_*/ω (1 + N²/ω²)^(−0.040)     flat to 1.6 %   (tidal)
+    h = 0.85 u_*/f (1 + N²/f²)^(−0.155)     flat to 4.4 %   (rotating)
+
+Three things worth noting. The tidal layer is **almost stratification-blind**
+(p = 0.04): its thickness is set by ω, and `N` gets no time to act. WM's
+`p = 1/4` is **too steep** for the rotating column here — though the four
+low-`N/f` cases have not equilibrated and their `h` is still rising, so the
+fitted 0.155 is a lower bound. And the two prefactors, 1.05 and 0.85, agree to
+24 %, which is closer than the published 0.4 and 1.3 would suggest.
+
+### Stage 2 — is TKE exponential, and does it collapse
+
+`figures/tke_profiles_T10.png`, plotted log-`TKE` against linear `z/h` so an
+exponential is a straight line. Fitted from the TKE peak to `z = h`; fitting
+from the wall would fold the near-wall rise into `A₂`.
+
+| | `A₂` | `A₂ h/δ` (decay over one `h`) | `A₁/u_*²` | fit rms |
+|---|---|---|---|---|
+| Stokes | 1.30 – 1.45 (×1.12) | 3.40 – 3.77 (×1.11) | 3.34 – 3.55 (×1.06) | 14–19 % |
+| Ekman | 4.01 – 6.48 (×1.62) | 2.60 – 4.23 (×1.63) | 1.75 – 2.23 (×1.27) | 2–13 % |
+
+**Half works.** The six Stokes profiles collapse onto a single exponential with
+no stratification dependence at all — `A₁/u_*² = 3.4 ± 3 %`, `A₂` to ±6 %. The
+Ekman profiles **do not collapse**: they fan out by ×1.6 in decay rate, and
+they flatten to a floor of 1–3 % of `u_*²` above `z ≈ h`. So `h/δ` being flat
+(stage 1) does **not** imply the profiles collapse on δ.
+
+`A₂` is quoted per δ as the model defines it, but the published 0.4 and 1.3 put
+`h/δ` at 2.62 and 0.66, so `A₂` alone is not comparable between flows; `A₂h/δ`
+is, and on that measure both flows decay by about `e^(−3.4)` over one `h`.
+
+### Stage 3 — the δ model for K_T
+
+`figures/KT_delta_model_T10.png`. Does `L_K/δ` against `L_harm/δ` collapse both
+flows better than the unscaled fit's 10.4 %?
+
+| δ | both | Stokes | Ekman |
+|---|---|---|---|
+| published (0.4, 1.3) | 18.1 % | 9.1 % | 7.9 % |
+| one common constant | 12.0 % | 9.1 % | 7.9 % |
+| `δ = h`, the most favourable | 11.1 % | 9.1 % | 8.2 % |
+| **unscaled, no δ at all** | **10.4 %** | 9.1 % | 8.9 % |
+
+**This stage does not work.** No thickness improves the two-flow collapse, and
+the published constants make it much worse by putting the two δ a factor of
+five apart. `δ = h` is the best case available and is still no better than not
+scaling. Within the Ekman column alone δ helps slightly, 8.9 % → 7.9 %, which
+is a hint that its knee moves with thickness but is well inside the noise on
+seven points.
+
+Two caveats on the verdict. The Stokes column **cannot test this**: its largest
+`L_harm` is `0.23 x₀`, so `exp(−L_harm/x₀) ≥ 0.80` throughout and it never
+reaches the bend — its 9.1 % is the same straight line however δ is chosen.
+And the one thing that does survive is the **initial slope**, 0.451 (Stokes)
+against 0.454 (Ekman) — but `C₁C₂ = dL_K/dL_harm` contains no δ, so that
+agreement is evidence for `L_harm`, not for the thickness.
+
+**Where this leaves the model.** The `h` law of stage 1 is a genuine result and
+worth keeping. The `K_T` law is better written without δ, as it already was:
+`L_K = 2.18(1 − e^(−L_harm/4.89))`, rms 10.4 %.
