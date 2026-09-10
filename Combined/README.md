@@ -664,3 +664,73 @@ agreement is evidence for `L_harm`, not for the thickness.
 **Where this leaves the model.** The `h` law of stage 1 is a genuine result and
 worth keeping. The `K_T` law is better written without δ, as it already was:
 `L_K = 2.18(1 − e^(−L_harm/4.89))`, rms 10.4 %.
+
+
+## Re-running the weakly stratified end — `swirles.sh`
+
+`L_s/L_N = N/S = √Ri`, so the `L_s = L_N` crossing on
+`figures/L_N_L_s_vs_r_T10.png` is `Ri = 1`. The medians put it at `r ≈ 1.4`
+(Stokes) and, extrapolated below the sweep, `r ≈ 0.4` (Ekman) — neither
+resolved. `swirles.sh` re-runs both columns at low `r` to fix that.
+
+```
+cd /cephfs/store/damtp/tll46/SRIM-2026
+MODE=preflight bash Combined/swirles.sh     # login node, no GPU work
+sbatch Combined/swirles.sh                  # ~5.6 h serially
+sbatch --array=0-2 Combined/swirles.sh      # or one case per task, ~2 h
+MODE=status bash Combined/swirles.sh        # before pulling anything home
+```
+
+| flow | default `r` | why |
+|---|---|---|
+| Stokes | 0.5, 0.2 | `r = 0.5` exists in `outputs/` but **predates the moments pipeline** — no `*_moments.jld2`, no `mixing_*`, no drag marker — so it is re-run, not reused |
+| Ekman | 0.2 | `r = 0.5` already has a complete moments run; `0.2` crosses to the far side of `Ri = 1` |
+
+Both flows take the same `r` so `N` matches case for case, which is what the
+comparison rests on.
+
+### One folder, for scp
+
+```
+Combined/Data/lowN/
+  stokes/P4_T10_sqrtRi0p5/    TidalBL3D_*_moments.jld2, mixing_*_hcross.jld2
+  stokes/P4_T10_sqrtRi0p2/
+  ekman/r=0.2, T=10.0/        Moments.jld2, Avg_*.jld2
+  logs/
+```
+
+```
+scp -r <host>:/cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/lowN \
+       ~/SRIM-2026/Combined/Data/
+```
+
+~900 MB. The analysis only ever reads two files a case, so an `rsync` filtered
+to `*_moments.jld2`, `mixing_*_hcross.jld2` and `Moments.jld2` brings it to
+~60 MB a Stokes case — the command is in the script header.
+
+Nothing under `Ekman/`, `Stokes/3D/outputs/` or `Data/Ekman_moments/` is written
+to; the Stokes drag spin-up under `outputs/` is read, never modified.
+
+### Two things to know before running it
+
+**The Ekman driver cannot take an `r` with two decimals.** `case_dir()` in
+`ekmanrun.jl` formats it as `%.1f`, so `r = 0.25` would silently write into the
+folder `r=0.2` and collide with a genuine `r = 0.2`. `swirles.sh` refuses such
+an `r` with a message rather than letting it happen. Fixing it properly means
+changing `case_dir()` **and** the matching readers in
+`reduce_ekman_moments_T10.jl` and the `r=%.1f` group keys in the plot scripts.
+
+**`K_T` is badly conditioned at low `N`, and that is why `r = 0.5` was dropped
+from the Stokes column in the first place** (`run_moments_sweep.sh` says so).
+`Δb` is small there and `K_T = −F_b/⟨∂b/∂z⟩` divides by it. The acceptance test
+is the `VERIFICATION` block that `swirles.sh` echoes after each Stokes case:
+`K_T_bulk` and `K_T_pe` share no code, so if they disagree by more than ~30 %
+the diffusivity at that `r` is not measuring the flow. Check that before adding
+these points to any figure.
+
+### Still to do once the data is here
+
+The reductions and plot scripts read `Data/Ekman_moments/4` and
+`Stokes/3D/outputs` with `SVALS = [1, 2, 5, 10, 25, 50]` hard-coded. Pointing
+them at `Data/lowN` and widening `SVALS` is a separate change, deliberately not
+made until the runs exist and have passed the conditioning check above.
