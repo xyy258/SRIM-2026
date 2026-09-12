@@ -2,6 +2,39 @@
 
 We combine the results of both simulations for each model.
 
+## Notation, and how the figures are drawn
+
+Length scales, all evaluated at `z = h` and formed per time sample before any
+median is taken:
+
+| symbol | definition | where |
+|---|---|---|
+| `ℓ`, `L_K` | `K_T/√TKE`, the mixing length | every figure |
+| `L_N` | `√TKE/N`, the stratification scale | |
+| `L_s` | `√TKE/S`, the shear scale | |
+| **`L_C`** | **`(ε/S³)^(1/2)`, the Corrsin shear scale** | `plot_l_vs_corrsin_T10.jl` only |
+| `L_harm` | `1/L_harm = 1/L_N + 1/L_s`, equal-weight harmonic | `plot_L_K_vs_Lharm_T10.jl` |
+| `L_β` | `1/L_β = 1/L_N + β/L_s`, weighted harmonic | `plot_Lcomb_candidates_T10.jl` |
+| `L_comb` | any candidate combination of `L_N` and `L_s` | `plot_Lcomb_candidates_T10.jl` |
+
+**`L_C` means the Corrsin scale and nothing else.** The combined scales were
+called `L_c` up to 2026-09-07, which collided with it; they are `L_harm`, `L_β`
+and `L_comb` now, and the scripts and figures were renamed to match.
+
+Every plotting script here opens with
+
+```julia
+default(dpi = 600, fontfamily = "DejaVu Sans")
+```
+
+and writes its axis labels, titles and legends as `LaTeXStrings`. The maths is
+set by GR's own mathtext, so it follows the TeX shapes whatever `fontfamily`
+says; `fontfamily` fixes the surrounding text. Two things GR's mathtext does not
+have, learned the hard way: `\text{...}` (so no hyphenated words inside
+`\mathrm`, they come out as minus signs), and a line break inside a label. And
+`%g` inside a label prints `2.16e + 03`, with the exponent's sign set as a
+binary operator — `texnum` in `plot_shear_scales_T10.jl` is there for that.
+
 ## l against √TKE/N at z = h, T = 10 m
 
 The Stokes (tidal) and Ekman (rotating) columns on one axis, for the softplus
@@ -278,24 +311,24 @@ Against `τ_s` the same points scatter and the two flows separate.
 
 ### The weighted scale
 
-Testing `L_c = 1/(1/L_N + 1/L_s)` with `c_N = c_s = 1`, so nothing is tuned.
+Testing `L_harm = 1/(1/L_N + 1/L_s)` with `c_N = c_s = 1`, so nothing is tuned.
 The numbers are the slope of `log L_K` against `log(scale)` and the rms residual
 about that straight line — a slope of 1 means straight proportionality:
 
-| set | vs `L_N` | vs `L_s` | vs `L_c` |
+| set | vs `L_N` | vs `L_s` | vs `L_harm` |
 |---|---|---|---|
 | Stokes | slope 0.82, rms 15.8 % | slope 2.26, rms 35.8 % | **slope 1.01, rms 9.1 %** |
 | Ekman | slope 0.82, rms 12.1 % | slope 0.92, rms 17.7 % | slope 0.87, rms 6.9 % |
 | both | slope 0.83, rms 14.2 % | slope 1.08, rms 50.9 % | slope 0.91, rms 12.7 % |
 
 The harmonic combination helps both flows, and for Stokes it takes the slope to
-1.01 — `L_K ∝ L_c` with no curvature left — while nearly halving the scatter.
+1.01 — `L_K ∝ L_harm` with no curvature left — while nearly halving the scatter.
 That is the result the weighted form was hoped to give.
 
-Three cautions before leaning on it. `L_c` is a monotone function of `L_N` and
+Three cautions before leaning on it. `L_harm` is a monotone function of `L_N` and
 `L_s`, so some improvement from adding a second scale is expected with only six
 or seven points; the slope moving to 1 is stronger evidence than the rms falling.
-Combining both flows still does not work (12.7 %), so `L_c` does not unify them.
+Combining both flows still does not work (12.7 %), so `L_harm` does not unify them.
 And the Stokes `r = 1` and `r = 2` medians — the two that most influence the
 slope at the large-`L_N` end — are taken over samples with 28 % of the cycle
 discarded for counter-gradient flux, `K_T ≤ 0`. That exclusion is inherent to
@@ -309,7 +342,7 @@ no such exclusion.
 ```
 cd Combined
 GKSwstype=100 julia --project=. plot_shear_scales_T10.jl    # ~3 min, also writes the cache
-GKSwstype=100 julia --project=. plot_Lc_candidates_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot_Lcomb_candidates_T10.jl   # seconds, reads the cache
 ```
 
 `plot_shear_scales_T10.jl` writes `Data/shear_scales_T10.jld2`, the per-sample
@@ -341,11 +374,11 @@ The exponents say it plainly. Against `τ_N` the two flows agree, b = 0.81 and
 
 All formed per sample, then reduced to a case median. Free parameters chosen on
 both flows together, since a scale needing a different weight per flow has
-unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_c`,
+unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_comb`,
 which is the form a closure would want; `b` free is the same fit with the
 exponent released, as the honesty check.
 
-| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_c`, both** |
+| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_comb`, both** |
 |---|---|---|---|---|
 | `L_N` alone | — | 29.5 % | 0.83 | 14.9 % |
 | `L_s` alone | — | 51.7 % | 1.08 | 51.7 % |
@@ -355,7 +388,7 @@ exponent released, as the honesty check.
 | p-norm | p = 0.60 | 17.2 % | 0.93 | 11.9 % |
 | geometric | α = 0.65 | 17.6 % | 0.94 | 13.2 % |
 
-**No candidate makes `L_K` proportional to `L_c`.** The best `b = 1` fit is
+**No candidate makes `L_K` proportional to `L_comb`.** The best `b = 1` fit is
 17.2 %, and every combined scale still has a natural exponent near 0.9. The
 curvature that the saturating form captures is real and no reweighting removes
 it.
@@ -372,23 +405,23 @@ and has no free parameter to justify.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_L_K_vs_Lc_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot_L_K_vs_Lharm_T10.jl   # seconds, reads the cache
 ```
 
-`figures/L_K_vs_Lc_T10.png` — the preferred candidate only, and the regime
+`figures/L_K_vs_Lharm_T10.png` — the preferred candidate only, and the regime
 question, on one page.
 
-**Left**: `L_K` against `L_c = 1/(1/L_N + 1/L_s)` for all thirteen cases, with
-the saturating curve through both flows, `L_K = 2.18(1 − e^(−L_c/4.89))`, rms
-10.4 %. The pure proportionality `L_K = 0.398 L_c` (rms 18.3 %) is dotted
+**Left**: `L_K` against `L_harm = 1/(1/L_N + 1/L_s)` for all thirteen cases, with
+the saturating curve through both flows, `L_K = 2.18(1 − e^(−L_harm/4.89))`, rms
+10.4 %. The pure proportionality `L_K = 0.398 L_harm` (rms 18.3 %) is dotted
 alongside so the residual curvature is visible rather than asserted.
 
-**Right**: written as `1/L_c = 1/L_N + 1/L_s` the two terms are resistances in
+**Right**: written as `1/L_harm = 1/L_N + 1/L_s` the two terms are resistances in
 series and their shares add to one,
 
-    w_N = L_c/L_N       w_s = L_c/L_s       w_N + w_s = 1
+    w_N = L_harm/L_N       w_s = L_harm/L_s       w_N + w_s = 1
 
-so `w_s` is the fraction of `1/L_c` the shear contributes. `w_s > 1/2` is
+so `w_s` is the fraction of `1/L_harm` the shear contributes. `w_s > 1/2` is
 shear-limited, `w_s < 1/2` stratification-limited, `w_s = 1/2` is `L_s = L_N`.
 Only `w_s` is drawn — `w_N` is `1 − w_s`. It is also what colours the markers on
 the left, so a point's colour there says which regime it came from. The weight
@@ -404,18 +437,18 @@ sequence marches monotonically into the stratification-limited corner as `N`
 rises, 0.59 → 0.06; the Ekman sequence does not march anywhere, sitting at
 0.22–0.26 for `r ≥ 1` and only creeping to 0.44 at the weakest stratification.
 So the shear-limited regime is approached from the Stokes side at low `N` and
-never reached on the Ekman side. The shear still earns its place in `L_c` at
+never reached on the Ekman side. The shear still earns its place in `L_harm` at
 `w_s ≈ 0.25` — that is where the collapse of the two flows onto one curve comes
 from.
 
 ## `LOG.txt`
 
-A running record of what this folder has been for, in order, in the comment
-style of `Ekman 3D.jl`: the questions, the two asymmetries and the re-run that
-closed them, the definitions and the two ordering rules, what each figure
-showed, the mistakes made and corrected, and what is still open. The README
-says where things stand; `LOG.txt` says how they got there. Newest entries at
-the bottom; append when something is learned, not when something is run.
+A short chronological record of what this folder has been for, in the comment
+style of `Ekman 3D.jl` — one entry per episode, giving what was done and what
+came of it, plus the mistakes made and what is still open. **The detail and the
+reasoning live in this README; `LOG.txt` is the narrative.** Keep it that way
+when appending: newest entries at the bottom, and append when something is
+learned, not when something is run.
 
 
 ## l against the Corrsin shear length scale
@@ -518,3 +551,186 @@ rests on three points spanning less than a factor of two in `L_C`, over exactly
 the part of the sweep where the `ε` estimate is starting to degrade (`ε/(P+|B|)`
 falling 0.88 → 0.21), so it is the weakest number in the table and should not be
 read as a contradiction of the Ekman result.
+
+
+## The δ model: does a boundary-layer thickness explain the mixing?
+
+```
+cd Combined
+GKSwstype=100 julia --project=. reduce_profiles_T10.jl     # ~6 min, walks both columns
+GKSwstype=100 julia --project=. plot_delta_T10.jl          # stage 1
+GKSwstype=100 julia --project=. plot_tke_profiles_T10.jl   # stage 2
+GKSwstype=100 julia --project=. plot_KT_model_T10.jl       # stage 3
+```
+
+Testing
+
+    TKE(z) = A₁ exp(−A₂ z/δ)
+    K_T    = B₁ δ √TKE (B₂ + exp(B₃ L_harm/δ))
+
+Divided by `√TKE` the second is the saturating form already fitted, with one new
+claim: **that the plateau and the knee both scale with δ** instead of being
+fitted per flow. (As written the bracket only gives a saturating curve with
+`B₁ < 0, B₂ = −1, B₃ < 0`; everything below uses the equivalent
+`L_K/δ = C₁(1 − e^(−C₂ L_harm/δ))`.)
+
+### u_* is measured, not assumed
+
+`reduce_profiles_T10.jl` takes `u_*² = max over 0 < z ≤ h of |τ|` with
+`τ = (⟨uw⟩ − ⟨u⟩⟨w⟩) − νₑ ∂U/∂z` and `νₑ ≈ κₑ`, per sample then reduced.
+
+| | measured `u_*` | `√c_D·U∞` | `√(c_D·|U₁|²)` |
+|---|---|---|---|
+| Stokes | 1.11e−3 | 4.40e−3 | 1.00e−3 |
+| Ekman | 2.63e−3 | 3.81e−3 | 1.94e−3 |
+
+`u_*` is flat to under 3 % across each sweep — stratification does not change
+the bed stress. The free-stream estimate is **4× too large** for Stokes, so
+this was worth measuring rather than assuming.
+
+### Stage 1 — which δ tracks h
+
+`figures/delta_vs_h_T10.png`. The leading constant is not what is being
+tested — a later fit absorbs it — so a candidate is good if `h/δ` is **flat**.
+Ratio of max to min across each sweep:
+
+| δ | Stokes | Ekman |
+|---|---|---|
+| plain, no stratification | ×1.32 | ×3.22 |
+| Weatherly & Martin, `(1+N²/Ω²)^(−1/4)` | ×4.52 | ×2.09 |
+| **fitted exponent p** | **×1.05 (p = 0.040)** | **×1.13 (p = 0.155)** |
+| `u_*/√(ΩN)` | ×5.37 | ×3.13 |
+
+**This stage works.** The same functional form fits both flows, with different
+exponents:
+
+    h = 1.05 u_*/ω (1 + N²/ω²)^(−0.040)     flat to 1.6 %   (tidal)
+    h = 0.85 u_*/f (1 + N²/f²)^(−0.155)     flat to 4.4 %   (rotating)
+
+Three things worth noting. The tidal layer is **almost stratification-blind**
+(p = 0.04): its thickness is set by ω, and `N` gets no time to act. WM's
+`p = 1/4` is **too steep** for the rotating column here — though the four
+low-`N/f` cases have not equilibrated and their `h` is still rising, so the
+fitted 0.155 is a lower bound. And the two prefactors, 1.05 and 0.85, agree to
+24 %, which is closer than the published 0.4 and 1.3 would suggest.
+
+### Stage 2 — is TKE exponential, and does it collapse
+
+`figures/tke_profiles_T10.png`, plotted log-`TKE` against linear `z/h` so an
+exponential is a straight line. Fitted from the TKE peak to `z = h`; fitting
+from the wall would fold the near-wall rise into `A₂`.
+
+| | `A₂` | `A₂ h/δ` (decay over one `h`) | `A₁/u_*²` | fit rms |
+|---|---|---|---|---|
+| Stokes | 1.30 – 1.45 (×1.12) | 3.40 – 3.77 (×1.11) | 3.34 – 3.55 (×1.06) | 14–19 % |
+| Ekman | 4.01 – 6.48 (×1.62) | 2.60 – 4.23 (×1.63) | 1.75 – 2.23 (×1.27) | 2–13 % |
+
+**Half works.** The six Stokes profiles collapse onto a single exponential with
+no stratification dependence at all — `A₁/u_*² = 3.4 ± 3 %`, `A₂` to ±6 %. The
+Ekman profiles **do not collapse**: they fan out by ×1.6 in decay rate, and
+they flatten to a floor of 1–3 % of `u_*²` above `z ≈ h`. So `h/δ` being flat
+(stage 1) does **not** imply the profiles collapse on δ.
+
+`A₂` is quoted per δ as the model defines it, but the published 0.4 and 1.3 put
+`h/δ` at 2.62 and 0.66, so `A₂` alone is not comparable between flows; `A₂h/δ`
+is, and on that measure both flows decay by about `e^(−3.4)` over one `h`.
+
+### Stage 3 — the δ model for K_T
+
+`figures/KT_delta_model_T10.png`. Does `L_K/δ` against `L_harm/δ` collapse both
+flows better than the unscaled fit's 10.4 %?
+
+| δ | both | Stokes | Ekman |
+|---|---|---|---|
+| published (0.4, 1.3) | 18.1 % | 9.1 % | 7.9 % |
+| one common constant | 12.0 % | 9.1 % | 7.9 % |
+| `δ = h`, the most favourable | 11.1 % | 9.1 % | 8.2 % |
+| **unscaled, no δ at all** | **10.4 %** | 9.1 % | 8.9 % |
+
+**This stage does not work.** No thickness improves the two-flow collapse, and
+the published constants make it much worse by putting the two δ a factor of
+five apart. `δ = h` is the best case available and is still no better than not
+scaling. Within the Ekman column alone δ helps slightly, 8.9 % → 7.9 %, which
+is a hint that its knee moves with thickness but is well inside the noise on
+seven points.
+
+Two caveats on the verdict. The Stokes column **cannot test this**: its largest
+`L_harm` is `0.23 x₀`, so `exp(−L_harm/x₀) ≥ 0.80` throughout and it never
+reaches the bend — its 9.1 % is the same straight line however δ is chosen.
+And the one thing that does survive is the **initial slope**, 0.451 (Stokes)
+against 0.454 (Ekman) — but `C₁C₂ = dL_K/dL_harm` contains no δ, so that
+agreement is evidence for `L_harm`, not for the thickness.
+
+**Where this leaves the model.** The `h` law of stage 1 is a genuine result and
+worth keeping. The `K_T` law is better written without δ, as it already was:
+`L_K = 2.18(1 − e^(−L_harm/4.89))`, rms 10.4 %.
+
+
+## Re-running the weakly stratified end — `swirles.sh`
+
+`L_s/L_N = N/S = √Ri`, so the `L_s = L_N` crossing on
+`figures/L_N_L_s_vs_r_T10.png` is `Ri = 1`. The medians put it at `r ≈ 1.4`
+(Stokes) and, extrapolated below the sweep, `r ≈ 0.4` (Ekman) — neither
+resolved. `swirles.sh` re-runs both columns at low `r` to fix that.
+
+```
+cd /cephfs/store/damtp/tll46/SRIM-2026
+MODE=preflight bash Combined/swirles.sh     # login node, no GPU work
+sbatch Combined/swirles.sh                  # ~5.6 h serially
+sbatch --array=0-2 Combined/swirles.sh      # or one case per task, ~2 h
+MODE=status bash Combined/swirles.sh        # before pulling anything home
+```
+
+| flow | default `r` | why |
+|---|---|---|
+| Stokes | 0.5, 0.2 | `r = 0.5` exists in `outputs/` but **predates the moments pipeline** — no `*_moments.jld2`, no `mixing_*`, no drag marker — so it is re-run, not reused |
+| Ekman | 0.2 | `r = 0.5` already has a complete moments run; `0.2` crosses to the far side of `Ri = 1` |
+
+Both flows take the same `r` so `N` matches case for case, which is what the
+comparison rests on.
+
+### One folder, for scp
+
+```
+Combined/Data/lowN/
+  stokes/P4_T10_sqrtRi0p5/    TidalBL3D_*_moments.jld2, mixing_*_hcross.jld2
+  stokes/P4_T10_sqrtRi0p2/
+  ekman/r=0.2, T=10.0/        Moments.jld2, Avg_*.jld2
+  logs/
+```
+
+```
+scp -r <host>:/cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/lowN \
+       ~/SRIM-2026/Combined/Data/
+```
+
+~900 MB. The analysis only ever reads two files a case, so an `rsync` filtered
+to `*_moments.jld2`, `mixing_*_hcross.jld2` and `Moments.jld2` brings it to
+~60 MB a Stokes case — the command is in the script header.
+
+Nothing under `Ekman/`, `Stokes/3D/outputs/` or `Data/Ekman_moments/` is written
+to; the Stokes drag spin-up under `outputs/` is read, never modified.
+
+### Two things to know before running it
+
+**The Ekman driver cannot take an `r` with two decimals.** `case_dir()` in
+`ekmanrun.jl` formats it as `%.1f`, so `r = 0.25` would silently write into the
+folder `r=0.2` and collide with a genuine `r = 0.2`. `swirles.sh` refuses such
+an `r` with a message rather than letting it happen. Fixing it properly means
+changing `case_dir()` **and** the matching readers in
+`reduce_ekman_moments_T10.jl` and the `r=%.1f` group keys in the plot scripts.
+
+**`K_T` is badly conditioned at low `N`, and that is why `r = 0.5` was dropped
+from the Stokes column in the first place** (`run_moments_sweep.sh` says so).
+`Δb` is small there and `K_T = −F_b/⟨∂b/∂z⟩` divides by it. The acceptance test
+is the `VERIFICATION` block that `swirles.sh` echoes after each Stokes case:
+`K_T_bulk` and `K_T_pe` share no code, so if they disagree by more than ~30 %
+the diffusivity at that `r` is not measuring the flow. Check that before adding
+these points to any figure.
+
+### Still to do once the data is here
+
+The reductions and plot scripts read `Data/Ekman_moments/4` and
+`Stokes/3D/outputs` with `SVALS = [1, 2, 5, 10, 25, 50]` hard-coded. Pointing
+them at `Data/lowN` and widening `SVALS` is a separate change, deliberately not
+made until the runs exist and have passed the conditioning check above.

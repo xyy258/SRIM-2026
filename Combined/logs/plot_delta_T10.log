@@ -1,0 +1,35 @@
+6 Stokes and 7 Ekman cases from profiles_T10.jld2
+
+flattest stratification exponent:  Stokes p = 0.040   Ekman p = 0.155   (Weatherly & Martin use 1/4)
+
+Stokes:  h/delta across the sweep.  flat is what matters, not the level
+  candidate                   h/delta range        max/min   rms about the mean
+  plain  0.4u_*/\omega        1.934 - 2.545        1.32          9.7 %
+  WM 1/4                      3.027 - 13.677       4.52         53.4 %
+  fitted p = 0.040            2.561 - 2.701        1.05          1.6 %
+  u_*/sqrt(omega N)           1.018 - 5.470        5.37         58.4 %
+
+Ekman :  h/delta across the sweep.  flat is what matters, not the level
+  candidate                   h/delta range        max/min   rms about the mean
+  plain  1.3u_*/f             0.186 - 0.598        3.22         42.5 %
+  WM 1/4                      0.628 - 1.314        2.09         25.5 %
+  fitted p = 0.155            0.615 - 0.694        1.13          4.4 %
+  u_*/sqrt(f N)               0.546 - 1.709        3.13         37.9 %
+
+h and u_* per case
+  flow    r        h (m)     u_* (m/s)   u_*(p90)
+  Stokes 1        11.296   1.1096e-03  1.4687e-03
+  Stokes 2        10.629   1.1064e-03  1.4716e-03
+  Stokes 5        10.528   1.1101e-03  1.4751e-03
+  Stokes 10        9.795   1.1204e-03  1.4767e-03
+  Stokes 25        9.061   1.1186e-03  1.4681e-03
+  Stokes 50        8.602   1.1120e-03  1.4701e-03
+  Ekman  0.5      20.521   2.6562e-03  2.6921e-03
+  Ekman  1        20.663   2.6593e-03  2.6988e-03
+  Ekman  2        18.664   2.6620e-03  2.6922e-03
+  Ekman  5        14.458   2.6544e-03  2.6903e-03
+  Ekman  10       11.450   2.6414e-03  2.6771e-03
+  Ekman  25        8.309   2.6301e-03  2.6525e-03
+  Ekman  50        6.240   2.5825e-03  2.6041e-03
+
+wrote /home/tll46/SRIM-2026/Combined/figures/delta_vs_h_T10.png

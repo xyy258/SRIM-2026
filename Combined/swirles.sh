@@ -1,121 +1,332 @@
 #!/bin/bash
-#SBATCH --job-name=ekmanmoments
+#SBATCH --job-name=lowN
 #SBATCH --partition=ampere
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=12:00:00
-#SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out   # Standard output log
-#SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err    # Standard error log
+#SBATCH --output=/cephfs/store/damtp/tll46/logs/%x_%j.out
+#SBATCH --error=/cephfs/store/damtp/tll46/logs/%x_%j.err
 
 # ---------------------------------------------------------------------------
-# The Ekman N/f column at T = 10 m, re-run with the subgrid buoyancy flux saved.
-# Combined/ekmanrun.jl carries the reasoning; the practical points are:
+# The weakly stratified end of BOTH columns, T = 10 m, into one folder.
 #
-#   1. once, on a login node -- checks the environment and prints the plan
+# WHY. L_s/L_N = N/S = sqrt(Ri), so the crossing L_s = L_N on
+# figures/L_N_L_s_vs_r_T10.png is Ri = 1 — the point where the shear scale stops
+# being the larger of the two. The medians put it at r ~ 1.4 for Stokes and,
+# extrapolated below the sweep, r ~ 0.4 for Ekman. Neither is resolved:
+#
+#   Stokes  the crossing is bracketed by r = 1 and r = 2 only, and those are the
+#           two cases whose medians discard 28 % of the tidal cycle to
+#           counter-gradient flux. r = 0.5 exists in outputs/ but PREDATES the
+#           moments pipeline — no *_moments.jld2, no mixing_*, no drag marker —
+#           so it cannot be used and is re-run here.
+#   Ekman   r = 0.5 is the lowest case and is still on the stratification-limited
+#           side (Ri = 1.6, shear-limited only 23 % of the time). r = 0.2 puts a
+#           point on the far side of the extrapolated crossing.
+#
+# Both flows get the same r so that N matches case for case, which is what the
+# whole comparison rests on.
+#
+# ---------------------------------------------------------------------------
+# HOW TO RUN
+#
+#   1. once, on a login node — checks the environment, prints the plan, runs no
+#      GPU work:
 #
 #        cd /cephfs/store/damtp/tll46/SRIM-2026
-#        SWEEP_STAGE=preflight julia --project=. Combined/ekmanrun.jl
-#        DRY_RUN=1             julia --project=. Combined/ekmanrun.jl
+#        MODE=preflight bash Combined/swirles.sh
 #
 #   2. then
 #
-#        sbatch Combined/swirles.sh
+#        sbatch Combined/swirles.sh                 # everything, serially
+#        sbatch --array=0-2 Combined/swirles.sh     # one case per task
 #
-# All seven cases, one job, about 3 h inside the 12 h wall.
+#   3. when it comes back, before pulling anything home:
+#
+#        MODE=status bash Combined/swirles.sh
+#
+# MODE = preflight | stokes | ekman | all (default) | status
 #
 # ---------------------------------------------------------------------------
-# THE BUDGET. A case is 50 000 steps -- 40e4 s of model time with the step pinned
-# at max_Dt = 8 s, the advective CFL sitting at 0.8, so the ceiling sets the step
-# and N does not change it. The Stokes column measured 0.0058 s per step per
-# Mcell on this partition (logs/P4_T10_sqrtRi*.log: 403 000 steps in 1.95 h on
-# 100x100x300), and this grid is 5.0 Mcell, so
+# WHAT COMES BACK, AND HOW TO SCP IT
 #
-#        50 000 x 0.0058 x 5.0 = 1450 s = 0.40 h a case, 2.8 h for the column.
+# Everything lands under ONE directory, which is the point:
 #
-# CASE_HOURS holds 1.0 h a case as margin, which still fits all seven. The
-# wall-clock guard and the per-case markers are kept for the case that overruns:
-# re-submitting continues rather than restarts.
+#   Combined/Data/lowN/
+#     stokes/P4_T10_sqrtRi0p5/    TidalBL3D_*_moments.jld2, mixing_*_hcross.jld2
+#     stokes/P4_T10_sqrtRi0p2/
+#     ekman/r=0.2, T=10.0/        Moments.jld2, Avg_*.jld2
+#     logs/                       one log a case, plus this script's own
 #
-# IF YOU WANT IT FASTER. The seven cases share nothing -- no spin-up, no restart
-# file, no ordering -- so they can go as a seven-task array instead:
+#   scp -r <host>:/cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/lowN \
+#          ~/SRIM-2026/Combined/Data/
 #
-#        sbatch --array=0-6 Combined/swirles.sh
+# That is ~900 MB. If the link is slow, the analysis only ever reads two files a
+# case, so this is enough:
 #
-# That turns 3 h of compute into ~25 min, at the cost of seven queue waits, and
-# the markers mean the two modes are interchangeable. It is a convenience, not a
-# requirement: nothing about the column needs an array to fit 12 h.
+#   scp -r --include='*_moments.jld2' --include='mixing_*_hcross.jld2' ...
+#   (or:  rsync -av --include='*/' --include='*_moments.jld2' \
+#           --include='mixing_*_hcross.jld2' --include='Moments.jld2' \
+#           --exclude='*' <host>:.../Combined/Data/lowN ~/SRIM-2026/Combined/Data/)
 #
-# WHY IT IS BEING RE-RUN. "Ekman 3D.jl" has its diffusivity_fields writer
-# commented out, so the runs on disk have no F_sgs and their K_T is the resolved
-# flux alone. On the Stokes side the subgrid share at z = h goes from 0.03 at
-# N/omega = 1 to 0.59 at N/omega = 50, so at the strong end that is a factor of
-# two. It cannot be recovered offline -- kappa_e needs the full 3D fields and
-# only a y slice was saved -- hence this column.
+# which is ~60 MB a Stokes case and ~220 MB for the Ekman one.
 #
-# Other stages:  SWEEP_STAGE=preflight | cases | check | auto (default)
-#   check   re-reads the finished Moments.jld2 files and reports <w>_xy, the sign
-#           of kappa_sgs and the subgrid share -- run it on a login node when the
-#           job comes back, before pulling 0.8 GB home over scp:
+# Nothing under Ekman/, Stokes/3D/outputs/ or Combined/Data/Ekman_moments/ is
+# written to. The Stokes spin-up under outputs/ is READ, never modified.
 #
-#             SWEEP_STAGE=check julia --project=. Combined/ekmanrun.jl
+# ---------------------------------------------------------------------------
+# THE BUDGET
 #
-# Output:   Combined/Data/Ekman_moments/4/r=<r>, T=10.0/   ~110 MB a case
-# Logs:     Combined/logs/P4_T10_r<r>.log, Combined/logs/params_*.txt
-# Nothing under Ekman/ or Combined/Data/Ekman/ is written to.
+#   Stokes  8 tidal periods, 100x100x300, measured 1.95 h a case on this
+#           partition (Stokes/3D/logs/P4_T10_sqrtRi*.log). Two cases ~4 h.
+#   Ekman   1.6e6 s at max_Dt = 8 s is 200 000 steps on 100x100x400 = 5.0 Mcell
+#           at 0.0058 s/step/Mcell, so ~1.6 h. One case.
+#
+# ~5.6 h of the 12 h wall. The per-case markers mean a re-submission continues
+# rather than restarts, so an overrun costs one more queue wait and nothing else.
+#
+# EKMAN DURATION IS DOUBLED, deliberately. The default column ran 8e5 s and the
+# four lowest-N/f cases still had h creeping upward at the end — r = 0.2 will be
+# worse, not better. 1.6e6 s is the same reduction window (the last 4 inertial
+# periods) taken further into the run, so it is strictly better and still fits.
+# It does mean this case is not duration-matched to the existing seven; set
+# EKMAN_DURATION=8e5 if you would rather it were.
+#
+# ---------------------------------------------------------------------------
+# ENV
+#   MODE              preflight | stokes | ekman | all | status
+#   STOKES_RATIOS     default "0.5 0.2"
+#   EKMAN_RATIOS      default "0.2"   (r = 0.5 already has a complete moments run
+#                                      under Data/Ekman_moments/4; add it here to
+#                                      duplicate it as a cross-check)
+#   STOKES_PERIODS    default 8, matching the existing column
+#   EKMAN_DURATION    default 1.6e6 s
+#   LOWN_ROOT         default Combined/Data/lowN
+#   DRY_RUN=1         print the commands, launch nothing
 # ---------------------------------------------------------------------------
 
-# Exit immediately if any command fails
-set -eo pipefail
+set -uo pipefail
 
-# Project directory
-PROJECT_DIR="/cephfs/store/damtp/tll46/SRIM-2026"
-mkdir -p "$PROJECT_DIR/logs"
-cd "$PROJECT_DIR"
+PROJECT_DIR="${PROJECT_DIR:-/cephfs/store/damtp/tll46/SRIM-2026}"
+cd "$PROJECT_DIR" || { echo "FATAL: no $PROJECT_DIR"; exit 1; }
 
-# Load modules
-module purge
-module load julia/1.12.4
-module load cuda/12.6.3
+MODE="${MODE:-all}"
+STOKES_RATIOS="${STOKES_RATIOS:-0.5 0.2}"
+EKMAN_RATIOS="${EKMAN_RATIOS:-0.2}"
+STOKES_PERIODS="${STOKES_PERIODS:-8}"
+EKMAN_DURATION="${EKMAN_DURATION:-1.6e6}"
+T_STRAT="${T_STRAT:-10}"
+GRID_TAG="${GRID_TAG:-100x100x300_drag}"
+LOWN_ROOT="${LOWN_ROOT:-$PROJECT_DIR/Combined/Data/lowN}"
 
-# Pass allocated Slurm CPUs to Julia multi-threading
-export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK
+STOKES_OUT="$LOWN_ROOT/stokes"
+EKMAN_OUT="$LOWN_ROOT/ekman"
+LOWN_LOGS="$LOWN_ROOT/logs"
+mkdir -p "$STOKES_OUT" "$EKMAN_OUT" "$LOWN_LOGS" "$PROJECT_DIR/logs"
 
-# Put the Julia depot on the project store rather than in $HOME. Precompiling
-# CUDA and Oceananigans writes several GB of cache and artifacts, which the home
-# quota cannot hold; it then fails part way through precompilation and shows up
-# as a broken environment rather than as an out-of-space message.
-#
-# $HOME/.julia stays on the path as a second entry: Julia writes only to the
-# first depot but reads from the rest, so packages already downloaded under home
-# are reused rather than fetched again.
-export JULIA_DEPOT_PATH="/cephfs/store/damtp/tll46/.julia:$HOME/.julia"
-mkdir -p /cephfs/store/damtp/tll46/.julia
+SPIN_FIELDS="$PROJECT_DIR/Stokes/3D/outputs/spinup_${GRID_TAG}/TidalBL3D_spinup_${GRID_TAG}_fields.jld2"
 
-# The wall-clock guard needs to know the wall it is working against. 11.5 h of
-# the 12 h above leaves half an hour for module loading and the final check.
-export WALL_HOURS="${WALL_HOURS:-11.5}"
+log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*" | tee -a "$LOWN_LOGS/swirles.log"; }
+
+# 0.5 -> 0p5, 0.25 -> 0p25, 10 -> 10.  Matches case_params.jl's naming, which
+# takes 'p' for the decimal point so the case is a safe directory name.
+t_lbl() { awk -v x="$1" 'BEGIN{ if (x==int(x)) printf "%d", x;
+                                else { s=sprintf("%g",x); gsub(/\./,"p",s); printf "%s", s } }'; }
+
+# ekmanrun.jl names case folders with @sprintf("r=%.1f, T=%.1f"), so an r needing
+# two decimals would be silently truncated — 0.25 becomes the folder "r=0.2" and
+# collides with a genuine r = 0.2. Refuse rather than write into the wrong place.
+ek_check() {
+    local r="$1"
+    local back; back="$(awk -v r="$r" 'BEGIN{printf "%.1f", r}')"
+    if [ "$(awk -v a="$r" -v b="$back" 'BEGIN{print (a==b)?1:0}')" != "1" ]; then
+        log "FATAL: Ekman r = $r needs more than one decimal, and ekmanrun.jl's"
+        log "  case_dir() formats r with %.1f — it would write into \"r=$back\"."
+        log "  Use a one-decimal r (0.1, 0.2, 0.3, 0.4), or fix case_dir() in"
+        log "  Combined/ekmanrun.jl and the matching readers in"
+        log "  Combined/reduce_ekman_moments_T10.jl first."
+        return 1
+    fi
+    return 0
+}
 
 # ---------------------------------------------------------------------------
-# Array mode, only when --array is given. One stratification per task, strongest
-# first, so that if only a few slots come free they are the cases where the
-# subgrid flux actually moves the points. Without --array this block is skipped
-# and the job runs the whole column serially, which is the default.
-#
-# SKIP_PREFLIGHT because seven tasks precompiling into one shared depot at the
-# same moment serialise on Julia's precompile lock at best, and race at worst.
-# Step 1 in the header does it once instead; drop the export if you would rather
-# each task checked for itself.
+# Environment
 # ---------------------------------------------------------------------------
+if [ "$MODE" != "status" ] && [ -n "${SLURM_JOB_ID:-}" ]; then
+    module purge
+    module load julia/1.12.4
+    module load cuda/12.6.3
+    export JULIA_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
+fi
+# The depot goes on the project store: precompiling CUDA and Oceananigans writes
+# several GB, which the home quota cannot hold, and it fails part way through as
+# a broken environment rather than as an out-of-space message. $HOME/.julia stays
+# second so already-downloaded packages are reused.
+export JULIA_DEPOT_PATH="${JULIA_DEPOT_PATH:-/cephfs/store/damtp/tll46/.julia:$HOME/.julia}"
+# Only on the cluster: off it, /cephfs does not exist and the mkdir is noise.
+[ -d /cephfs/store/damtp/tll46 ] && mkdir -p /cephfs/store/damtp/tll46/.julia
+export GKSwstype=100
+JULIA="${JULIA:-julia}"
+
+# ---------------------------------------------------------------------------
+# One Stokes case: the run, then MixedLayerDiffusivity.jl for h and K_T.
+# ---------------------------------------------------------------------------
+run_stokes() {
+    local r="$1"
+    local lbl; lbl="$(t_lbl "$r")"
+    local tag="P4_T$(t_lbl "$T_STRAT")_sqrtRi${lbl}"
+    local mark="$STOKES_OUT/$tag/.done_moments_${GRID_TAG}"
+
+    if [ -f "$mark" ]; then log "  $tag already complete — skipping"; return 0; fi
+    log "  Stokes N/omega = $r  ->  $tag  ($STOKES_PERIODS periods)"
+    if [ "${DRY_RUN:-0}" = "1" ]; then log "    (DRY_RUN — not launched)"; return 0; fi
+    if [ ! -f "$SPIN_FIELDS" ]; then
+        log "  FATAL: no drag spin-up at $SPIN_FIELDS"
+        log "    build it with:  cd Stokes/3D && ./'Code running'/run_moments_sweep.sh spinup"
+        return 1
+    fi
+
+    # LIGHT_OUTPUT=1 FIELDS3D=0 as the rest of the column used. MOMENTS=1 is what
+    # writes TidalBL3D_*_moments.jld2, which is the file the Combined analysis
+    # actually reads — the r = 0.5 run already in outputs/ predates it.
+    ( cd "$PROJECT_DIR/Stokes/3D" && \
+      PROFILE=4 T_STRAT="$T_STRAT" N_PERIODS="$STOKES_PERIODS" \
+      LIGHT_OUTPUT=1 FIELDS3D=0 MOMENTS=1 \
+      SPINUP_FILE="$SPIN_FIELDS" OUT_ROOT="$STOKES_OUT" \
+      "$JULIA" --project=. -t auto Tidal3D.jl "sqrtRi${lbl}" ) \
+      >> "$LOWN_LOGS/${tag}.log" 2>&1
+
+    if [ ! -f "$STOKES_OUT/$tag/TidalBL3D_${tag}_moments.jld2" ]; then
+        log "  $tag FAILED — see $LOWN_LOGS/${tag}.log"
+        return 1
+    fi
+    # The marker, not the file, is the test: an interrupted run still leaves a
+    # valid but truncated moments file behind.
+    date > "$mark"
+    rm -f "$STOKES_OUT/$tag"/*_checkpoint_iteration*.jld2
+
+    # h and K_T. H_DEF/MIX_SUFFIX must match what the Combined scripts read,
+    # which is mixing_<tag>_hcross.jld2 from the crossing definition at 0.1 N2.
+    log "  $tag: post-processing (H_DEF=crossing)"
+    ( cd "$PROJECT_DIR/Stokes/3D" && \
+      OUT_ROOT="$STOKES_OUT" T_VALUES="$T_STRAT" N_OVER_OMEGA="$r" \
+      H_DEF=crossing H_LEVEL=0.1 MIX_SUFFIX=_hcross \
+      FIG_DIR="$LOWN_ROOT/figures" \
+      "$JULIA" --project=. MixedLayerDiffusivity.jl ) \
+      >> "$LOWN_LOGS/post_${tag}.log" 2>&1 \
+      || log "  post-processing $tag failed — see $LOWN_LOGS/post_${tag}.log"
+
+    # K_T_bulk and K_T_pe share no code, so their disagreement is the honest test
+    # of whether K_T means anything here. It matters at low N: run_moments_sweep.sh
+    # dropped r = 0.5 precisely because delta_b is small and K_T = -F/delta_b is
+    # badly conditioned. Echo it rather than bury it in the log.
+    sed -n '/^VERIFICATION/,/^  . /p' "$LOWN_LOGS/post_${tag}.log" | tail -20 | tee -a "$LOWN_LOGS/swirles.log"
+    log "  $tag done"
+}
+
+# ---------------------------------------------------------------------------
+# One Ekman case, handed to the existing driver with the output redirected.
+# ---------------------------------------------------------------------------
+run_ekman() {
+    local r="$1"
+    ek_check "$r" || return 1
+    local dir; dir="$EKMAN_OUT/$(awk -v r="$r" -v t="$T_STRAT" 'BEGIN{printf "r=%.1f, T=%.1f", r, t}')"
+    if compgen -G "$dir/.done_moments_*" > /dev/null; then
+        log "  Ekman r = $r already complete — skipping"; return 0
+    fi
+    log "  Ekman N/f = $r  ->  $dir  (duration $EKMAN_DURATION s)"
+    if [ "${DRY_RUN:-0}" = "1" ]; then log "    (DRY_RUN — not launched)"; return 0; fi
+
+    OUT_ROOT="$EKMAN_OUT" RATIOS="$r" T_STRAT="$T_STRAT" DURATION="$EKMAN_DURATION" \
+    SWEEP_STAGE=cases SKIP_PREFLIGHT=1 WALL_HOURS="${WALL_HOURS:-11.0}" \
+        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/ekmanrun.jl" \
+        >> "$LOWN_LOGS/ekman_r${r}.log" 2>&1
+    if compgen -G "$dir/.done_moments_*" > /dev/null; then
+        log "  Ekman r = $r done"
+    else
+        log "  Ekman r = $r FAILED — see $LOWN_LOGS/ekman_r${r}.log"; return 1
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Array mode: one case per task, across both flows. The cases share nothing —
+# no restart, no ordering — so the split is free. Stokes first, since those are
+# the two that bracket the crossing.
+# ---------------------------------------------------------------------------
+TASKS=()
+for r in $STOKES_RATIOS; do TASKS+=("stokes $r"); done
+for r in $EKMAN_RATIOS;  do TASKS+=("ekman $r");  done
+
 if [ -n "${SLURM_ARRAY_TASK_ID:-}" ]; then
-    ALL_RATIOS=(50 25 10 5 2 1 0.5)
-    export RATIOS="${ALL_RATIOS[$SLURM_ARRAY_TASK_ID]}"
-    export SWEEP_STAGE="cases"
-    export SKIP_PREFLIGHT=1
-    echo "array task $SLURM_ARRAY_TASK_ID of ${SLURM_ARRAY_JOB_ID:-?}: N/f = $RATIOS"
+    if [ "$SLURM_ARRAY_TASK_ID" -ge "${#TASKS[@]}" ]; then
+        log "array task $SLURM_ARRAY_TASK_ID: nothing to do (${#TASKS[@]} cases)"; exit 0
+    fi
+    read -r flow r <<< "${TASKS[$SLURM_ARRAY_TASK_ID]}"
+    log "=== array task $SLURM_ARRAY_TASK_ID: $flow r = $r ==="
+    case "$flow" in
+        stokes) run_stokes "$r"; exit $? ;;
+        ekman)  run_ekman  "$r"; exit $? ;;
+    esac
 fi
 
-# Run the Julia script with project activation. The root project is the one the
-# existing Ekman runs used, and ekmanrun.jl passes it on to each case it spawns.
-srun julia --project="$PROJECT_DIR" "Combined/ekmanrun.jl"
+# ---------------------------------------------------------------------------
+# Serial modes
+# ---------------------------------------------------------------------------
+case "$MODE" in
+
+preflight)
+    log "=== preflight ==="
+    log "  project     $PROJECT_DIR"
+    log "  output      $LOWN_ROOT"
+    log "  Stokes r    $STOKES_RATIOS   ($STOKES_PERIODS periods each)"
+    log "  Ekman  r    $EKMAN_RATIOS    (duration $EKMAN_DURATION s)"
+    log "  cases       ${#TASKS[@]}  ->  sbatch --array=0-$(( ${#TASKS[@]} - 1 ))"
+    [ -f "$SPIN_FIELDS" ] && log "  spin-up     found: $SPIN_FIELDS" \
+                          || log "  spin-up     MISSING: $SPIN_FIELDS"
+    for r in $EKMAN_RATIOS; do ek_check "$r" || exit 1; done
+    log "  checking the Ekman driver's own preflight..."
+    OUT_ROOT="$EKMAN_OUT" RATIOS="$EKMAN_RATIOS" T_STRAT="$T_STRAT" \
+    DURATION="$EKMAN_DURATION" SWEEP_STAGE=preflight \
+        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/ekmanrun.jl" 2>&1 | tail -20
+    log "  now:  DRY_RUN=1 MODE=all bash Combined/swirles.sh"
+    ;;
+
+status)
+    log "=== status under $LOWN_ROOT ==="
+    for r in $STOKES_RATIOS; do
+        tag="P4_T$(t_lbl "$T_STRAT")_sqrtRi$(t_lbl "$r")"
+        if [ -f "$STOKES_OUT/$tag/.done_moments_${GRID_TAG}" ]; then
+            log "  [done] $tag"
+        else
+            log "  [ -- ] $tag"
+        fi
+    done
+    for r in $EKMAN_RATIOS; do
+        dir="$EKMAN_OUT/$(awk -v r="$r" -v t="$T_STRAT" 'BEGIN{printf "r=%.1f, T=%.1f", r, t}')"
+        if compgen -G "$dir/.done_moments_*" > /dev/null; then
+            log "  [done] ekman r = $r"
+        else
+            log "  [ -- ] ekman r = $r"
+        fi
+    done
+    du -sh "$LOWN_ROOT" 2>/dev/null | tee -a "$LOWN_LOGS/swirles.log"
+    ;;
+
+stokes) log "=== Stokes, r = $STOKES_RATIOS ==="
+        for r in $STOKES_RATIOS; do run_stokes "$r" || exit 1; done ;;
+
+ekman)  log "=== Ekman, r = $EKMAN_RATIOS ==="
+        for r in $EKMAN_RATIOS; do run_ekman "$r" || exit 1; done ;;
+
+all)    log "=== both flows: Stokes $STOKES_RATIOS, Ekman $EKMAN_RATIOS ==="
+        for r in $STOKES_RATIOS; do run_stokes "$r" || exit 1; done
+        for r in $EKMAN_RATIOS;  do run_ekman  "$r" || exit 1; done ;;
+
+*)      log "unknown MODE \"$MODE\" — use preflight | stokes | ekman | all | status"
+        exit 1 ;;
+esac
+
+log "=== $MODE done ==="

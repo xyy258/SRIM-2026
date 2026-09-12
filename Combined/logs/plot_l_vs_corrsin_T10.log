@@ -1,11 +1,4 @@
-walking the Stokes moment files — a few minutes
-Stokes N/ω = 1     1001 samples  med S = 1.467e-04  med eps = 1.660e-12
-Stokes N/ω = 2     1001 samples  med S = 1.300e-04  med eps = 1.005e-12
-Stokes N/ω = 5     1001 samples  med S = 1.509e-04  med eps = 4.302e-13
-Stokes N/ω = 10    1001 samples  med S = 2.239e-04  med eps = -5.059e-13
-Stokes N/ω = 25    1001 samples  med S = 4.347e-04  med eps = -4.238e-12
-Stokes N/ω = 50    1001 samples  med S = 3.081e-04  med eps = -8.710e-12
-wrote /home/tll46/SRIM-2026/Combined/Data/corrsin_T10.jld2
+Stokes side from the cache corrsin_T10.jld2 — set REBUILD=1 to re-walk the moments
 
 retained samples, and why the rest went
   flow    r      kept        K_T<=0   eps<=0    S<=0   eps>0 frac

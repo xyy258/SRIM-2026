@@ -1,0 +1,20 @@
+6 Stokes and 7 Ekman cases
+
+scaled by delta:  L_K/delta = C1 (1 - exp(-C2 L_harm/delta))
+  set       C1        C2      initial slope C1 C2    rms
+  stokes   4.4192     0.102            0.451        9.1 %
+  ekman    0.0634     7.156            0.454        7.9 %
+  both     0.6058     0.677            0.410       18.1 %
+
+for comparison, the same form UNSCALED, L_K = L_inf(1 - exp(-L_harm/x0)):
+  both flows 10.4 %, Stokes alone 9.1 %, Ekman alone 8.9 %   (plot_L_K_vs_Lharm_T10.jl)
+
+which delta, if any, collapses the two flows?  (rms on all 13 cases)
+  delta                                  both    Stokes   Ekman
+  published                              18.1 %     9.1 %     7.9 %
+  common                                 12.0 %     9.1 %     7.9 %
+  h                                      11.1 %     9.1 %     8.2 %
+  unscaled (no delta at all)             10.4 %     9.1 %     8.9 %
+
+delta = h, both flows: rms 11.1 %  (unscaled 10.4 %)
+wrote /home/tll46/SRIM-2026/Combined/figures/KT_delta_model_T10.png
