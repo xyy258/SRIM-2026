@@ -1,0 +1,21 @@
+[2026-09-10 23:50:51 | 0.00 h] === Ekman T = 10.0 column with F_sgs, stage "cases", grid+BC tag 100x100x400_drag ===
+
+##############################################################################
+#  Ekman N/f column at T = 10 m, grid+BC tag 100x100x400_drag
+#  from Parameters.jl: grid 100x100x400, duration 1.6e+06 s = 25.46 T_f, max Δt 15 s → 106667 steps
+#  N/f ∈ {0.2},  run order {0.2}  (strongest first — see the header)
+#  output → Combined/Data/lowN/ekman
+#
+#  case              N/f      Ri   status
+#  P4_T10_r0.2        0.2    0.04   TO RUN
+#
+#  1 to run x ~1.7 h = 1.7 h in a 11.0 h budget
+#  Per case: 0.69 h expected (106667 steps x 0.0058 s/step/Mcell x 4.0 Mcell, the
+#  rate the Stokes column measured on this partition); CASE_HOURS holds 2.5x
+#  that as margin. Replaced by the measurement once the first case finishes.
+##############################################################################
+
+[2026-09-10 23:50:54 | 0.00 h] SKIP_PREFLIGHT=1 — not checking the environment
+[2026-09-10 23:50:55 | 0.00 h] run P4_T10_r0.2  (T = 10 m, N/f = 0.2, N = 2.0e-05 s⁻¹, Ri = 0.04)
+[2026-09-11 01:54:36 | 2.06 h]   P4_T10_r0.2 done in 2.06 h — estimate for the rest is now 2.27 h
+[2026-09-11 01:54:36 | 2.06 h] === cases: 1 complete, 0 failed, 0 not started ===

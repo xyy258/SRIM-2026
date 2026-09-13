@@ -1,0 +1,20 @@
+[2026-09-10 19:24:18] === both flows: Stokes 0.5 0.2, Ekman 0.2 ===
+[2026-09-10 19:24:18]   Stokes N/omega = 0.5  ->  P4_T10_sqrtRi0p5  (8 periods)
+[2026-09-10 21:35:32]   P4_T10_sqrtRi0p5: post-processing (H_DEF=crossing)
+VERIFICATION  P4_T10_sqrtRi0p5   (T = 10 m, N/ω = 0.5, Ri = 0.25, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 3.272e-19 m/s  (= 8.18e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.1 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 2.6 %; flux leaking past zref = 0.01 × ∫F_b
+[2026-09-10 21:37:00]   P4_T10_sqrtRi0p5 done
+[2026-09-10 21:37:00]   Stokes N/omega = 0.2  ->  P4_T10_sqrtRi0p2  (8 periods)
+[2026-09-10 23:49:20]   P4_T10_sqrtRi0p2: post-processing (H_DEF=crossing)
+VERIFICATION  P4_T10_sqrtRi0p2   (T = 10 m, N/ω = 0.2, Ri = 0.04, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.831e-19 m/s  (= 7.08e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.1 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 2.6 %; flux leaking past zref = 0.01 × ∫F_b
+[2026-09-10 23:50:49]   P4_T10_sqrtRi0p2 done
+[2026-09-10 23:50:49]   Ekman N/f = 0.2  ->  /cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/lowN/ekman/r=0.2, T=10.0  (duration 1.6e6 s)
+[2026-09-11 01:54:36]   Ekman r = 0.2 done
+[2026-09-11 01:54:36] === all done ===
