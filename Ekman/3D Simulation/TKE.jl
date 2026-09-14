@@ -4,6 +4,9 @@ using Oceananigans, Plots, Printf, JLD2
 using Plots.PlotMeasures
 using Statistics
 
+# High-DPI plot formatting with full Unicode glyph support
+default(dpi = 600, fontfamily = "DejaVu Sans")
+
 # Import parameters
 include("Parameters.jl")
 include("Filename_plot.jl")
