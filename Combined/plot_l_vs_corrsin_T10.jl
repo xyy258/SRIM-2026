@@ -66,29 +66,14 @@ get!(ENV, "GKSwstype", "100")
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
-const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
+include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
 const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
 const CACHE  = joinpath(HERE, "Data", "corrsin_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
 const SKIP   = 3                      # Stokes spin-up, in tidal periods
-const SVALS  = [1, 2, 5, 10, 25, 50]
 
-const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
-              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
-              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
-function ramp_colour(s)
-    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
-    for i in 1:length(RAMP)-1
-        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
-        x <= x1 || continue
-        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
-        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
-        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
-    end
-    return "#000000"
-end
 
 fin(v) = filter(isfinite, v)
 med(v) = (w = fin(v); isempty(w) ? NaN : median(w))
@@ -142,10 +127,9 @@ say(s) = (println(s); flush(stdout); push!(logl, s))
 function build_stokes()
     out = []
     for s in SVALS
-        tag = "P4_T10_sqrtRi$s"
-        mix = joinpath(STOKES, "outputs", tag, "mixing_$(tag)_hcross.jld2")
-        mom = joinpath(STOKES, "outputs", tag, "TidalBL3D_$(tag)_moments.jld2")
-        (isfile(mix) && isfile(mom)) || (say("missing files for $tag — skipped"); continue)
+        c = stokes_case(s)
+        c === nothing && (say("missing files for $(sqrtRi_tag(s)) — skipped"); continue)
+        tag, mix, mom = c.tag, c.mix, c.mom
 
         d = jldopen(mix, "r") do io
             (t = io["times"], Kh = io["K_at_h"], E = io["TKE_at_h"], h = io["h"])
@@ -221,7 +205,7 @@ if isfile(CACHE) && get(ENV, "REBUILD", "0") == "0"
 else
     say("walking the Stokes moment files — a few minutes")
     stokes = build_stokes()
-    isempty(stokes) && error("no Stokes T = 10 cases found under $STOKES/outputs")
+    isempty(stokes) && error("no Stokes T = 10 cases found under any of $STOKES_ROOTS")
     jldopen(CACHE, "w") do io
         io["note"] = "Stokes S, P, B, eps at z = h; written by plot_l_vs_corrsin_T10.jl"
         io["ratios"] = [c.r for c in stokes]

@@ -14,7 +14,9 @@
 #
 # So the test is sharp and needs no new fit machinery: does L_K/delta against
 # L_harm/delta collapse BOTH flows onto one curve, better than L_K against
-# L_harm did unscaled? The unscaled number to beat is 10.4 % on all 13 cases.
+# L_harm did unscaled? The unscaled number to beat is whatever the same
+# saturating form gives with no delta at all — computed here rather than quoted,
+# so it cannot go stale when a case is added to the sweep.
 #
 # ---------------- What the Stokes column can and cannot say ----------------
 # The largest Stokes L_harm is 0.23 x0 of the Ekman knee, so exp(-L_harm/x0)
@@ -32,28 +34,14 @@ get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
 const HERE   = @__DIR__
+include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
 const SCALES = joinpath(HERE, "Data", "shear_scales_T10.jld2")
 const DFILE  = joinpath(HERE, "Data", "delta_T10.jld2")
 const PFILE  = joinpath(HERE, "Data", "profiles_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
-const SVALS  = [1, 2, 5, 10, 25, 50]
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"
 
-const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
-              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
-              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
-function ramp_colour(s)
-    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
-    for i in 1:length(RAMP)-1
-        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
-        x <= x1 || continue
-        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
-        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
-        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
-    end
-    return "#000000"
-end
 fin(v) = filter(isfinite, v)
 med(v) = (w = fin(v); isempty(w) ? NaN : median(w))
 qlo(v) = (w = fin(v); isempty(w) ? NaN : quantile(w, 0.25))
@@ -149,14 +137,21 @@ for (k, cs) in ((:stokes, S), (:ekman, E), (:both, BOTH))
     say(@sprintf("  %-8s %.4f %9.3f %16.3f %10.1f %%%s", string(k), f.C1, f.C2,
                  f.C1 * f.C2, f.rms, f.pinned ? "   << PINNED, not a fit" : ""))
 end
+# The null: the same saturating form with no thickness at all. Recomputed here
+# from the same cache, so it tracks the sweep instead of being copied across.
+xu(cs) = [med(c.L_h) for c in cs]
+yu(cs) = [med(c.L_K) for c in cs]
+const UNS = (both = satfit(xu(BOTH), yu(BOTH)),
+             stokes = satfit(xu(S), yu(S)), ekman = satfit(xu(E), yu(E)))
 say("")
 say("for comparison, the same form UNSCALED, L_K = L_inf(1 - exp(-L_harm/x0)):")
-say("  both flows 10.4 %, Stokes alone 9.1 %, Ekman alone 8.9 %   (plot_L_K_vs_Lharm_T10.jl)")
+say(@sprintf("  both flows %.1f %%, Stokes alone %.1f %%, Ekman alone %.1f %%   (as plot_L_K_vs_Lharm_T10.jl)",
+             UNS.both.rms, UNS.stokes.rms, UNS.ekman.rms))
 
 # Does the choice of delta rescue it? The unscaled fit is the null: if no delta
-# beats 10.4 % on both flows, dividing by a thickness is not buying anything.
+# beats it on both flows, dividing by a thickness is not buying anything.
 say("")
-say("which delta, if any, collapses the two flows?  (rms on all 13 cases)")
+say(@sprintf("which delta, if any, collapses the two flows?  (rms on all %d cases)", length(BOTH)))
 say("  delta                                  both    Stokes   Ekman")
 for key in (:published, :common, :h)
     xk(cs) = [med(c.L_h) / getfield(c.δall, key) for c in cs]
@@ -165,7 +160,8 @@ for key in (:published, :common, :h)
     say(@sprintf("  %-36s %6.1f %% %7.1f %% %7.1f %%%s", string(key),
                  fb.rms, fs.rms, fe.rms, fb.pinned ? "   << PINNED" : ""))
 end
-say("  unscaled (no delta at all)             10.4 %     9.1 %     8.9 %")
+say(@sprintf("  %-36s %6.1f %% %7.1f %% %7.1f %%", "unscaled (no delta at all)",
+             UNS.both.rms, UNS.stokes.rms, UNS.ekman.rms))
 
 # ---------------- the figure ----------------
 mkpath(FIGDIR)
@@ -230,9 +226,9 @@ let v = vcat(yh(S), yh(E))
               yticks = logticks(minimum(v) / 1.8, maximum(v) * 1.8))
 end
 annotate!(pb, minimum(allxh) / 1.5, maximum(vcat(yh(S), yh(E))) * 1.4,
-          text(latexstring(@sprintf("\\mathrm{unscaled\\ fit\\ on}\\ L_{\\mathrm{harm}}\\!:\\ \\mathrm{rms}\\ 10.4\\,\\%%")),
+          text(latexstring(@sprintf("\\mathrm{unscaled\\ fit\\ on}\\ L_{\\mathrm{harm}}\\!:\\ \\mathrm{rms}\\ %.1f\\,\\%%", UNS.both.rms)),
                7, :grey25, :left))
-say(@sprintf("\ndelta = h, both flows: rms %.1f %%  (unscaled 10.4 %%)", fh.rms))
+say(@sprintf("\ndelta = h, both flows: rms %.1f %%  (unscaled %.1f %%)", fh.rms, UNS.both.rms))
 
 fig = plot(pa, pb; layout = (1, 2), size = (1300, 580),
            plot_title = L"T = 10\,\mathrm{m},\ z = h:\ \ \mathrm{does}\ K_T = B_1 \delta \sqrt{\mathrm{TKE}}\,(B_2 + e^{B_3 L_{\mathrm{harm}}/\delta})\ \mathrm{beat\ the\ unscaled\ fit?}",

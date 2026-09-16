@@ -73,19 +73,19 @@
 # USAGE  cd Combined && GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl
 # ENV    WINDOW (4)        how many inertial periods at the end to average over
 #        GRAD_FLOOR (0.05) mask cells with ∂b/∂z below this fraction of N²_ref
-#        RATIOS            space-separated r values (default 0.5 1 2 5 10 25 50)
+#        RATIOS            space-separated r values (default: the sweep in sweep.jl)
 
 using Oceananigans, JLD2, Printf, Statistics, Dates
 
 const HERE    = @__DIR__
-const DATA    = joinpath(HERE, "Data", "Ekman_moments", "4")
+include(joinpath(HERE, "sweep.jl"))       # RATIOS, ekman_case
 const OUT     = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
 const f₀      = 1e-4                      # Ekman Coriolis parameter
 const T_f     = 2π / f₀                   # inertial period, 62832 s
 const T_STRAT = 10.0
 const WINDOW  = parse(Float64, get(ENV, "WINDOW", "4"))
-const RATIOS  = [parse(Float64, s) for s in
-                 split(get(ENV, "RATIOS", "0.5 1 2 5 10 25 50"))]
+haskey(ENV, "RATIOS") && (empty!(RATIOS);
+    append!(RATIOS, parse.(Float64, split(ENV["RATIOS"]))))
 
 # The Stokes reduction smooths in time with a boxcar of one twentieth of a
 # forcing period before forming any ratio (SMOOTH=tide20). f₀ here equals ω
@@ -157,9 +157,11 @@ faces_to_centres(ff, zf, zc) =
 
 # ---------------- one case ----------------
 function reduce_case(r)
-    root = joinpath(DATA, @sprintf("r=%.1f, T=%.1f", r, T_STRAT))
+    c = ekman_case(r)
+    c === nothing && (log("  r=$r: no Moments.jld2 in any root — skipped"); return nothing)
+    root = c.dir
     file = joinpath(root, "Moments.jld2")
-    isfile(file) || (log("  r=$r: no Moments.jld2 — skipped"); return nothing)
+    log(@sprintf("  r=%-5g reading %s", r, root))
 
     series(v) = FieldTimeSeries(file, v; backend = OnDisk())
     S = Dict(v => series(v) for v in

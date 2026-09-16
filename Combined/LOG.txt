@@ -243,6 +243,134 @@
 # L_K = 2.18(1 - e^(-L_harm/4.89)), rms 10.4 %.
 
 
+## The weakly stratified end, run and checked           (2026-09-10 -> 09-13)
+
+# swirles.sh ran on the cluster: Stokes r = 0.5 and 0.2, Ekman r = 0.2. All
+# three reached their full stop time — the Stokes pair 8.00 periods (5.027e5 s)
+# in 2.13 and 2.15 h, Ekman 25.46 T_f (1.5998e6 s) in 2.06 h. Data scp'd to
+# Combined/Data/lowN, ~1.1 GB; markers, logs and figures committed (1c4fced)
+# and pushed, the .jld2 correctly left gitignored.
+#
+# --- The conditioning check passes, and it is not close ---
+#
+# K_T_bulk vs K_T_pe agree to 0.1 % rms, bias -0.0 %, at BOTH r = 0.5 and
+# r = 0.2. The acceptance threshold was ~30 %. The two share no code. So the
+# reason Stokes r = 0.5 was dropped from the original sweep does not apply to
+# these runs, and both points can go into the L_harm figures.
+#
+# K_sgs/K_T at z = h is 0.03 and 0.04 — the subgrid flux is no larger here than
+# anywhere else in the sweep. Panel (d) slope is +0.40 and +0.41, against 1/2
+# for sqrt(TKE)*l and 1 for TKE/N. No regime change by that diagnostic.
+#
+# --- Two things that must not be forgotten when these points are plotted ---
+#
+# *** h runs into the pycnocline. *** h(t) climbs to z = T = 10 m by wt ~ 30 in
+# both Stokes cases and then sits on it (mean h 9.17 m at r = 0.5, 7.97 m at
+# r = 0.2). The layer is not growing freely any more. L_harm is local at z = h
+# and is fine. The h = 1.05 u_*/omega (1+N^2/omega^2)^(-0.040) fit is NOT — its
+# whole claim is that h is set by omega and u_* alone, and these two points no
+# longer test that. Do not add them to it.
+#
+#   *** WRONG, corrected 2026-09-15 — see the next entry. The low-N cases are
+#   not special in this. h_pin, the fraction of samples with h within 5 % of
+#   z = T, is 24 % at r = 0.2 and 26 % at r = 0.5 against 45 % at r = 5 and
+#   94 % at r = 10. The whole Stokes column sits on the pycnocline, because h
+#   is 8.6 to 11.3 m across the sweep while T = 10 m. The two cases were fitted
+#   with the rest. The reading above came from looking at two figures without
+#   the comparison. ***
+#
+# delta_eff at r = 0.5 has CV 0.43 (against 0.19 at r = 0.2) and goes negative
+# at wt ~ 18, 26, 32, 41, where F_b changes sign and the ratio
+# int(F_b dz)/F_b|peak is undefined. Drop those phases before taking any median.
+# Does not touch K_T.
+#
+# --- Still not done, deliberately ---
+#
+# Ekman r = 0.2 has raw Moments.jld2 only; swirles.sh runs the Stokes post-step
+# but not the Ekman one, so reduce_ekman_moments_T10.jl still has to be run over
+# it. And the reductions and plot scripts still hard-code
+# SVALS = [1,2,5,10,25,50] and the old paths. That is the next change.
+
+
+## All figures rebuilt on 16 cases                                  (2026-09-15)
+
+# The lowN data is now in every figure. 13 cases -> 16: Stokes gains r = 0.2 and
+# 0.5, Ekman gains r = 0.2. Both reductions and all eight plot scripts were
+# pointed at it and re-run; every figure in Combined/figures is regenerated.
+#
+# --- how the scripts find the cases now ---
+#
+# The three new cases are NOT beside the originals — they were run into
+# Combined/Data/lowN as one folder for scp. Six scripts had the root, the
+# "sqrtRi0p5" tag spelling and the r-colour ramp open-coded, so all three moved
+# into a new shared Combined/sweep.jl that every script includes:
+#   SVALS / RATIOS      the sweep, now 0.2 0.5 1 2 5 10 25 50 in both columns
+#   stokes_case(s)      searches Data/lowN/stokes first, then Stokes/3D/outputs
+#   ekman_case(r)       searches Data/lowN/ekman first, then Data/Ekman_moments/4
+#   RAMP, ramp_colour   two anchors added below r = 1; r >= 1 colours unchanged
+# lowN wins where a case is in both roots, which it has to: the old
+# Stokes/3D/outputs/P4_T10_sqrtRi0p5 has no moments or mixing file at all.
+#
+# --- what changed in the results ---
+#
+# THE MAIN RESULT HOLDS, with the constants moved a little:
+#     L_K = 2.004(1 - e^(-L_harm/4.498))   rms 10.7 % on 16 cases
+#                          was  2.18, 4.89, rms 10.4 % on 13
+# Stokes alone 11.7 %, Ekman alone 8.4 %. L_harm still beats either scale alone
+# by a wide margin: against L_N the Stokes column is 46.5 % and against L_s
+# 54.7 %, against L_harm 13.4 %.
+#
+# THE SHEAR-LIMITED REGIME IS NO LONGER ONE CASE IN THIRTEEN. It is four in
+# sixteen — Stokes r = 0.2, 0.5, 1 and Ekman r = 0.2 all have w_s > 1/2. This is
+# what the runs were for, and the Ri = 1 crossing is now bracketed by DATA on
+# both sides rather than extrapolated:
+#     Stokes  crosses between r = 1 (w_s 0.591) and r = 2 (0.395)
+#     Ekman   crosses between r = 0.2 (0.602) and r = 0.5 (0.441)
+# The old estimates were r ~ 1.4 and an extrapolated r ~ 0.4. Both stand.
+#
+# THE STOKES h LAW IS WEAKER THAN IT LOOKED. Refitting on all eight:
+#     Stokes  p 0.040 -> 0.020,  flat to 7.3 %  (was 1.6 % on six cases)
+#     Ekman   p 0.155 unchanged, flat to 4.2 %  (was 4.4 %)
+# The tidal column is even more stratification-blind than before, but "flat to
+# 1.6 %" was a six-case number and does not survive the low-N end. The Ekman law
+# took its new point without moving at all.
+#
+# min(L_N, L_s) NOW EDGES OUT THE HARMONIC as the saturating fit on both flows,
+# 10.0 % against 10.8 %. On 13 cases the harmonic won. The two are within each
+# other's noise and min() has the uglier derivative, so the harmonic is kept as
+# the written form — but it is no longer the clear winner and should not be
+# claimed as one. The "L_N alone" panel is where the new points really tell:
+# all three flatten off completely, which is what makes the case for a combined
+# scale rather than a stratification one.
+#
+# UNCHANGED: stage 3 still fails (delta = h gives 10.8 % against 10.7 %
+# unscaled, so no thickness buys anything); the Stokes TKE profiles still
+# collapse (A1/u_*^2 x1.08 over eight cases) while the Ekman ones still fan out
+# (A2 x1.72); the Corrsin scale still rests on an eps estimate that is negative
+# for Stokes r = 10, 25, 50, so 13 of 16 cases are usable there. The new low-N
+# Stokes cases have the best-conditioned eps in that column, eps/(P+|B|) = 1.00
+# and 0.99.
+#
+# --- three figure defects the new data exposed ---
+#
+# All three had been latent, and only showed once the sweep widened:
+# - L_K_vs_Lharm's right panel was ylims (0, 0.75) with colours to 0.6. w_s
+#   reaches 0.94 at Stokes r = 0.2, so two points were clipped off the panel and
+#   saturated to one colour. Both now run to 1, which is w_s's actual bound.
+# - delta_vs_h let Plots fit the axes to the data on a log scale, so the end
+#   markers were drawn half outside the panel and a tick label was stranded
+#   above it. Limits are now set from the same lo/hi as the ticks.
+# - tau_K_vs_timescales DREW A PINNED FIT. choose() keeps a pinned family off a
+#   panel, but it decides on the combined set; the Stokes fit against tau_s is
+#   pinned on its own (x0 off the top of the grid, 83 % rms) while the combined
+#   one is not, so an 83 % straight line was drawn as if it were a fit. Per-flow
+#   pinned fits are now suppressed and the legend says "pinned, not drawn".
+#
+# plot_KT_model_T10.jl and plot_L_K_vs_Lharm_T10.jl also had "13 cases" and the
+# unscaled 10.4 / 9.1 / 8.9 % written into their output as literals, copied from
+# each other. They compute them now.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning
@@ -256,14 +384,25 @@
 #   line COLOUR says which flow, line STYLE says which quantity.
 # - `head` on a Julia pipeline SIGPIPE-kills it before it writes its figures.
 # - @sprintf will not take a format string built with `*`.
+# - Two figures were read as showing the low-N cases pinned against the
+#   pycnocline, and a caveat written from that, without checking the rest of the
+#   sweep for the same thing. It does it too, harder. Look at the comparison
+#   before calling a feature special.
+# - A reference number ("the unscaled fit is 10.4 %") was copied from one script
+#   into another as a literal. It went stale the moment the sweep changed.
+#   Numbers that appear in two places get computed in both.
 
 
 ## Open
 
-# - Whether the excess l in the four unequilibrated Ekman cases survives. Needs
-#   a longer run.
-# - The shear-limited regime is one case in thirteen. Testing whether L_harm is
-#   right rather than merely better needs Stokes cases below r = 1.
+# - Whether the excess l in the five unequilibrated Ekman cases survives. Needs
+#   a longer run. r = 0.2 is the sharpest version of this: it ran twice as long
+#   as the others and its h has settled to +0.9 %, but l is still falling at
+#   -20 %. h equilibrating does not mean l has.
+# - CLOSED 2026-09-15. The shear-limited regime is now four cases in sixteen
+#   and the Ri = 1 crossing is bracketed by data in both flows. What is left
+#   open is narrower: min(L_N, L_s) and L_harm are now within noise of each
+#   other (10.0 % against 10.8 %), and nothing here separates them.
 # - Stokes r = 1 and 2 discard 28 % of the tidal cycle to counter-gradient flux,
 #   and they are the two points that most influence every fit here.
 # - Why the Ekman TKE profiles fan out on delta while the Stokes ones collapse.
@@ -271,4 +410,8 @@
 #   estimate whose transport term cannot be checked. If the Corrsin scale
 #   matters, write eps directly in the next run — one extra profile.
 # - Only T = 10 m has been done. T = 15, 20 exist on the Stokes side.
+# - The Stokes h law is flat to 7.3 %, not the 1.6 % of the six-case sweep.
+#   Whether that is the low-N cases being genuinely worse behaved or the layer
+#   interacting with the pycnocline at T = 10 m is not separable without another
+#   T. This is the strongest reason to do T = 15 or 20.
 # - The softplus overflow in Ekman 3D.jl is unfixed, by design.

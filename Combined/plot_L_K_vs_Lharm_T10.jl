@@ -126,7 +126,7 @@ end
 
 PR = propfit(BOTH); PW = powfit(BOTH); SA = satfit(BOTH)
 say("")
-say("L_harm = 1/(1/L_N + 1/L_s), on all 13 cases")
+say(@sprintf("L_harm = 1/(1/L_N + 1/L_s), on all %d cases", length(BOTH)))
 say(@sprintf("  proportionality  L_K = %.3f L_harm                 rms %.1f %%", PR.A, PR.rms))
 say(@sprintf("  power law        L_K = %.3f L_harm^%.2f            rms %.1f %%", PW.A, PW.b, PW.rms))
 say(@sprintf("  saturating       L_K = %.3f(1 − e^(−L_harm/%.3f))  rms %.1f %%%s",
@@ -150,7 +150,11 @@ end
 # ---------------- the figure ----------------
 mkpath(FIGDIR)
 const CMAP  = cgrad(:RdBu, rev = true)      # blue = stratification, red = shear
-const CLIMS = (0.0, 0.6)
+# w_N + w_s = 1, so w_s is bounded by 1 by construction and the full range is
+# the honest one. It used to stop at 0.6 and 0.75, which was enough for a sweep
+# that began at r = 1; the lowN cases reach w_s = 0.94 and would have been
+# clipped out of the right panel and saturated to one colour in the left.
+const CLIMS = (0.0, 1.0)
 
 # ---- left: the collapse ----
 pa = plot(xscale = :log10, yscale = :log10,
@@ -199,7 +203,7 @@ end
 # carrying the same information twice.
 pb = plot(xscale = :log10, xlabel = L"r = N/\omega = N/f",
           ylabel = L"w_s = L_{\mathrm{harm}}/L_s",
-          ylims = (0, 0.75), title = L"\mathrm{which\ scale\ limits\ the\ mixing}",
+          ylims = (0, 1), title = L"\mathrm{which\ scale\ limits\ the\ mixing}",
           legend = :topright, legendfontsize = 6,
           foreground_color_legend = nothing)
 hline!(pb, [0.5]; color = :black, lw = 1.2, ls = :dash,

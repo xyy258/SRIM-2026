@@ -1,39 +1,44 @@
 Ekman side: ekman_lengthscales_T10_moments.jld2
   flux = resolved + subgrid — F_b = (<wb> - <w><b>) + F_sgs
 
-Stokes fit:                  L∞ = 0.600 m, x₀ = 1.480 m, rms 7.5 % in l   (6 cases)
-Ekman fit:                   L∞ = 1.790 m, x₀ = 5.400 m, rms 7.5 % in l   (7 cases)
-Overall fit (both):          L∞ = 1.455 m, x₀ = 4.170 m, rms 14.9 % in l   (13 cases)
+Stokes fit:                  L∞ = 0.520 m, x₀ = 1.250 m, rms 8.1 % in l   (8 cases)
+Ekman fit:                   L∞ = 1.765 m, x₀ = 5.310 m, rms 7.0 % in l   (8 cases)
+Overall fit (both):          L∞ = 0.940 m, x₀ = 2.530 m, rms 31.9 % in l   (16 cases)
 
 
 Ekman medians against the Stokes fit  (ratio > 1 means Ekman mixes more)
-  N/f = 0.5    l = 1.4755 m   Stokes fit 0.5992 m   ratio  2.46   h drift  +7.2 %   l drift  -10.1 %
-  N/f = 1      l = 1.0565 m   Stokes fit 0.5728 m   ratio  1.84   h drift  +7.4 %   l drift  -11.4 %
-  N/f = 2      l = 0.7771 m   Stokes fit 0.5188 m   ratio  1.50   h drift  +6.7 %   l drift  -13.9 %
-  N/f = 5      l = 0.4252 m   Stokes fit 0.3745 m   ratio  1.14   h drift  +8.1 %   l drift  -20.8 %
-  N/f = 10     l = 0.2381 m   Stokes fit 0.2624 m   ratio  0.91   h drift  +4.1 %   l drift   +3.1 %
-  N/f = 25     l = 0.1092 m   Stokes fit 0.1347 m   ratio  0.81   h drift  +0.9 %   l drift   -4.4 %
-  N/f = 50     l = 0.0640 m   Stokes fit 0.0655 m   ratio  0.98   h drift  -1.4 %   l drift   +0.3 %
+  N/f = 0.2    l = 1.7138 m   Stokes fit 0.5200 m   ratio  3.30   h drift  +0.9 %   l drift  -20.0 %
+  N/f = 0.5    l = 1.4755 m   Stokes fit 0.5198 m   ratio  2.84   h drift  +7.2 %   l drift  -10.1 %
+  N/f = 1      l = 1.0565 m   Stokes fit 0.5067 m   ratio  2.09   h drift  +7.4 %   l drift  -11.4 %
+  N/f = 2      l = 0.7771 m   Stokes fit 0.4713 m   ratio  1.65   h drift  +6.7 %   l drift  -13.9 %
+  N/f = 5      l = 0.4252 m   Stokes fit 0.3567 m   ratio  1.19   h drift  +8.1 %   l drift  -20.8 %
+  N/f = 10     l = 0.2381 m   Stokes fit 0.2568 m   ratio  0.93   h drift  +4.1 %   l drift   +3.1 %
+  N/f = 25     l = 0.1092 m   Stokes fit 0.1351 m   ratio  0.81   h drift  +0.9 %   l drift   -4.4 %
+  N/f = 50     l = 0.0640 m   Stokes fit 0.0665 m   ratio  0.96   h drift  -1.4 %   l drift   +0.3 %
 
 case medians — x = √TKE/N (m), l = K_T/√TKE (m)
   Stokes                                    Ekman
   N/ω      x       l    l(resolved)  K_sgs/K_T |  N/f      x       l   sgs share
-  1      2.8956  0.4783     0.4648      0.031 | 0.5     9.8465  1.4755     0.04
-  2      1.4305  0.4229     0.4153      0.028 | 1       4.5784  1.0565     0.05
-  5      0.5113  0.1796     0.1693      0.060 | 2       2.9600  0.7771     0.06
-  10     0.2815  0.0956     0.0861      0.102 | 5       1.4482  0.4252     0.10
-  25     0.1026  0.0384     0.0282      0.295 | 10      0.8513  0.2381     0.17
-  50     0.0438  0.0183     0.0076      0.592 | 25      0.3762  0.1092     0.32
-                                              | 50      0.1710  0.0640     0.56
+  0.2   24.3938  0.4808     0.4627      0.037 | 0.2    20.6251  1.7138     0.03
+  0.5    8.1929  0.5120     0.4956      0.032 | 0.5     9.8465  1.4755     0.04
+  1      2.8956  0.4783     0.4648      0.031 | 1       4.5784  1.0565     0.05
+  2      1.4305  0.4229     0.4153      0.028 | 2       2.9600  0.7771     0.06
+  5      0.5113  0.1796     0.1693      0.060 | 5       1.4482  0.4252     0.10
+  10     0.2815  0.0956     0.0861      0.102 | 10      0.8513  0.2381     0.17
+  25     0.1026  0.0384     0.0282      0.295 | 25      0.3762  0.1092     0.32
+  50     0.0438  0.0183     0.0076      0.592 | 50      0.1710  0.0640     0.56
 
 interquartile ranges — the bars in the errorbar figure
   case          x: q25    med    q75  |  l: q25    med    q75
+  Stokes 0.2   20.0085 24.3938 33.5972  |  0.3753 0.4808 0.6031
+  Stokes 0.5    6.1995 8.1929 10.2488  |  0.4079 0.5120 0.5908
   Stokes 1      2.4341 2.8956 3.6545  |  0.3858 0.4783 0.6181
   Stokes 2      1.0746 1.4305 1.7537  |  0.3265 0.4229 0.5697
   Stokes 5      0.4200 0.5113 0.6348  |  0.1407 0.1796 0.2366
   Stokes 10     0.2410 0.2815 0.3455  |  0.0611 0.0956 0.1384
   Stokes 25     0.0858 0.1026 0.1280  |  0.0254 0.0384 0.0570
   Stokes 50     0.0348 0.0438 0.0552  |  0.0146 0.0183 0.0236
+  Ekman  0.2   19.1305 20.6251 22.8840  |  1.3060 1.7138 2.2752
   Ekman  0.5    9.3635 9.8465 10.5757  |  1.3122 1.4755 1.7032
   Ekman  1      4.3035 4.5784 4.8269  |  0.8828 1.0565 1.2372
   Ekman  2      2.7655 2.9600 3.0938  |  0.6200 0.7771 0.9164

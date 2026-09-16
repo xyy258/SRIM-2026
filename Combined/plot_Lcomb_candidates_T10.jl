@@ -45,26 +45,12 @@ get!(ENV, "GKSwstype", "100")
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
+include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
 const CACHE  = joinpath(HERE, "Data", "shear_scales_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
-const SVALS  = [1, 2, 5, 10, 25, 50]
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"
 
-const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
-              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
-              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
-function ramp_colour(s)
-    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
-    for i in 1:length(RAMP)-1
-        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
-        x <= x1 || continue
-        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
-        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
-        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
-    end
-    return "#000000"
-end
 med(v) = (w = filter(isfinite, v); isempty(w) ? NaN : median(w))
 
 logl = String[]

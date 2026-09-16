@@ -36,8 +36,7 @@
 using Oceananigans, JLD2, Printf, Statistics
 
 const HERE   = @__DIR__
-const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
-const EKDATA = joinpath(HERE, "Data", "Ekman_moments", "4")
+include(joinpath(HERE, "sweep.jl"))    # SVALS, RATIOS, stokes_case, ekman_case
 const EKRED  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
 const OUT    = joinpath(HERE, "Data", "profiles_T10.jld2")
 const ω      = 1e-4                    # = f₀; both flows share it
@@ -45,8 +44,24 @@ const T_tide = 2π / ω
 const T_f    = 2π / ω
 const SKIP   = 3                       # Stokes spin-up, tidal periods
 const WINDOW = 4                       # Ekman window, inertial periods
-const SVALS  = [1, 2, 5, 10, 25, 50]
-const RATIOS = [0.5, 1.0, 2.0, 5.0, 10.0, 25.0, 50.0]
+const T_STRAT = 10.0                   # pycnocline height, m
+
+# The fraction of retained samples whose mixed-layer top is SITTING ON the
+# pycnocline — inside a +/-5 % band around z = T, not merely above it. At low N
+# the tidal layer grows until it reaches z = T and then stops there, so h is no
+# longer set by u_* and Omega alone and the stage-1 h laws do not apply to it.
+#
+# The band matters. Every Ekman case here has h ~ 20 m against T = 10 m: that
+# layer ate through the pycnocline long ago and its h is free, set by the
+# residual stratification above. A one-sided h >= T test would have called all
+# seven of them pinned and left nothing to fit. Being stuck at T is the thing
+# that breaks the law; being well past it is not.
+#
+# Stored per case so plot_delta_T10.jl can exclude them rather than carry a
+# hard-coded list that goes stale the next time a case is added.
+h_pinned(hv) = (g = fin(hv); isempty(g) ? NaN :
+                mean(0.95 * T_STRAT .<= g .<= 1.05 * T_STRAT))
+
 const U∞     = 0.04
 const κ_vk   = 0.41
 const z₀     = 0.0016
@@ -130,10 +145,9 @@ cases = []
 # ---------------- Stokes ----------------
 cD_S = (κ_vk / log(0.0667 / z₀))^2      # z_drag_ref from Stokes/3D/case_params.jl
 for s in SVALS
-    tag = "P4_T10_sqrtRi$s"
-    mix = joinpath(STOKES, "outputs", tag, "mixing_$(tag)_hcross.jld2")
-    mom = joinpath(STOKES, "outputs", tag, "TidalBL3D_$(tag)_moments.jld2")
-    (isfile(mix) && isfile(mom)) || (say("missing files for $tag — skipped"); continue)
+    c = stokes_case(s)
+    c === nothing && (say("missing files for $(sqrtRi_tag(s)) — skipped"); continue)
+    tag, mix, mom = c.tag, c.mix, c.mom
     d = jldopen(mix, "r") do io; (t = io["times"], h = io["h"]) end
     F = Dict(v => FieldTimeSeries(mom, v; backend = OnDisk()) for v in
              ("U", "V", "W", "uu", "vv", "ww", "uw", "vw", "kappa_sgs"))
@@ -146,10 +160,11 @@ for s in SVALS
     keep = d.t[sel] .>= SKIP * T_tide
     push!(cases, (flow = "stokes", r = float(s), N = s * ω, zc = zc, zf = zf,
                   TKE = w.TKE, TAU = w.TAU, h = med(d.h[sel][keep]),
+                  h_pin = h_pinned(d.h[sel][keep]),
                   us = med(w.us[keep]), us_p90 = quantile(fin(w.us[keep]), 0.9),
                   us_free = sqrt(cD_S) * U∞, us_drag = sqrt(cD_S) * w.U1, cD = cD_S))
-    say(@sprintf("Stokes N/ω = %-4g  h = %6.3f m  u_* med %.4e  p90 %.4e  (free stream %.4e, drag law %.4e)",
-                 s, cases[end].h, cases[end].us, cases[end].us_p90,
+    say(@sprintf("Stokes N/ω = %-4g  h = %6.3f m  (%.0f %% of samples sitting on the pycnocline)  u_* med %.4e  p90 %.4e  (free stream %.4e, drag law %.4e)",
+                 s, cases[end].h, 100 * cases[end].h_pin, cases[end].us, cases[end].us_p90,
                  cases[end].us_free, cases[end].us_drag))
 end
 
@@ -159,8 +174,9 @@ jldopen(EKRED, "r") do io
     for r in io["ratios"]; hE[r] = io[@sprintf("r=%.1f/h", r)] end
 end
 for r in RATIOS
-    file = joinpath(EKDATA, @sprintf("r=%.1f, T=10.0", r), "Moments.jld2")
-    isfile(file) || (say("missing Moments.jld2 for r=$r — skipped"); continue)
+    ec = ekman_case(r)
+    ec === nothing && (say("missing Moments.jld2 for r=$r — skipped"); continue)
+    file = joinpath(ec.dir, "Moments.jld2")
     F = Dict(v => FieldTimeSeries(file, v; backend = OnDisk()) for v in
              ("U", "V", "W", "uu", "vv", "ww", "uw", "vw", "kappa_sgs"))
     grid = F["U"].grid
@@ -174,10 +190,11 @@ for r in RATIOS
     w = walk(F, sel, hE[r], zc, zf, nh)
     push!(cases, (flow = "ekman", r = r, N = r * ω, zc = zc, zf = zf,
                   TKE = w.TKE, TAU = w.TAU, h = med(hE[r]),
+                  h_pin = h_pinned(hE[r]),
                   us = med(w.us), us_p90 = quantile(fin(w.us), 0.9),
                   us_free = sqrt(cD_E) * U∞, us_drag = sqrt(cD_E) * w.U1, cD = cD_E))
-    say(@sprintf("Ekman  N/f = %-4g  h = %6.3f m  u_* med %.4e  p90 %.4e  (free stream %.4e, drag law %.4e)",
-                 r, cases[end].h, cases[end].us, cases[end].us_p90,
+    say(@sprintf("Ekman  N/f = %-4g  h = %6.3f m  (%.0f %% of samples sitting on the pycnocline)  u_* med %.4e  p90 %.4e  (free stream %.4e, drag law %.4e)",
+                 r, cases[end].h, 100 * cases[end].h_pin, cases[end].us, cases[end].us_p90,
                  cases[end].us_free, cases[end].us_drag))
 end
 
@@ -190,7 +207,7 @@ jldopen(OUT, "w") do io
     end
     for c in cases
         g = @sprintf("%s/r=%.1f", c.flow, c.r)
-        for k in (:N, :zc, :zf, :TKE, :TAU, :h, :us, :us_p90, :us_free, :us_drag, :cD)
+        for k in (:N, :zc, :zf, :TKE, :TAU, :h, :h_pin, :us, :us_p90, :us_free, :us_drag, :cD)
             io["$g/$k"] = getfield(c, k)
         end
     end

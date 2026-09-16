@@ -49,14 +49,13 @@ get!(ENV, "GKSwstype", "100")
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
-const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
+include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
 const EKNEW  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
 const EKOLD  = joinpath(HERE, "Data", "ekman_lengthscales_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
 const SKIP   = 3                      # Stokes spin-up, in tidal periods
-const SVALS  = [1, 2, 5, 10, 25, 50]
 # A case counts as equilibrated if neither h nor l moves by more than this
 # across the averaging window. 5 % is set against the 7.5 % rms of the Stokes
 # fit itself: drift smaller than the scatter of the reference curve cannot be
@@ -64,20 +63,6 @@ const SVALS  = [1, 2, 5, 10, 25, 50]
 const DRIFT_TOL = 0.05
 
 # The ramp swirlesrun4.jl uses, so colours mean the same N in every figure.
-const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
-              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
-              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
-function ramp_colour(s)
-    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
-    for i in 1:length(RAMP)-1
-        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
-        x <= x1 || continue
-        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
-        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
-        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
-    end
-    return "#000000"
-end
 med(v) = (w = filter(isfinite, v); isempty(w) ? NaN : median(w))
 
 interp_at(z, fv, z₀) = isnan(z₀) ? NaN : begin
@@ -95,9 +80,9 @@ say(s) = (println(s); flush(stdout); push!(logl, s))
 # z = h has to be interpolated onto h the same way K_at_h was.
 stokes = []
 for s in SVALS
-    tag = "P4_T10_sqrtRi$s"
-    f   = joinpath(STOKES, "outputs", tag, "mixing_$(tag)_hcross.jld2")
-    isfile(f) || (say("missing $f — skipped"); continue)
+    c = stokes_case(s)
+    c === nothing && (say("missing files for $(sqrtRi_tag(s)) — skipped"); continue)
+    tag, f = c.tag, c.mix
     d = jldopen(f, "r") do io
         (t = io["times"], Kh = io["K_at_h"], E = io["TKE_at_h"], h = io["h"],
          zf = io["z_face"], Ksgs = io["K_sgs"], frac = io["checks"]["K_sgs_over_K_T"])
@@ -113,7 +98,7 @@ for s in SVALS
     push!(stokes, (s = s, x = x[g], l = l[g], xm = med(x[g]), lm = med(l[g]),
                    xr = med(x[gr]), lr = med(lr[gr]), frac = d.frac))
 end
-isempty(stokes) && error("no Stokes T = 10 mixing files under $STOKES/outputs")
+isempty(stokes) && error("no Stokes T = 10 cases found under any of $STOKES_ROOTS")
 
 # ---------------- Ekman ----------------
 EKFILE = isfile(EKNEW) ? EKNEW : EKOLD

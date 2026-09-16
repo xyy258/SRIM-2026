@@ -77,31 +77,16 @@ get!(ENV, "GKSwstype", "100")
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
 const HERE   = @__DIR__
-const STOKES = "/home/tll46/SRIM-2026/Stokes/3D"
+include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
 const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
 const SKIP   = 3                      # Stokes spin-up, in tidal periods
-const SVALS  = [1, 2, 5, 10, 25, 50]
 
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"
 
-const RAMP = [(0.0,   ( 27,  78, 143)), (0.301, ( 46, 139,  87)),
-              (0.699, (200, 150,  30)), (1.0,   (180,  80,  44)),
-              (1.398, (142,  27,  78)), (1.699, ( 75,  16,  96))]
-function ramp_colour(s)
-    x = clamp(log10(s), RAMP[1][1], RAMP[end][1])
-    for i in 1:length(RAMP)-1
-        (x0, c0), (x1, c1) = RAMP[i], RAMP[i+1]
-        x <= x1 || continue
-        f = x1 == x0 ? 0.0 : (x - x0) / (x1 - x0)
-        chan(k) = clamp(round(Int, c0[k] + f * (c1[k] - c0[k])), 0, 255)
-        return "#" * join(string(chan(k), base = 16, pad = 2) for k in 1:3)
-    end
-    return "#000000"
-end
 
 fin(v) = filter(isfinite, v)
 med(v) = (w = fin(v); isempty(w) ? NaN : median(w))
@@ -144,10 +129,9 @@ say(s) = (println(s); flush(stdout); push!(logl, s))
 # ---------------- Stokes ----------------
 stokes = []
 for s in SVALS
-    tag = "P4_T10_sqrtRi$s"
-    mix = joinpath(STOKES, "outputs", tag, "mixing_$(tag)_hcross.jld2")
-    mom = joinpath(STOKES, "outputs", tag, "TidalBL3D_$(tag)_moments.jld2")
-    (isfile(mix) && isfile(mom)) || (say("missing files for $tag — skipped"); continue)
+    c = stokes_case(s)
+    c === nothing && (say("missing files for $(sqrtRi_tag(s)) — skipped"); continue)
+    tag, mix, mom = c.tag, c.mix, c.mom
 
     d = jldopen(mix, "r") do io
         (t = io["times"], Kh = io["K_at_h"], E = io["TKE_at_h"], h = io["h"])
@@ -173,7 +157,7 @@ for s in SVALS
     push!(stokes, (r = float(s), N = s * ω, K = d.Kh[m], E = d.E[m], S = Sh[m]))
     say(@sprintf("Stokes N/ω = %-4g  med S at h = %.4e s⁻¹", s, med(Sh[m])))
 end
-isempty(stokes) && error("no Stokes T = 10 cases found under $STOKES/outputs")
+isempty(stokes) && error("no Stokes T = 10 cases found under any of $STOKES_ROOTS")
 
 # ---------------- Ekman ----------------
 ekman = []
@@ -401,11 +385,24 @@ function panel(xf, xlab, ttl; oneone = true, xkey = :τ_N)
         plot!(p, [lo, hi], [lo, hi]; color = :black, lw = 1.0, ls = :dash,
               label = L"1{:}1")
     end
-    # Each fit is drawn only across the range of the cases it was made from.
+    # Each fit is drawn only across the range of the cases it was made from, and
+    # only if its own fit is not pinned. choose() already keeps a pinned family
+    # off the panel, but it decides on the COMBINED set: a per-flow fit can be
+    # pinned while the combined one is not. That is the Stokes column against
+    # τ_s once the sweep reaches r = 0.2 — x₀ runs off the top of its grid and
+    # the "fit" is a straight line with 83 % rms. Drawing it would put a curve
+    # on the figure that is not a fit, which is the thing the pinned flag exists
+    # to prevent.
     for (key, cs, col, ls, lw) in ((:stokes, S, C_STOK, :dash, 1.8),
                                    (:ekman,  E, C_EKMA, :dash, 1.8),
                                    (:both, vcat(S, E), :black, :solid, 2.6))
         f = getfield(FITS[(xkey, key)], FAM[xkey])
+        if f.pinned
+            plot!(p, [NaN], [NaN]; color = col, ls = :dot, lw = lw,
+                  label = latexstring(@sprintf("\\mathrm{%s}\\!: \\ \\mathrm{pinned,\\ not\\ drawn}",
+                                               key == :both ? "both" : string(key))))
+            continue
+        end
         xv = [med(xf(c)) for c in cs]
         xx = exp.(range(log(minimum(xv)), log(maximum(xv)); length = 300))
         plot!(p, xx, f.f.(xx); color = col, ls = ls, lw = lw,

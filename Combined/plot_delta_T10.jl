@@ -21,6 +21,26 @@
 # each flow's sweep, and the rms of log(h/delta) about its geometric mean. A
 # perfect thickness would give 1.00 and 0 %.
 #
+# EVERY CASE IS FITTED, INCLUDING THE WEAKLY STRATIFIED ONES. That was checked,
+# not assumed. The lowN figures show h(t) climbing to z = T = 10 m and sitting
+# there, which looked like grounds to drop r = 0.2 and 0.5 from a free-growth
+# law. reduce_profiles_T10.jl therefore reports h_pin, the fraction of samples
+# with h inside a +/-5 % band on z = T, and it says the opposite:
+#
+#     Stokes   r     0.2   0.5    1     2     5    10    25    50
+#     h_pin         24 %  26 %  14 %  36 %  45 %  94 %   0 %   0 %
+#
+# The Stokes layer top is near the pycnocline at EVERY r — r = 10 sits on it for
+# 94 % of samples against 24 % for r = 0.2 — because h is 8.6 to 11.3 m right
+# across the sweep while T = 10 m. Sitting on the pycnocline is the geometry of
+# this configuration, not something the low-N cases do. There is no basis for
+# treating the new points differently, so they are fitted with the rest and
+# h_pin is left as a logged diagnostic.
+#
+# (Ekman is nowhere near this: h is 6.2 to 22.6 m and h_pin is 0 % at every r.
+# A one-sided h >= T test would have called all eight Ekman cases pinned, which
+# is why the test is a band and not a threshold.)
+#
 # USAGE  cd Combined && GKSwstype=100 julia --project=. plot_delta_T10.jl
 #        (run reduce_profiles_T10.jl first)
 
@@ -58,12 +78,22 @@ jldopen(CACHE, "r") do io
         haskey(io, "$fl/ratios") || continue
         for r in io["$fl/ratios"]
             g = @sprintf("%s/r=%.1f", fl, r)
+            hp = haskey(io, "$g/h_pin") ? io["$g/h_pin"] : 0.0
             push!(dst, (r = r, N = io["$g/N"], h = io["$g/h"], us = io["$g/us"],
-                        us_p90 = io["$g/us_p90"]))
+                        us_p90 = io["$g/us_p90"], h_pin = hp))
         end
     end
 end
 say(@sprintf("%d Stokes and %d Ekman cases from %s", length(S), length(E), basename(CACHE)))
+
+# h_pin is reported, not acted on — see the header. It is here so the next
+# person to suspect the low-N cases of being pycnocline-limited can see at a
+# glance that the whole Stokes column is, equally.
+say("")
+say("h_pin, the fraction of samples with h within 5 % of z = T = 10 m:")
+for (nm, cs) in (("Stokes", S), ("Ekman ", E))
+    say("  $nm  " * join([@sprintf("r=%-5g %3.0f %%", c.r, 100 * c.h_pin) for c in cs], "  "))
+end
 
 # ---------------- the candidates ----------------
 # Each is a function of a case returning a length. The leading constants are the
@@ -117,9 +147,10 @@ end
 
 say("")
 say("h and u_* per case")
-say("  flow    r        h (m)     u_* (m/s)   u_*(p90)")
+say("  flow    r        h (m)     u_* (m/s)   u_*(p90)   h_pin")
 for (nm, cs) in (("Stokes", S), ("Ekman ", E)), c in cs
-    say(@sprintf("  %s %-5g %9.3f %12.4e %11.4e", nm, c.r, c.h, c.us, c.us_p90))
+    say(@sprintf("  %s %-5g %9.3f %12.4e %11.4e %7.2f",
+                 nm, c.r, c.h, c.us, c.us_p90, c.h_pin))
 end
 
 # ---------------- the figure ----------------
@@ -127,9 +158,9 @@ mkpath(FIGDIR)
 const MARK = [:circle, :diamond, :utriangle, :square]
 const COLS = ["#1b3a6b", "#c46a1f", "#2e8b57", "#8e1b4e"]
 
-function panel(cs, cd, ttl, lc)
+function panel(cs, cd, ttl, lc; legpos = :bottomleft)
     p = plot(xscale = :log10, yscale = :log10, xlabel = L"r = N/\omega = N/f",
-             ylabel = L"h/\delta", title = ttl, legend = :bottomleft,
+             ylabel = L"h/\delta", title = ttl, legend = legpos,
              legendfontsize = 6, foreground_color_legend = nothing)
     xs = [c.r for c in cs]; o = sortperm(xs)
     allv = Float64[]
@@ -143,11 +174,18 @@ function panel(cs, cd, ttl, lc)
     end
     # A flat candidate is a horizontal line; the guide is each candidate's own
     # geometric mean, so the eye compares shape and not level.
-    plot!(p; yticks = logticks(minimum(allv) / 1.3, maximum(allv) * 1.3))
+    # ylims is set from the same lo/hi as the ticks. Letting Plots choose it
+    # instead clipped the lowest marker and left a tick label stranded above the
+    # panel once the sweep widened to r = 0.2.
+    lo, hi = minimum(allv) / 1.3, maximum(allv) * 1.3
+    # Pad x as well: both axes are log and Plots fits them tight to the data, so
+    # the markers at the two ends of the sweep are drawn half outside the panel.
+    plot!(p; yticks = logticks(lo, hi), ylims = (lo, hi),
+             xlims = (minimum(xs) / 1.3, maximum(xs) * 1.3))
     return p
 end
 
-p1 = panel(S, CANDS_S, L"\mathrm{Stokes\ (tidal)}", C_STOK)
+p1 = panel(S, CANDS_S, L"\mathrm{Stokes\ (tidal)}", C_STOK; legpos = :topleft)
 p2 = panel(E, CANDS_E, L"\mathrm{Ekman\ (rotating)}", C_EKMA)
 f = plot(p1, p2; layout = (1, 2), size = (1240, 560),
          plot_title = L"T = 10\,\mathrm{m}:\ \ \mathrm{does}\ \delta\ \mathrm{track\ the\ layer\ height}\ h?\ \ (\mathrm{flat\ is\ good;\ the\ legend\ gives\ max/min})",
