@@ -3,14 +3,14 @@
 L_K against each candidate scale.  b = 1 is the one-parameter proportionality
 L_K = A·L_comb; b free is the same fit with the exponent released, as a check.
 
-  candidate              param      b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_comb: both  Stokes  Ekman
-  L_N alone              —              79.8 %  102.2 %   45.1 % |   0.65    46.8 % |        31.9 %    8.1 %    7.2 %
-  L_s alone              —              62.4 %   83.8 %   21.5 % |   1.03    62.3 % |        62.2 %   83.9 %   21.5 %
-  min(L_N, L_s)          —              31.4 %   15.8 %   34.0 % |   0.82    16.2 % |        10.0 %    9.0 %    7.2 %
-  harmonic, equal        —              23.1 %   14.5 %   24.2 % |   0.88    14.8 % |        10.8 %   11.7 %    8.4 %
-  harmonic, weighted     β = 1.42       21.2 %   10.5 %   20.7 % |   0.90    16.4 % |        11.9 %   10.7 %    8.8 %
-  p-norm                 p = 0.62       22.7 %   18.9 %   22.9 % |   0.89    16.7 % |        13.4 %   16.2 %    8.9 %
-  geometric              α = 0.42       27.2 %   33.8 %   18.1 % |   0.96    26.8 % |        25.3 %   33.7 %   11.5 %
+  candidate              param          A     b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_comb: both  Stokes  Ekman
+  L_N alone              —            0.202     79.8 %  102.2 %   45.1 % |   0.65    46.8 % |        31.9 %    8.1 %    7.2 %
+  L_s alone              —            0.109     62.4 %   83.8 %   21.5 % |   1.03    62.3 % |        62.2 %   83.9 %   21.5 %
+  min(L_N, L_s)          —            0.282     31.4 %   15.8 %   34.0 % |   0.82    16.2 % |        10.0 %    9.0 %    7.2 %
+  harmonic, equal        —            0.377     23.1 %   14.5 %   24.2 % |   0.88    14.8 % |        10.8 %   11.7 %    8.4 %
+  harmonic, weighted     β = 1.42     0.433     21.2 %   10.5 %   20.7 % |   0.90    16.4 % |        11.9 %   10.7 %    8.8 %
+  p-norm                 p = 0.62     0.532     22.7 %   18.9 %   22.9 % |   0.89    16.7 % |        13.4 %   16.2 %    8.9 %
+  geometric              α = 0.42     0.140     27.2 %   33.8 %   18.1 % |   0.96    26.8 % |        25.3 %   33.7 %   11.5 %
 
 best proportionality on both flows: harmonic, weighted (β = 1.42), L_K = 0.433 · L_comb, rms 21.2 % (slope 0.90 with b free)
 best saturating curve on both flows: min(L_N, L_s), L_K = 1.763(1 − e^(−L_comb/4.951)), rms 10.0 %

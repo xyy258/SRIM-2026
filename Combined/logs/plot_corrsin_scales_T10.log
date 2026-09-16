@@ -18,14 +18,14 @@ per-sample scales at z = h.  L_C = (eps/S^3)^(1/2) exists only where eps > 0
   Ekman  50       0.1710    0.4872    0.1436    0.0640      1.00 
 
 fits on the case medians of the 13 reliable cases of 16
-  candidate            prop rms: both  Stokes  Ekman |  power b   rms |  saturating: both Stokes Ekman
-  L_N alone                82.0 %   107.3 %    45.1 % |   0.54   46.7 % |    35.2 %     6.8 %     7.1 %
-  L_C alone                33.5 %    27.0 %    14.9 % |   0.88   31.5 % |    31.0 %    27.1 %    14.9 %
-  min(L_N, L_C)            32.6 %    25.3 %    13.8 % |   0.89   30.5 % |    29.9 %    25.4 %    13.8 %
-  harmonic, equal          20.3 %    12.5 %    16.2 % |   0.87   15.1 % |    13.8 %    12.6 %     9.5 %
-  harmonic, weighted       20.0 %    12.5 %    17.1 % |   0.87   14.2 % |    12.8 %    12.4 %     9.3 %
-  p-norm                   19.9 %    13.9 %    17.4 % |   0.87   14.0 % |    12.8 %    13.4 %     9.4 %
-  geometric                20.9 %    21.8 %    14.9 % |   0.88   16.8 % |    16.9 %    18.7 %    11.0 %
+  candidate                  A   prop rms: both  Stokes  Ekman |  power b   rms |  saturating: both Stokes Ekman
+  L_N alone              0.175     82.0 %   107.3 %    45.1 % |   0.54   46.7 % |    35.2 %     6.8 %     7.1 %
+  L_C alone              0.418     33.5 %    27.0 %    14.9 % |   0.88   31.5 % |    31.0 %    27.1 %    14.9 %
+  min(L_N, L_C)          0.422     32.6 %    25.3 %    13.8 % |   0.89   30.5 % |    29.9 %    25.4 %    13.8 %
+  harmonic, equal        0.643     20.3 %    12.5 %    16.2 % |   0.87   15.1 % |    13.8 %    12.6 %     9.5 %
+  harmonic, weighted     0.591     20.0 %    12.5 %    17.1 % |   0.87   14.2 % |    12.8 %    12.4 %     9.3 %
+  p-norm                 0.729     19.9 %    13.9 %    17.4 % |   0.87   14.0 % |    12.8 %    13.4 %     9.4 %
+  geometric              0.331     20.9 %    21.8 %    14.9 % |   0.88   16.8 % |    16.9 %    18.7 %    11.0 %
 
 best saturating curve on both flows: p-norm, rms 12.8 %
 

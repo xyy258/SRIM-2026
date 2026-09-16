@@ -953,3 +953,16 @@ case P4_T10_r25 finished at 2026-09-03 19:54:40
 [ Info: Simulation is stopping after running for 52.540 minutes.
 [ Info: Simulation time 9.259 days equals or exceeds stop time 9.259 days.
 [ Info: health @ 12.73 T_f: max|⟨w⟩_xy| = 9.714e-21 m/s (= 2.4e-19 U∞); κₑ ∈ [0.000e+00, 2.835e-03] m²/s
+
+==============================================================================
+==== 2026-09-16 16:40:16  P4_T10_r25  (r = 25.0, T = 10.0)
+==============================================================================
+ekmanrun.jl case P4_T10_r25
+  architecture      GPU
+  dimensions        75.0 m x 75.0 m x 150.0 m  (+ 20 m sponge, H = 170 m)
+  grid              100 x 100 x 400   (first centre at z = 0.1182 m)
+  U∞  = 0.0400   f₀ = 1.00e-04   r = N/f = 25.0   N² = 6.250e-06
+  profile 4 (softplus), T = 10.0 m, sharp = 6.0
+  cᴰ  = 0.03621   ν₀ = 1.0e-06   κ₀ = 1.0e-07   Pr = 10
+  duration 1.600e+06 s = 25.46 inertial periods, max Δt = 15 s
+  moments every 314 s, x-z slices off, Avg_* writers ON

@@ -125,15 +125,15 @@ xy(f, cs) = ([med(f(c)) for c in use(cs)], [med(c.L_K) for c in use(cs)])
 
 say("")
 say(@sprintf("fits on the case medians of the %d reliable cases of %d", length(use(BOTH)), length(BOTH)))
-say("  candidate            prop rms: both  Stokes  Ekman |  power b   rms |  saturating: both Stokes Ekman")
+say("  candidate                  A   prop rms: both  Stokes  Ekman |  power b   rms |  saturating: both Stokes Ekman")
 RES = Dict{String,Any}()
 for (nm, f, _) in CANDS
     xb, yb = xy(f, BOTH); xs, ys = xy(f, S_cases); xe, ye = xy(f, E_cases)
     pr = propfit(xb, yb); pw = powfit(xb, yb)
     sb = satfit(xb, yb); ss = satfit(xs, ys); se = satfit(xe, ye)
     RES[nm] = (prop = pr, pow = pw, sat = sb)
-    say(@sprintf("  %-20s %8.1f %% %7.1f %% %7.1f %% | %6.2f %6.1f %% | %7.1f %% %7.1f %% %7.1f %%%s",
-                 nm, pr.rms, propfit(xs, ys).rms, propfit(xe, ye).rms,
+    say(@sprintf("  %-20s %7.3f %8.1f %% %7.1f %% %7.1f %% | %6.2f %6.1f %% | %7.1f %% %7.1f %% %7.1f %%%s",
+                 nm, pr.A, pr.rms, propfit(xs, ys).rms, propfit(xe, ye).rms,
                  pw.b, pw.rms, sb.rms, ss.rms, se.rms, sb.pinned ? "  << PINNED" : ""))
 end
 BEST = argmin(nm -> RES[nm].sat.pinned ? Inf : RES[nm].sat.rms, [c[1] for c in CANDS])
@@ -225,8 +225,8 @@ function candpanel(nm, f, tex)
         end
     end
     annotate!(p, minimum(xb) / 1.4, maximum(yb) * 1.3,
-              text(latexstring(@sprintf("b\\!=\\!1\\!: %.0f\\,\\%%, \\ \\mathrm{sat}\\!: %s",
-                   pr.rms, sa.pinned ? "\\mathrm{pinned}" : @sprintf("%.0f\\,\\%%", sa.rms))),
+              text(latexstring(@sprintf("A = %.3f, \\ b\\!=\\!1\\!: %.0f\\,\\%%, \\ \\mathrm{sat}\\!: %s",
+                   pr.A, pr.rms, sa.pinned ? "\\mathrm{pinned}" : @sprintf("%.0f\\,\\%%", sa.rms))),
                    7, :grey25, :left))
     plot!(p; xticks = logticks(minimum(xb) / 1.6, maximum(xb) * 1.6),
              yticks = logticks(minimum(yb) / 1.6, maximum(yb) * 1.6))

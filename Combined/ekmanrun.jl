@@ -580,7 +580,11 @@ grid = RectilinearGrid(arch;
     x = (0, Lx), y = (0, Ly), z = z_faces)
 
 z₁ = abs(Array(znodes(grid, Center()))[1])      # closest grid centre to the bottom
-cᴰ = (κ / log(z₁ / z₀))^2                       # drag coefficient (κ = von Karman)
+# Z0 overrides Parameters.jl's roughness without touching it — the one knob that
+# raises u_* at fixed U∞, f and N, for testing whether Ri at the layer top is
+# self-regulated. Default is the swept value, so an unset Z0 changes nothing.
+const Z0 = parse(Float64, get(ENV, "Z0", string(z₀)))
+cᴰ = (κ / log(z₁ / Z0))^2                       # drag coefficient (κ = von Karman)
 
 # --- boundary and initial conditions ----------------------------------------
 u_bcs = FieldBoundaryConditions(bottom = BulkDrag(coefficient = cᴰ))

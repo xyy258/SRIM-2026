@@ -95,6 +95,43 @@ of that the eps>0 rule drops Stokes r = 10, 25, 50, and over what is left
 cases against 10.0-10.8 % on 16 with L_s. Keep L_s = sqrt(TKE)/S; L_s/L_N is
 sqrt(Ri) and that is the quantity with the crossing.
 
+A nondimensional reformulation K_T* = K_T N/TKE = f(Ri) was assessed on
+2026-09-16 (numbers in LOG.txt, no figure yet). It is algebraically the same
+model as L_K = A L_harm, so it reproduces 23-24 %, not the saturating form's
+10.7 % — its value is clarity about what the good fit costs, not accuracy. The
+blocking problem is that Ri is an output, not a control: the Ekman S grows with
+N so its Ri is pinned near 10 for r = 1..50 (six of eight cases) while K_T*
+still moves. The tidal column spans Ri over five decades and can carry such a
+law; the rotating one cannot without a run that varies S independently of N.
+
+Built 2026-09-16: plot_KTstar_Ri_stokes_T10.jl, the harmonic law
+nondimensionalised for the Stokes column, K_T* = K_T N/TKE = A sqrt(Ri)/(1+sqrt(Ri))
+at z = h on the background N. A = 0.412, rms 14.7 % over five decades of Ri, both
+asymptotes populated, no length scale anywhere — the cleanest form of the
+two-regime result so far. A local-gradient Ri was tried and dropped: it is
+degenerate at z = h (h IS the 0.1 N2_ref gradient crossing, so N_loc = sqrt(0.1)
+N_bg exactly) and no fixed height is fair either (26-47 % over z = 9-18 m).
+
+THERE IS NO EKMAN VERSION AND THERE CANNOT EASILY BE ONE. S ~ N^1.018 at z = h
+in the rotating column against N^0.281 in the tidal one, so Ekman Ri is pinned
+near 10 while Stokes Ri spans five decades. The tidal layer's thickness is set
+by omega and cannot respond to N; the steady rotating layer equilibrates to a
+marginal Ri at its top. A z-scan (plot_KTstar_Ri_zscan_T10.jl, built
+2026-09-16) DOES fix the range — Ekman spans Ri 8.8e-3 to 4.5e5 — but the
+plateau is NOT universal, A = 0.331 Stokes against 0.149 Ekman, and the collapse
+loosens to 50-52 % because the scan mixes the turbulent interior with the
+quiescent fluid above the layer. Inside the mixed layer Ri is genuinely small
+but db/dz vanishes, so K_T does not exist there and no height fixes that.
+
+RUNNING as of 2026-09-16 16:40, LOCALLY (no cluster access): a rough-bed Ekman
+case, r = 25 with z0 = 0.0137 m instead of 0.0016, so c_D x4 and u_* x2 at fixed
+U_inf, f and N. It asks whether Ri at the layer top is genuinely self-regulated
+or only coincidentally pinned. Output to Combined/Data/rough/ekman (separate
+root — case_dir() names by r alone and would otherwise collide). ~7 h expected
+from a benchmark; the GPU is shared so that may stretch. Appends to
+logs/P4_T10_r25.log under its own banner. ekmanrun.jl gained a Z0 env override
+for it; unset Z0 changes nothing. See the LOG entry for what to look for.
+
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist
 on the Stokes side), because it is the only way to tell whether the Stokes h

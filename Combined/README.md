@@ -386,15 +386,23 @@ unified nothing. `b = 1` is the one-parameter proportionality `L_K = A·L_comb`,
 which is the form a closure would want; `b` free is the same fit with the
 exponent released, as the honesty check.
 
-| candidate | param | b=1 rms (both) | b free slope | **saturating on `L_comb`, both** |
-|---|---|---|---|---|
-| `L_N` alone | — | 79.8 % | 0.65 | 31.9 % |
-| `L_s` alone | — | 62.4 % | 1.03 | 62.2 % |
-| `min(L_N, L_s)` | — | 31.4 % | 0.82 | **10.0 %** |
-| harmonic, equal | — | 23.1 % | 0.88 | **10.8 %** |
-| harmonic, weighted | β = 1.42 | 21.2 % | 0.90 | 11.9 % |
-| p-norm | p = 0.62 | 22.7 % | 0.89 | 13.4 % |
-| geometric | α = 0.42 | 27.2 % | 0.96 | 25.3 % |
+| candidate | param | `A` in `L_K = A L_comb` | b=1 rms (both) | b free slope | **saturating on `L_comb`, both** |
+|---|---|---|---|---|---|
+| `L_N` alone | — | 0.202 | 79.8 % | 0.65 | 31.9 % |
+| `L_s` alone | — | 0.109 | 62.4 % | 1.03 | 62.2 % |
+| `min(L_N, L_s)` | — | 0.282 | 31.4 % | 0.82 | **10.0 %** |
+| harmonic, equal | — | 0.377 | 23.1 % | 0.88 | **10.8 %** |
+| harmonic, weighted | β = 1.42 | 0.433 | 21.2 % | 0.90 | 11.9 % |
+| p-norm | p = 0.62 | 0.532 | 22.7 % | 0.89 | 13.4 % |
+| geometric | α = 0.42 | 0.140 | 27.2 % | 0.96 | 25.3 % |
+
+`A` is the geometric mean of `L_K/L_comb` and is what the black line in each
+panel of `L_K_vs_Lcomb_candidates_T10.png` is drawn with; it is printed on the
+panel next to the rms. It is **not** a quality measure — it says where a
+candidate sits, not how well it collapses — and it is only comparable between
+candidates that put `L_comb` on the same footing. It rises from 0.109 (`L_s`,
+the largest scale, so the smallest ratio) to 0.532 (p-norm), simply because
+each combination is a smaller length than the one before it.
 
 *(16 cases, 2026-09-15. The 13-case version of this table had `L_N` alone at
 14.9 % and the harmonic at 10.4 %.)*
@@ -419,6 +427,119 @@ two are inside each other's noise either way and nothing here separates them;
 the harmonic is kept as the written form for the same reasons as before, but it
 should no longer be called the winner.
 
+
+### The harmonic law read nondimensionally
+
+`1/L_K = 1/L_N + 1/L_s` is a statement about times as much as lengths. Putting
+`L_K = K_T/√TKE`, `L_N = √TKE/N`, `L_s = √TKE/S` into it and clearing `√TKE`:
+
+    TKE / K_T = (N + S) / A        i.e.       K_T* ≡ K_T N / TKE = A √Ri/(1 + √Ri)
+
+since `√Ri = N/S` here, so `S/N = 1/√Ri`. `K_T*` is `τ_K N = τ_K/τ_N`, the
+mixing time in buoyancy times — the left panel of `tau_K_vs_timescales_T10.png`
+normalised. The limits are the two regimes: `Ri → ∞` gives `K_T → TKE/N`
+(stratification-limited) and `Ri → 0` gives `K_T → TKE/S` (shear-limited).
+
+**This is a change of variables, not a change of model.** Fitting
+`K_T* = A√Ri/(1+√Ri)` has the same log residuals as fitting `L_K = A L_harm` —
+measured 24.0 % against 23.1 %, the gap being only the per-sample median
+convention. It cannot improve on the dimensional fit and does not.
+
+What it makes visible is where the dimensions actually are. `A` was always
+dimensionless; the dimensional constants are in the **saturating** form,
+`L_∞ = 2.004 m` and `x₀ = 4.498 m`, and those have no nondimensional
+expression. So the choice is 23–24 % with a clean law or 10.7 % with two
+unexplained lengths — see the 2026-09-16 entry in `LOG.txt` for why a freer
+`f(Ri)` does not close that gap (m free gives 23.3 %), why `f` is not universal
+across the two flows (~21 % offset), and why the Ekman column cannot span `Ri`.
+
+### Built: `K_T*` against `Ri`, Stokes only
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_KTstar_Ri_stokes_T10.jl
+```
+
+`figures/KTstar_vs_Ri_stokes_T10.png`. One panel: the pure harmonic form with
+one free constant, `K_T* = A√Ri/(1+√Ri)`, at `z = h` on the background
+`N = r·ω`.
+
+`K_T* = 0.412 √Ri/(1+√Ri)`, **rms 14.7 %** on eight cases, `Ri` from 0.0043 to
+263 (×61 000).
+
+**The background version works.** 14.7 % on eight cases with one dimensionless
+constant and no length scale anywhere, and both asymptotes are populated: the
+low-`Ri` cases lie on `K_T* = A√Ri` (`K_T → TKE/S`, shear-limited) and the
+high-`Ri` ones flatten onto `K_T* = A` (`K_T → TKE/N`, stratification-limited),
+with the knee at `Ri ≈ 1` where it belongs. It is the same model as
+`L_K = A L_harm`, so 14.7 % is the Stokes-only proportionality rms rather than
+an improvement — the gain is interpretive, and it is a real one.
+
+**A local gradient `Ri` was tried and dropped.** It cannot be taken at `z = h`:
+`h` is *defined* as the height where `∂b/∂z` crosses `0.1 N²_ref`, so the
+gradient there is identically `0.1 N²_bg` (measured, `0.100000`, min = max =
+median over every sample of every case) and a "local" `Ri` is exactly
+`0.1 × Ri_bg`. At a fixed height the gradient is free but no single height sits
+at the same place in the flow for every case — median `h` runs 8.6 to 11.3 m —
+so it fits worse: 26.3 % at the best height (`z = 10 m = T`), and 30–47 % over
+9–18 m. Inside the layer the gradient falls under the mask and `K_T` is
+discarded; above it `S` dies and `√Ri` runs away. The numbers are in `LOG.txt`.
+
+The panel carries a note that `K_T* ∝ N` and `Ri ∝ N²` share `N`, so some
+correlation is built in, exactly as `L_K` vs `L_harm` shares `√TKE`.
+
+### Why this is Stokes only
+
+`S` at `z = h`, fitted over the equilibrated range `r ≥ 1`:
+
+| flow | `S ∝ N^p` | `S` spread over a ×250 change in `N` | so `Ri ∝ N^(2(1−p))` |
+|---|---|---|---|
+| Stokes | `p = 0.281` | ×3.3 | `Ri ∝ N^1.44` — spans 5 decades |
+| Ekman | **`p = 1.018`** | ×58 | `Ri ∝ N^(−0.04)` — **pinned near 10** |
+
+**The tidal layer has an externally imposed clock and the rotating layer does
+not.** `h = 1.05 u_*/ω (1+N²/ω²)^(−0.020)` is almost stratification-blind: `ω`
+sets the thickness, `N` gets no time to act, `S` stays put and `Ri` tracks `N`.
+The steady rotating layer has no such clock, so it equilibrates — and
+equilibration means adjusting until `Ri` at the layer top reaches a marginal
+value. That is self-regulation, a result rather than a defect.
+
+### The height scan — `plot_KTstar_Ri_zscan_T10.jl`
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_KTstar_Ri_zscan_T10.jl
+```
+
+`figures/KTstar_vs_Ri_zscan_T10.png`. One point per (case, height) rather than
+one per case, everything local: `N = √(⟨∂b/∂z⟩)` at `z`, `S` at `z`, `K_T` and
+`TKE` at `z`. Heights are fractions of each case's median `h` (0.6 → 3.0), so
+the scan sits at the same place in the flow for every case; a point is kept only
+where `∂b/∂z` clears the `0.05 N²_ref` mask in at least half its samples.
+
+| set | `A` | rms | `n` | `Ri` range |
+|---|---|---|---|---|
+| both | 0.217 | 65.0 % | 95 | 5.5×10⁻⁴ → 7.0×10⁶ |
+| Stokes | 0.331 | 50.3 % | 45 | 5.5×10⁻⁴ → 7.0×10⁶ |
+| Ekman | 0.149 | 52.3 % | 50 | 8.8×10⁻³ → 4.5×10⁵ |
+
+**The range problem is solved** — Ekman goes from `Ri` 0.44–12.8 at `z = h` to
+eight decades, so an Ekman version of the figure does exist.
+
+**But the plateau is not universal**: `A` = 0.331 for Stokes against 0.149 for
+Ekman, a factor 2.2, with the Ekman points sitting below the Stokes ones
+throughout. Whatever `K_T*` saturates at, it is not the same number in the two
+flows.
+
+**And the collapse is much looser**, 50–52 % per flow against 14.7 %. The scan
+buys range by mixing two regions — the turbulent layer interior and the
+quiescent fluid above it, where `S` has died and `Ri` runs to 10⁵–10⁶. Those are
+not the same physics, and at the top end the points keep climbing rather than
+flattening, so the plateau is not clean.
+
+What stays out of reach either way is the **well-mixed interior**, where `Ri` is
+genuinely small: there is no gradient there, so `K_T = −F_b/⟨∂b/∂z⟩` does not
+exist, and no choice of height changes that.
 
 ## The one-figure summary
 
@@ -789,15 +910,20 @@ the cluster of Stokes circles sitting off the line in the `L_C alone` panel.
 
 ### What the candidate table says
 
-| candidate | b=1 rms both | power `b` | **saturating, both** | Stokes | Ekman |
-|---|---|---|---|---|---|
-| `L_N` alone | 82.0 % | 0.54 | 35.2 % | 6.8 % | 7.1 % |
-| `L_C` alone | 33.5 % | 0.88 | 31.0 % | 27.1 % | 14.9 % |
-| `min(L_N, L_C)` | 32.6 % | 0.89 | 29.9 % | 25.4 % | 13.8 % |
-| harmonic, equal | 20.3 % | 0.87 | 13.8 % | 12.6 % | 9.5 % |
-| harmonic, weighted (β = 0.88) | 20.0 % | 0.87 | **12.8 %** | 12.4 % | 9.3 % |
-| p-norm (p = 0.82) | 19.9 % | 0.87 | **12.8 %** | 13.4 % | 9.4 % |
-| geometric (α = 0.25) | 20.9 % | 0.88 | 16.9 % | 18.7 % | 11.0 % |
+| candidate | `A` | b=1 rms both | power `b` | **saturating, both** | Stokes | Ekman |
+|---|---|---|---|---|---|---|
+| `L_N` alone | 0.175 | 82.0 % | 0.54 | 35.2 % | 6.8 % | 7.1 % |
+| `L_C` alone | 0.418 | 33.5 % | 0.88 | 31.0 % | 27.1 % | 14.9 % |
+| `min(L_N, L_C)` | 0.422 | 32.6 % | 0.89 | 29.9 % | 25.4 % | 13.8 % |
+| harmonic, equal | 0.643 | 20.3 % | 0.87 | 13.8 % | 12.6 % | 9.5 % |
+| harmonic, weighted (β = 0.88) | 0.591 | 20.0 % | 0.87 | **12.8 %** | 12.4 % | 9.3 % |
+| p-norm (p = 0.82) | 0.729 | 19.9 % | 0.87 | **12.8 %** | 13.4 % | 9.4 % |
+| geometric (α = 0.25) | 0.331 | 20.9 % | 0.88 | 16.9 % | 18.7 % | 11.0 % |
+
+`A` here is a third of the way to being a result on its own: `L_C` alone gives
+`A` = 0.418 against 0.109 for `L_s` alone, so `L_K` is about 0.4 `L_C` but only
+0.1 `L_s`. The Corrsin scale sits much closer to the mixing length than the
+shear scale does, which is the other half of why it looks better one-on-one.
 
 Two things to read off it.
 

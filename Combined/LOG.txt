@@ -398,14 +398,21 @@
 #
 # --- the fits, for the record ---
 #
-#   candidate              b=1 both   sat both   sat Stokes   sat Ekman
-#   L_N alone                82.0 %     35.2 %       6.8 %       7.1 %
-#   L_C alone                33.5 %     31.0 %      27.1 %      14.9 %
-#   min(L_N, L_C)            32.6 %     29.9 %      25.4 %      13.8 %
-#   harmonic, equal          20.3 %     13.8 %      12.6 %       9.5 %
-#   harmonic, weighted       20.0 %     12.8 %      12.4 %       9.3 %   b = 0.88
-#   p-norm                   19.9 %     12.8 %      13.4 %       9.4 %   p = 0.82
-#   geometric                20.9 %     16.9 %      18.7 %      11.0 %   a = 0.25
+#   candidate            A     b=1 both   sat both   sat Stokes   sat Ekman
+#   L_N alone          0.175     82.0 %     35.2 %       6.8 %       7.1 %
+#   L_C alone          0.418     33.5 %     31.0 %      27.1 %      14.9 %
+#   min(L_N, L_C)      0.422     32.6 %     29.9 %      25.4 %      13.8 %
+#   harmonic, equal    0.643     20.3 %     13.8 %      12.6 %       9.5 %
+#   harmonic, weighted 0.591     20.0 %     12.8 %      12.4 %       9.3 %   b = 0.88
+#   p-norm             0.729     19.9 %     12.8 %      13.4 %       9.4 %   p = 0.82
+#   geometric          0.331     20.9 %     16.9 %      18.7 %      11.0 %   a = 0.25
+#
+# A = geomean(L_K/L_comb), the constant the black line in each panel is drawn
+# with; both candidate figures now print it on the panel (2026-09-16). It says
+# where a candidate sits, not how well it collapses. L_C alone gives A = 0.418
+# against 0.109 for L_s alone — L_K is ~0.4 L_C but only ~0.1 L_s, so the
+# Corrsin scale sits far closer to the mixing length than the shear scale does.
+# That is the other half of why it looks better one-on-one.
 #
 # L_C ALONE IS A BETTER SHEAR SCALE THAN L_s ALONE — 33.5 % against 62.4 % on
 # the proportionality, natural exponent 0.88 against 1.03. It carries real
@@ -426,6 +433,231 @@
 # section, not the scale to build the model on.
 
 
+## Nondimensional K_T* = f(Ri): checked, not yet built        (2026-09-16)
+
+# Proposal: drop the dimensional fits and work with K_T* = K_T N / TKE against
+# Ri. It comes straight out of the harmonic law with A = 1,
+#     1/L_K = 1/L_N + 1/L_s   =>   TKE/K_T = N + S   =>   K_T* = 1/(1 + S/N)
+# and since sqrt(Ri) = N/S in this folder's convention, S/N = 1/sqrt(Ri), so
+#     K_T* = sqrt(Ri)/(1 + sqrt(Ri)),  or  A*sqrt(Ri)/(1+sqrt(Ri)) with A free.
+# (The proposal as written had S/N = sqrt(Ri), which is inverted and flips both
+# limits. With the correct sign: Ri -> inf gives K_T -> TKE/N, stratification-
+# limited; Ri -> 0 gives K_T -> TKE/S, shear-limited. Both right.)
+#
+# K_T* = (K_T/TKE)*N = tau_K/tau_N, the mixing time in buoyancy times — i.e.
+# the left panel of tau_K_vs_timescales_T10.png, normalised. No new data needed.
+#
+# --- IT IS A CHANGE OF VARIABLES, NOT A CHANGE OF MODEL ---
+#
+# Fitting K_T* = A sqrt(Ri)/(1+sqrt(Ri)) is ALGEBRAICALLY IDENTICAL to fitting
+# L_K = A L_harm: the log residuals are the same expression. Measured 24.0 %
+# against the 23.1 % of the dimensional proportionality — the gap is only the
+# per-sample median convention. So nondimensionalising cannot improve the fit.
+# What it does do is make the real cost visible: A was ALREADY dimensionless
+# (both sides are lengths). The dimensional constants live in the SATURATING
+# form, L_inf = 2.004 m and x0 = 4.498 m, and those have no nondimensional
+# expression at all. The choice is 23-24 % with a clean law or 10.7 % with two
+# unexplained lengths. That is worth having stated plainly.
+#
+# --- three findings from testing it on the 16 cases ---
+#
+# 1. A FREER f BUYS NOTHING. K_T* = A Ri^(m/2)/(1+Ri^(m/2)) with m free gives
+#    m = 1.08, rms 23.3 % against 24.0 % at m = 1. Pure power 28.1 %. The
+#    harmonic exponent is already the right one; there is no better simple f.
+#
+# 2. f(Ri) IS NOT UNIVERSAL ACROSS THE TWO FLOWS. Against a common fit the
+#    Stokes cases sit at median 1.123 and the Ekman at 0.926, ~21 % apart. At
+#    almost identical Ri (Stokes r=5, Ri=10.94, K*=0.331; Ekman r=5, Ri=10.95,
+#    K*=0.289) the two differ by 15 %. Something other than Ri is in play.
+#    Per flow: Stokes 14.7 %, Ekman 26.2 %.
+#
+# 3. *** Ri IS NOT AN INDEPENDENT KNOB, AND THE EKMAN COLUMN BARELY SPANS IT. ***
+#    Stokes Ri runs 0.0043 to 263 (x61000). Ekman runs 0.44 to 12.8 (x29), and
+#    for r = 1..50 — six of its eight cases — Ri sits between 8 and 13 while
+#    K_T* moves 0.235 -> 0.375. It is not even monotonic: r = 50 has the LOWEST
+#    Ri of that group (8.05) and the HIGHEST K_T* (0.375). The cause is that S
+#    is an output, not a control: in the rotating layer S grows with N (S ~ N
+#    above r ~ 1), so Ri saturates near 10. Changing r does not change Ri there.
+#
+# So the tidal column can carry a nondimensional law over five decades of Ri and
+# the rotating column cannot carry one at all. That is physics, not analysis —
+# no reprocessing fixes it. Giving the Ekman column leverage on Ri means varying
+# something that moves S independently of N (U_inf, or the drag), i.e. new runs.
+#
+# --- if it is built, two things to get right ---
+#
+# N here is the BACKGROUND r*omega, not the local sqrt(<db/dz>) at z = h, so
+# "Ri" is not the gradient Richardson number the Munk-Anderson / Pacanowski-
+# Philander / KPP literature means. The local gradient is available (the Ekman
+# reduction stores dBdz; the Stokes moments store the gradient too) and using it
+# would make the comparison to that literature legitimate.
+#
+# But BEWARE SELF-CORRELATION. Do NOT recover the gradient as -F_b/K_T: that
+# puts K_T on both axes and manufactures the relationship. Even taken from the
+# stored gradient, K_T* ~ N and Ri ~ N^2 share N, so some correlation is built
+# in. The dimensional L_K vs L_harm plot has the same issue through sqrt(TKE),
+# but it is sharper here and should be stated when the figure is made.
+
+
+## K_T* vs Ri, Stokes: the background form works                (2026-09-16)
+
+# plot_KTstar_Ri_stokes_T10.jl -> figures/KTstar_vs_Ri_stokes_T10.png.
+# Stokes only, pure harmonic form with one free constant,
+#     K_T* = K_T N/TKE = A sqrt(Ri)/(1 + sqrt(Ri)).
+# Left: z = h, background N = r*omega. Right: z = ZFIX = 10 m fixed, local
+# N = sqrt(<db/dz>) there, with K_T, TKE and S all taken at the same height.
+# The gradient is read from dBdz in the mixing file, NOT from -F_b/K_T, so K_T
+# is not on both axes.
+#
+#   z = h,  background N    A = 0.412   rms 14.7 %   Ri 0.0043 to 263
+#   z = 10 m, local N       A = 0.265   rms 26.3 %   Ri 0.0022 to 2467
+#
+# --- THE BACKGROUND VERSION WORKS ---
+#
+# 14.7 % on eight cases with ONE dimensionless constant and no length scale
+# anywhere, and both asymptotes are populated: the low-Ri cases sit on
+# K_T* = A sqrt(Ri) (K_T -> TKE/S, shear-limited) and the high-Ri ones flatten
+# onto K_T* = A (K_T -> TKE/N, stratification-limited), with the knee at Ri ~ 1
+# where it belongs. Cleanest statement of the two-regime picture so far.
+# Worst case r = 2 at +28 %, then r = 0.2 at -26 %; the rest inside 10 %.
+#
+# Same model as L_K = A L_harm, so 14.7 % is the Stokes-only proportionality
+# rms, not an improvement. The gain is interpretive, and it is real.
+#
+# --- *** A LOCAL Ri CANNOT BE TAKEN AT z = h *** ---
+#
+# h IS DEFINED as the height where db/dz crosses H_LEVEL = 0.1 of N2_ref
+# (mixed_layer_height.jl, H_DEF = crossing). Measured, db/dz at z = h over
+# N2_ref is 0.100000 with min = max = median across every sample of every case.
+# So N_loc(h) = sqrt(0.1) N_bg exactly, Ri_loc = 0.1 Ri_bg, and a "local" panel
+# at z = h is the background panel translated along the 1:1 diagonal — not
+# independent data. Hence the fixed height.
+#
+# --- THE FIXED-HEIGHT VERSION WAS TRIED AND DROPPED ---
+#
+# At z = 10 m (= T, the pycnocline height) the gradient is free and Ri spans six
+# decades, 0.0022 to 2467, but the fit is 26.3 % against 14.7 %. Height scan:
+#     9 m 30.2 %   10 m 26.3 %   11 m 36.3 %   12 m 47.2 %   15 m 43.6 %   18 m 43.6 %
+# NO FIXED HEIGHT IS A FAIR ONE. Median h runs 8.6 to 11.3 m, so a fixed z is
+# inside the layer for some cases and above it for others:
+#   - inside (r = 0.5 to 5): the gradient falls under the 0.05 N2_ref mask and
+#     K_T is thrown away — retention 31-42 % against 82-100 % at the ends
+#   - above (r = 25, 50): S dies, sqrt(Ri) runs away (49.7 at r = 50, 549 by
+#     z = 12 m) and K_T* climbs ABOVE the plateau, r = 50 at 1.47x the fit
+# The figure is now the background-N panel alone. The fixed-height code is gone;
+# the numbers are kept here.
+#
+# --- WHY THE EKMAN COLUMN CANNOT DO THIS (diagnosed 2026-09-16) ---
+#
+# S at z = h, fitted over the equilibrated range r >= 1:
+#     Stokes  S ~ N^0.281      Ekman  S ~ N^1.018
+# Over a x250 change in N, the Stokes S moves x3.3 and the Ekman S moves x58.
+# Since Ri = (N/S)^2 ~ N^(2(1-p)), that is Ri ~ N^1.44 for Stokes and N^(-0.04)
+# for Ekman — pinned.
+#
+# The reason is that the TIDAL LAYER HAS AN EXTERNALLY IMPOSED CLOCK and the
+# ROTATING LAYER DOES NOT. h = 1.05 u_*/omega (1+N^2/omega^2)^(-0.020) is almost
+# stratification-blind: omega sets the thickness and N gets no time to act, so S
+# stays put and Ri tracks N. The steady rotating layer has no such clock, so it
+# equilibrates — and equilibration means adjusting until Ri at the layer top
+# reaches a marginal value, here about 10. It is self-regulation, not a defect
+# in the data.
+#
+# A z-SCAN DOES WIDEN Ekman's Ri RANGE — BUILT 2026-09-16, see below — but only
+# at the top end. Median
+# sqrt(Ri) = N/S(z) against height, with the fraction of samples where db/dz
+# clears the 0.05 N2_ref mask (so K_T exists at all):
+#     r = 0.2   z = 2-10 m: sqrt(Ri) 0.01-0.06, 0 % usable;  z = 25 m: 1.21, 100 %
+#     r = 50    z = 2-6 m:  sqrt(Ri) 1.2-2.7,   0 % usable;  z = 25 m: 1075, 100 %
+# Inside the mixed layer Ri IS small — which is the regime wanted — but there is
+# no gradient there, so K_T = -F_b/<db/dz> does not exist. Everywhere K_T exists,
+# Ri is already large. Accessible range is roughly Ri 0.14 to 1e6, all of it on
+# the stratification-limited side. THE SHEAR-LIMITED LIMB THAT MAKES THE STOKES
+# FIGURE WORK IS NOT REACHABLE IN THE EKMAN COLUMN BY REPROCESSING.
+
+# --- what still stands ---
+#
+# Stokes spans Ri over five decades on the background N (x61000), which is why
+# the Stokes-only version works at all; the Ekman column is pinned near Ri ~ 10
+# (previous entry) and was left out deliberately. Self-correlation is noted on
+# the figure: K_T* ~ N and Ri ~ N^2 share N, exactly as L_K vs L_harm shares
+# sqrt(TKE).
+
+
+## The height scan: range yes, universality no                   (2026-09-16)
+
+# plot_KTstar_Ri_zscan_T10.jl -> figures/KTstar_vs_Ri_zscan_T10.png.
+# One point per (case, height) instead of one per case, everything local:
+# N = sqrt(<db/dz>) at z, S at z, K_T and TKE at z. Heights are fractions of
+# each case's median h (0.6 to 3.0) so the scan is at the same place in the flow
+# for every case. A point is kept only where db/dz clears the 0.05 N2_ref mask
+# in at least half the samples. Both flows, same treatment.
+#
+#   both     A = 0.217   rms 65.0 %   n = 95   Ri 5.5e-4 to 7.0e6
+#   Stokes   A = 0.331   rms 50.3 %   n = 45   Ri 5.5e-4 to 7.0e6
+#   Ekman    A = 0.149   rms 52.3 %   n = 50   Ri 8.8e-3 to 4.5e5
+#
+# THE RANGE PROBLEM IS SOLVED. Ekman goes from Ri 0.44-12.8 at z = h to eight
+# decades. So there IS an Ekman version of the figure.
+#
+# THE PLATEAU IS NOT UNIVERSAL. A = 0.331 for Stokes against 0.149 for Ekman, a
+# factor 2.2, and the Ekman points sit visibly below the Stokes ones everywhere.
+# Whatever K_T* saturates at, it is not the same number in the two flows.
+#
+# AND THE COLLAPSE IS MUCH LOOSER: 50-52 % per flow against 14.7 % for the
+# Stokes z = h background-N version. The scan buys range by mixing two different
+# regions — the turbulent layer interior and the quiescent fluid above it, where
+# S has died and Ri runs to 1e5-1e6. Those are not the same physics and the
+# saturating form should not be expected to hold across both. At the top end the
+# points keep climbing rather than flattening, so the plateau is not clean.
+#
+# So the z = h background-N Stokes figure stays the headline. This one answers a
+# narrower question — can the Ekman column be made to span Ri at all (yes), and
+# does it share the Stokes plateau (no).
+#
+# Still unreachable: the well-mixed interior, where Ri is genuinely small. There
+# is no gradient there, so K_T = -F_b/<db/dz> does not exist, and no choice of
+# height changes that.
+
+
+## Rough-bed Ekman run, launched locally               (2026-09-16, RUNNING)
+
+# Testing whether Ri at the Ekman layer top is genuinely self-regulated or only
+# coincidentally pinned. One knob: the bed roughness, which raises u_* at fixed
+# U_inf, f and N — the one control that moves S without moving N.
+#
+#   case      r = 25 (equilibrated: h drift +0.9 %, and sqrt(Ri) = 3.13, i.e.
+#             squarely in the pinned range)
+#   z0        0.0016 -> 0.0137 m, so c_D 0.00908 -> 0.03621 (x4) and the
+#             drag-law u_* 3.81e-3 -> 7.61e-3 m/s (x2)
+#   duration  1.6e6 s = 25.46 T_f, as the lowN Ekman run
+#   output    Combined/Data/rough/ekman  (SEPARATE ROOT — case_dir() names
+#             folders by r alone, so the same root would collide with the
+#             existing r = 25)
+#
+# ekmanrun.jl gained a Z0 env override for this (one line at the drag
+# coefficient). Default is Parameters.jl's z0, so an unset Z0 changes nothing,
+# and nothing in Ekman/ was touched.
+#
+# RUN LOCALLY, not on the cluster — no cluster access at the time. Benchmarked
+# first: 3e4 s of model time took 7.84 min on the RTX 4000 Ada plus ~1.2 min
+# startup, so 1.6e6 s extrapolates to about 7 h. Note the GPU is shared, so that
+# is a contended figure and could stretch.
+#
+# It appends to logs/P4_T10_r25.log under its own banner, which is the designed
+# behaviour but means that log now holds two different physical setups. The
+# banner records c_D, so they can be told apart.
+#
+# WHAT TO LOOK FOR when it lands:
+#   - sqrt(Ri) at z = h still ~3.1  ->  self-regulation confirmed, and the
+#     pinning is a property of the steady rotating layer, not a coincidence.
+#     That is a result worth stating on its own.
+#   - sqrt(Ri) drops towards ~1.6 (the x2 in u_* feeding straight through to S)
+#     ->  Ri is controllable after all, and a second sweep axis opens up for
+#     giving the Ekman column a K_T*(Ri) curve.
+#   - h should grow either way, since h ~ u_*/f.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning
@@ -439,6 +671,11 @@
 #   line COLOUR says which flow, line STYLE says which quantity.
 # - `head` on a Julia pipeline SIGPIPE-kills it before it writes its figures.
 # - @sprintf will not take a format string built with `*`.
+# - "Use the local gradient Richardson number" was recommended without checking
+#   what defines the evaluation height. h is the 0.1 N2_ref gradient crossing,
+#   so the local gradient there is fixed by construction and the local Ri is the
+#   background one times 0.1. Check what a diagnostic height is defined by
+#   before proposing to measure a gradient at it.
 # - Two figures were read as showing the low-N cases pinned against the
 #   pycnocline, and a caveat written from that, without checking the rest of the
 #   sweep for the same thing. It does it too, harder. Look at the comparison

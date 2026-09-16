@@ -173,7 +173,7 @@ say("")
 say("L_K against each candidate scale.  b = 1 is the one-parameter proportionality")
 say("L_K = A·L_comb; b free is the same fit with the exponent released, as a check.")
 say("")
-say("  candidate              param      b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_comb: both  Stokes  Ekman")
+say("  candidate              param          A     b=1 rms:  both  Stokes  Ekman   | b free: slope   rms | saturating on L_comb: both  Stokes  Ekman")
 results = []
 for cd in CANDS
     rv = resolve(cd)
@@ -183,10 +183,10 @@ for cd in CANDS
     push!(results, (cd = cd, par = rv.par, sc = rv.sc, A = fb.A,
                     rms = fb.rms, rms_s = fs.rms, rms_e = fe.rms, b = pw.b, prms = pw.rms,
                     sat = sb, sat_s = ss, sat_e = se))
-    say(@sprintf("  %-22s %-10s %8.1f %% %6.1f %% %6.1f %% | %6.2f  %6.1f %% | %11.1f %% %6.1f %% %6.1f %%%s",
+    say(@sprintf("  %-22s %-10s %7.3f %8.1f %% %6.1f %% %6.1f %% | %6.2f  %6.1f %% | %11.1f %% %6.1f %% %6.1f %%%s",
                  cd.name,
                  cd.grid === nothing ? "—" : @sprintf("%s = %.2f", cd.pname, rv.par),
-                 fb.rms, fs.rms, fe.rms, pw.b, pw.rms, sb.rms, ss.rms, se.rms,
+                 fb.A, fb.rms, fs.rms, fe.rms, pw.b, pw.rms, sb.rms, ss.rms, se.rms,
                  sb.pinned ? "  (sat pinned)" : ""))
 end
 
@@ -219,8 +219,8 @@ function panel(rz)
     # line of maths and has nowhere to put a break.
     ys = [med(c.L_K) for c in BOTH]
     annotate!(p, lo * 1.25, maximum(ys) * 1.15,
-              text(latexstring(@sprintf("b{=}1\\!:\\ %.0f\\,\\%%, \\ \\ b\\ \\mathrm{free}\\!:\\ %.2f, \\ \\ \\mathrm{sat}\\!:\\ %.0f\\,\\%%",
-                                        rz.rms, rz.b, rz.sat.rms)), 6, :grey25, :left))
+              text(latexstring(@sprintf("A = %.3f, \\ \\ b{=}1\\!:\\ %.0f\\,\\%%, \\ \\ b\\ \\mathrm{free}\\!:\\ %.2f, \\ \\ \\mathrm{sat}\\!:\\ %.0f\\,\\%%",
+                                        rz.A, rz.rms, rz.b, rz.sat.rms)), 6, :grey25, :left))
     plot!(p, xx, rz.A .* xx; color = :black, lw = 2.0)
     rz.sat.pinned || plot!(p, xx, rz.sat.L .* (1 .- exp.(-xx ./ rz.sat.x0));
                            color = "#c46a1f", lw = 1.8, ls = :dash)
