@@ -731,6 +731,100 @@ is now 10.8 % against 10.7 % rather than 11.1 % against 10.4 % — but the verdi
 is the same, and it is the same verdict for the same reason: nothing is bought.
 
 
+## The same study with the Corrsin scale — `plot_corrsin_scales_T10.jl`
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot_corrsin_scales_T10.jl   # reads both caches
+```
+
+The `L_N`/`L_s` study redone with `L_C = (ε/S³)^(1/2)` in place of
+`L_s = √TKE/S`, to ask whether the Corrsin scale is the better shear-side
+partner for `L_N`. Three figures, mirroring the `L_s` ones:
+
+| figure | the `L_s` original |
+|---|---|
+| `L_N_L_C_vs_r_T10.png` | `L_N_L_s_vs_r_T10.png` |
+| `L_K_vs_Lcomb_corrsin_T10.png` | `L_K_vs_Lcomb_candidates_T10.png` |
+| `L_K_vs_Lbest_corrsin_T10.png` | `L_K_vs_Lharm_T10.png` |
+
+Everything comes from the two existing caches — `Data/corrsin_T10.jld2` for the
+Stokes per-sample `S`, `ε` and `Data/ekman_lengthscales_T10_moments.jld2` for
+the Ekman ones — so `L_K`, `L_N`, `L_s` and `L_C` are all built from the same
+`K_T`, `TKE`, `S`, `ε` on one sample basis. A case is used only if `ε > 0` in at
+least half its samples, the same rule as `plot_l_vs_corrsin_T10.jl`, which
+leaves **13 of 16**: Stokes `r` = 10, 25 and 50 are out.
+
+### The answer: `L_C` does not give the two-regime structure
+
+The idea being tested is that `L_N` limits the mixing at strong stratification
+and a shear scale limits it at weak. With `L_s` that is exactly what the data
+show — `L_s/L_N = √Ri` crosses 1 cleanly and monotonically, and keeps going, to
+×15.6 by Stokes `r = 50`. With `L_C` it does not happen:
+
+| flow | `L_C/L_N` across the reliable sweep | `L_s/L_N` |
+|---|---|---|
+| Stokes (`r` ≤ 5) | 0.031 → 0.997, never above 1 | 0.068 → 3.5, crosses at `r ≈ 1.3` |
+| Ekman (all) | 0.216 → 0.997, peak 0.997, back to 0.840 | 0.663 → 3.6, crosses at `r ≈ 0.35` |
+
+**`L_C` is the smaller of the two scales in every reliable case.** Since
+`w_C = L_harm/L_C = 1/(1 + L_C/L_N)`, that puts the Corrsin share at or above ½
+everywhere — there is no `r` at which `L_N` takes over. The two Stokes points
+that do exceed 1 (`r` = 10 at 1.13 and `r` = 50 at 1.28) are ε-unusable cases,
+and they are not monotonic (`r` = 25 falls back to 0.55), so they are the ε
+estimate failing, not a crossing.
+
+**And the Stokes column cannot test it anyway.** Over the range where ε is
+usable (`r` ≤ 5), the scales move by:
+
+| | `L_N` | `L_s` | `L_C` | `L_K` |
+|---|---|---|---|---|
+| Stokes, `r` ≤ 5 | ×46.0 | ×1.31 | ×1.52 | ×2.9 |
+| Stokes, all 8 | ×535 | ×3.27 | ×13.8 | ×28.0 |
+| Ekman, all 8 | ×121 | ×28.1 | ×31.0 | ×26.8 |
+
+`L_C` changes by half as much as `L_K` does across the usable Stokes range, and
+the ε cut removed exactly the three cases where it would have varied. That is
+the cluster of Stokes circles sitting off the line in the `L_C alone` panel.
+
+### What the candidate table says
+
+| candidate | b=1 rms both | power `b` | **saturating, both** | Stokes | Ekman |
+|---|---|---|---|---|---|
+| `L_N` alone | 82.0 % | 0.54 | 35.2 % | 6.8 % | 7.1 % |
+| `L_C` alone | 33.5 % | 0.88 | 31.0 % | 27.1 % | 14.9 % |
+| `min(L_N, L_C)` | 32.6 % | 0.89 | 29.9 % | 25.4 % | 13.8 % |
+| harmonic, equal | 20.3 % | 0.87 | 13.8 % | 12.6 % | 9.5 % |
+| harmonic, weighted (β = 0.88) | 20.0 % | 0.87 | **12.8 %** | 12.4 % | 9.3 % |
+| p-norm (p = 0.82) | 19.9 % | 0.87 | **12.8 %** | 13.4 % | 9.4 % |
+| geometric (α = 0.25) | 20.9 % | 0.88 | 16.9 % | 18.7 % | 11.0 % |
+
+Two things to read off it.
+
+**`L_C` alone really is a better shear-side scale than `L_s` alone** — 33.5 %
+against 62.4 % on the proportionality, and its natural exponent is 0.88 rather
+than 1.03. `L_C` carries information `L_s` does not.
+
+**But combining with `L_C` is worse than combining with `L_s`, on fewer cases**:
+12.8 % on 13 cases against 10.0 % (`min`) and 10.8 % (harmonic) on 16. And
+`min(L_N, L_C)` at 29.9 % is barely different from `L_C` alone at 31.0 %, which
+is the same statement as above — the minimum is `L_C` almost everywhere, so
+taking it adds nothing.
+
+**The combination does still beat `L_N` alone** (35.2 % → 12.8 %), so `L_C` is
+not useless. But the mechanism is the reverse of the one being tested: `L_C` is
+the smaller scale everywhere yet nearly flat across the Stokes column, so it is
+`L_N` that supplies the case-to-case variation there. That is not "stratification
+limits at high `N`, shear limits at low `N`" — it is two scales that happen to
+combine well for a different reason.
+
+**Where this leaves the approach.** The two-regime idea is well supported, but
+by `L_s`, not `L_C`: `L_s/L_N = √Ri` is the quantity with a clean crossing, a
+physical interpretation, and the better collapse on the full 16 cases. `L_C` is
+worth keeping as the independent check it already was in the Corrsin section —
+it is not the shear scale to build the model on.
+
+
 ## Re-running the weakly stratified end — `swirles.sh`
 
 `L_s/L_N = N/S = √Ri`, so the `L_s = L_N` crossing on

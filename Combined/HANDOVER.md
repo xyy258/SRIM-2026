@@ -48,6 +48,11 @@ STANDING RULES:
   / next step / new gotchas), README.md (the reasoning and the detail) and
   LOG.txt (a dated entry in the narrative). Not at the end of a session — after
   each task, as part of it.
+- Keep code CONCISE with MINIMAL comments — aim for the style of
+  Ekman/3D Simulation/Ekman 3D.jl: short single-line comments where something
+  is not obvious, and nothing else. Do not write essay headers. (The older
+  Combined/ scripts are heavily commented; that is not the target, and new code
+  should not copy it.)
 - Run Julia from inside Combined/ with --project=. (--project=.. is empty).
 - One figure per question. Extra diagnostics go in the log file, not more panels.
 - Every plotting script opens with default(dpi = 600, fontfamily = "DejaVu
@@ -80,6 +85,15 @@ THREE THINGS MOVED, and they are the ones to know:
     noise. The harmonic is still the written form, but it is no longer a winner.
   - The δ model still does NOT work (δ = h gives 10.8 % against 10.7 %
     unscaled). Verdict unchanged, margin narrower. See stage 3 in LOG.txt.
+
+The Corrsin scale was tried as the shear-side partner for L_N on 2026-09-16
+(plot_corrsin_scales_T10.jl, three figures). IT DOES NOT WORK and the reason is
+worth keeping: L_C/L_N never crosses 1 in any reliable case, so the Corrsin
+scale is always the smaller and there is no regime where L_N takes over. On top
+of that the eps>0 rule drops Stokes r = 10, 25, 50, and over what is left
+(r <= 5) L_C moves only x1.52 while L_K moves x2.9. Combined fit 12.8 % on 13
+cases against 10.0-10.8 % on 16 with L_s. Keep L_s = sqrt(TKE)/S; L_s/L_N is
+sqrt(Ri) and that is the quantity with the crossing.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist

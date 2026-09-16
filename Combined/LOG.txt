@@ -371,6 +371,61 @@
 # each other. They compute them now.
 
 
+## L_C in place of L_s: the regime structure does not survive     (2026-09-16)
+
+# plot_corrsin_scales_T10.jl redoes the L_N/L_s study with the Corrsin scale
+# L_C = (eps/S^3)^(1/2) as the shear-side partner. Three figures:
+# L_N_L_C_vs_r_T10.png, L_K_vs_Lcomb_corrsin_T10.png, L_K_vs_Lbest_corrsin_T10.png.
+# Nothing new is read — L_K, L_N, L_s and L_C all come off the existing
+# corrsin_T10.jld2 and ekman_lengthscales_T10_moments.jld2 on one sample basis.
+# 13 of 16 cases, the eps>0 rule of plot_l_vs_corrsin_T10.jl.
+#
+# --- the answer is no, and for two separate reasons ---
+#
+# 1. L_C IS THE SMALLER SCALE IN EVERY RELIABLE CASE. L_C/L_N runs 0.031 -> 0.997
+# in Stokes and 0.216 -> 0.997 -> 0.840 in Ekman, and never crosses 1. The shear
+# share w_C = 1/(1 + L_C/L_N) is therefore >= 1/2 everywhere by construction —
+# there is no r at which L_N takes over. The only values above 1 are Stokes
+# r = 10 (1.13) and r = 50 (1.28), both eps-unusable, and non-monotonic
+# (r = 25 falls back to 0.55). That is the eps estimate failing, not a crossing.
+# With L_s the crossing is clean, monotonic, and keeps going to x15.6.
+#
+# 2. THE STOKES COLUMN CANNOT TEST IT. Over r <= 5, where eps is usable, the
+# case medians move by L_N x46.0, L_s x1.31, L_C x1.52, L_K x2.9. L_C moves half
+# as much as the quantity it is meant to explain, and the eps cut removed
+# exactly the three cases where it would have varied (over all eight it is
+# x13.8). That is the Stokes cluster sitting off the line in the L_C panel.
+#
+# --- the fits, for the record ---
+#
+#   candidate              b=1 both   sat both   sat Stokes   sat Ekman
+#   L_N alone                82.0 %     35.2 %       6.8 %       7.1 %
+#   L_C alone                33.5 %     31.0 %      27.1 %      14.9 %
+#   min(L_N, L_C)            32.6 %     29.9 %      25.4 %      13.8 %
+#   harmonic, equal          20.3 %     13.8 %      12.6 %       9.5 %
+#   harmonic, weighted       20.0 %     12.8 %      12.4 %       9.3 %   b = 0.88
+#   p-norm                   19.9 %     12.8 %      13.4 %       9.4 %   p = 0.82
+#   geometric                20.9 %     16.9 %      18.7 %      11.0 %   a = 0.25
+#
+# L_C ALONE IS A BETTER SHEAR SCALE THAN L_s ALONE — 33.5 % against 62.4 % on
+# the proportionality, natural exponent 0.88 against 1.03. It carries real
+# information. But COMBINED it is worse and on fewer cases: 12.8 % on 13 against
+# 10.0 % (min) and 10.8 % (harmonic) on 16. And min(L_N, L_C) at 29.9 % is
+# indistinguishable from L_C alone at 31.0 %, which is point 1 restated — the
+# minimum is L_C almost everywhere, so taking it buys nothing.
+#
+# The combination still beats L_N alone (35.2 % -> 12.8 %), so L_C is not
+# useless. But the mechanism is REVERSED from the one being tested: L_C is the
+# smaller scale everywhere yet nearly flat across Stokes, so it is L_N that
+# supplies the variation there. Not "stratification limits at high N, shear at
+# low N" — two scales combining well for another reason.
+#
+# VERDICT: keep L_s. The two-regime idea is well supported, but by sqrt(Ri),
+# which has the clean crossing, the interpretation, and the better collapse on
+# all 16 cases. L_C stays what it was, an independent check in the Corrsin
+# section, not the scale to build the model on.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning
@@ -402,7 +457,9 @@
 # - CLOSED 2026-09-15. The shear-limited regime is now four cases in sixteen
 #   and the Ri = 1 crossing is bracketed by data in both flows. What is left
 #   open is narrower: min(L_N, L_s) and L_harm are now within noise of each
-#   other (10.0 % against 10.8 %), and nothing here separates them.
+#   other (10.0 % against 10.8 %), and nothing here separates them. L_C was
+#   tried as the shear scale on 2026-09-16 and does not separate them either —
+#   it has no crossing at all.
 # - Stokes r = 1 and 2 discard 28 % of the tidal cycle to counter-gradient flux,
 #   and they are the two points that most influence every fit here.
 # - Why the Ekman TKE profiles fan out on delta while the Stokes ones collapse.
