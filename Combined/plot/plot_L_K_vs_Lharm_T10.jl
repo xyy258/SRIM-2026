@@ -27,7 +27,7 @@
 # The weight is not a fitted quantity. It is arithmetic on L_N and L_s, so the
 # right panel is data, not interpretation.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_L_K_vs_Lc_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_L_K_vs_Lharm_T10.jl
 #        (run plot_shear_scales_T10.jl first — it writes the cache)
 
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
@@ -37,8 +37,8 @@ get!(ENV, "GKSwstype", "100")
 # LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
-const HERE   = @__DIR__
-const CACHE  = joinpath(HERE, "Data", "shear_scales_T10.jld2")
+const HERE   = dirname(@__DIR__)        # scripts live one level down
+const CACHE  = joinpath(HERE, "Data", "cache", "shear_scales_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"

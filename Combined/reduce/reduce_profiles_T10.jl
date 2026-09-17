@@ -30,15 +30,15 @@
 # by a constant per flow, which B1 absorbs in stage 3 — but it matters for
 # reading delta/h against the published constants.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce_profiles_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce/reduce_profiles_T10.jl
 #        ~6 min. Writes Data/profiles_T10.jld2.
 
 using Oceananigans, JLD2, Printf, Statistics
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))    # SVALS, RATIOS, stokes_case, ekman_case
-const EKRED  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
-const OUT    = joinpath(HERE, "Data", "profiles_T10.jld2")
+const EKRED  = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2")
+const OUT    = joinpath(HERE, "Data", "cache", "profiles_T10.jld2")
 const ω      = 1e-4                    # = f₀; both flows share it
 const T_tide = 2π / ω
 const T_f    = 2π / ω

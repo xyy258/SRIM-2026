@@ -2,6 +2,31 @@
 
 We combine the results of both simulations for each model.
 
+## Where things live
+
+```
+Combined/
+  sweep.jl  mixed_layer_height.jl   shared, included by everything
+  plot/     the 14 plot_* scripts
+  reduce/   the 3 reduce_* scripts
+  run/      ekmanrun.jl, swirles.sh
+  Data/raw/     Ekman/  Ekman_moments/  lowN/  rough_ekman/
+  Data/cache/   the derived .jld2 the plot scripts read
+  figures/  logs/
+```
+
+Run everything from `Combined/` with the folder in the path:
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot/plot_delta_T10.jl
+```
+
+Scripts under `plot/`, `reduce/` and `run/` set `const HERE = dirname(@__DIR__)`,
+so `HERE` is `Combined/` and every path inside them is written relative to that.
+A new script in one of those folders must do the same rather than use
+`@__DIR__`.
+
 ## Notation, and how the figures are drawn
 
 Length scales, all evaluated at `z = h` and formed per time sample before any
@@ -12,10 +37,10 @@ median is taken:
 | `ℓ`, `L_K` | `K_T/√TKE`, the mixing length | every figure |
 | `L_N` | `√TKE/N`, the stratification scale | |
 | `L_s` | `√TKE/S`, the shear scale | |
-| **`L_C`** | **`(ε/S³)^(1/2)`, the Corrsin shear scale** | `plot_l_vs_corrsin_T10.jl` only |
-| `L_harm` | `1/L_harm = 1/L_N + 1/L_s`, equal-weight harmonic | `plot_L_K_vs_Lharm_T10.jl` |
-| `L_β` | `1/L_β = 1/L_N + β/L_s`, weighted harmonic | `plot_Lcomb_candidates_T10.jl` |
-| `L_comb` | any candidate combination of `L_N` and `L_s` | `plot_Lcomb_candidates_T10.jl` |
+| **`L_C`** | **`(ε/S³)^(1/2)`, the Corrsin shear scale** | `plot/plot_l_vs_corrsin_T10.jl` only |
+| `L_harm` | `1/L_harm = 1/L_N + 1/L_s`, equal-weight harmonic | `plot/plot_L_K_vs_Lharm_T10.jl` |
+| `L_β` | `1/L_β = 1/L_N + β/L_s`, weighted harmonic | `plot/plot_Lcomb_candidates_T10.jl` |
+| `L_comb` | any candidate combination of `L_N` and `L_s` | `plot/plot_Lcomb_candidates_T10.jl` |
 
 **`L_C` means the Corrsin scale and nothing else.** The combined scales were
 called `L_c` up to 2026-09-07, which collided with it; they are `L_harm`, `L_β`
@@ -33,7 +58,7 @@ says; `fontfamily` fixes the surrounding text. Two things GR's mathtext does not
 have, learned the hard way: `\text{...}` (so no hyphenated words inside
 `\mathrm`, they come out as minus signs), and a line break inside a label. And
 `%g` inside a label prints `2.16e + 03`, with the exponent's sign set as a
-binary operator — `texnum` in `plot_shear_scales_T10.jl` is there for that.
+binary operator — `texnum` in `plot/plot_shear_scales_T10.jl` is there for that.
 
 ## l against √TKE/N at z = h, T = 10 m
 
@@ -42,21 +67,21 @@ background with the pycnocline at T = 10 m.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl  # ~80 s, reads 845 MB
-GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl # seconds
+GKSwstype=100 julia --project=. reduce/reduce_ekman_moments_T10.jl  # ~80 s, reads 845 MB
+GKSwstype=100 julia --project=. plot/plot_l_vs_qN_T10_combined.jl # seconds
 ```
 
 | file | what it is |
 |---|---|
-| `reduce_ekman_moments_T10.jl` | **current**: reduces the moment files under `Data/Ekman_moments/4/r=*, T=10.0/` to `h(t)`, `K_at_h(t)`, `TKE_at_h(t)`, with `K_T` from the whole flux |
-| `reduce_ekman_T10.jl` | superseded: the same reduction from the old slice output under `Data/Ekman/4/`, resolved flux only. Kept because it is the only thing that reads those runs |
-| `plot_l_vs_qN_T10_combined.jl` | draws both figures below; prefers the moments reduction and falls back to the old one |
+| `reduce/reduce_ekman_moments_T10.jl` | **current**: reduces the moment files under `Data/raw/Ekman_moments/4/r=*, T=10.0/` to `h(t)`, `K_at_h(t)`, `TKE_at_h(t)`, with `K_T` from the whole flux |
+| `reduce/reduce_ekman_T10.jl` | superseded: the same reduction from the old slice output under `Data/Ekman/4/`, resolved flux only. Kept because it is the only thing that reads those runs |
+| `plot/plot_l_vs_qN_T10_combined.jl` | draws both figures below; prefers the moments reduction and falls back to the old one |
 | `mixed_layer_height.jl` | copy of `Stokes/3D/mixed_layer_height.jl`, unmodified |
 | `Project.toml`, `Manifest.toml` | copies of `Stokes/3D`'s, the environment known to work |
-| `Data/ekman_lengthscales_T10_moments.jld2` | the current reduction's output, ~300 kB |
-| `Data/ekman_lengthscales_T10.jld2` | the superseded one |
-| `ekmanrun.jl` | re-runs the Ekman T = 10 column with `F_sgs` saved — see below |
-| `swirles.sh` | the Slurm script that launches `ekmanrun.jl` on the cluster |
+| `Data/cache/ekman_lengthscales_T10_moments.jld2` | the current reduction's output, ~300 kB |
+| `Data/cache/ekman_lengthscales_T10.jld2` | the superseded one |
+| `run/ekmanrun.jl` | re-runs the Ekman T = 10 column with `F_sgs` saved — see below |
+| `run/swirles.sh` | the Slurm script that launches `run/ekmanrun.jl` on the cluster |
 
 Nothing under `Ekman/` is read for code and nothing there is modified. The
 Ekman side is read only as `.jld2` data under `Data/`.
@@ -98,16 +123,16 @@ while the Stokes `K_T` uses `⟨w'b'⟩ + F_sgs`. And `Velocity.jld2` / `Buoyanc
 are written with `indices = (:, 1, :)`, so the Ekman averages were over 100 x
 points at one y rather than the full plane.
 
-`ekmanrun.jl` closed both at once by re-running the column with full-plane moments
+`run/ekmanrun.jl` closed both at once by re-running the column with full-plane moments
 including `F_sgs`. The current figure uses the whole flux on both sides, so the
 crosses and the circles are the same quantity. The resolved-only Stokes medians
 are drawn only if the reduction falls back to the old data.
 
-## Closing both asymmetries — `ekmanrun.jl`
+## Closing both asymmetries — `run/ekmanrun.jl`
 
 Neither can be fixed offline: AMD sets κₑ from the full 3D gradients, and only a
 y slice was saved, so there is nothing on disk to rebuild either quantity from.
-`ekmanrun.jl` re-runs the T = 10 column with identical physics — it *includes*
+`run/ekmanrun.jl` re-runs the T = 10 column with identical physics — it *includes*
 `Ekman/3D Simulation/Parameters.jl` rather than copying it, so the two cannot
 drift — and writes the same thirteen plane-averaged profiles `Stokes/3D/Moments.jl`
 writes: `U V W B dBdz`, `uu vv ww`, `uw vw wb`, `kappa_sgs F_sgs`. Full-plane
@@ -115,7 +140,7 @@ averages, so the y-slice asymmetry goes with the subgrid one.
 
 ```
 DRY_RUN=1 julia --project=. Combined/ekmanrun.jl   # from the repo root: the plan, no GPU
-sbatch Combined/swirles.sh                         # on the cluster
+sbatch Combined/run/swirles.sh                         # on the cluster
 SWEEP_STAGE=check julia --project=. Combined/ekmanrun.jl   # health of what has finished
 ```
 
@@ -143,7 +168,7 @@ what is missing.
 This was done on 2026-09-04 and the column came back complete: 2548 samples per
 case over the full 12.73 inertial periods, no non-finite values anywhere, and
 `min κₑ ≈ 1e-7 m²/s` so the subgrid closure is live everywhere.
-`reduce_ekman_moments_T10.jl` reads it.
+`reduce/reduce_ekman_moments_T10.jl` reads it.
 
 ### What the subgrid flux turned out to be worth
 
@@ -246,7 +271,7 @@ just over. On the real grid the naive form is non-finite in 28 of 400 cells,
 first at z = 129.2 m; `dBdz` and `κₑ` go `NaN` with it and the `NaN` reaches `u`
 through the sponge target.
 
-Two fixes, both in place: `ekmanrun.jl` uses `max(x,0) + log1p(exp(-|x|))`, which
+Two fixes, both in place: `run/ekmanrun.jl` uses `max(x,0) + log1p(exp(-|x|))`, which
 agrees with the naive form to 1.7e-21 where that is finite and tends to
 `N²(z - T)` above it; and the driver no longer trusts a clean exit — it checks
 that the moments file reached the stop time with finite values before writing a
@@ -261,7 +286,7 @@ even `T = 50` stays below the 170 m top).
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_shear_scales_T10.jl   # ~3 min
+GKSwstype=100 julia --project=. plot/plot_shear_scales_T10.jl   # ~3 min
 ```
 
 Two length scales built from the same TKE at the same height `z = h`, and the
@@ -276,7 +301,7 @@ is the dimensionally honest way to plot them.
 
 Neither pipeline stored the shear. Both store plane-averaged `U` and `V`, so `S`
 is differenced from those: the Ekman side inside
-`reduce_ekman_moments_T10.jl`, the Stokes side inside `plot_shear_scales_T10.jl`
+`reduce/reduce_ekman_moments_T10.jl`, the Stokes side inside `plot/plot_shear_scales_T10.jl`
 from `TidalBL3D_*_moments.jld2`, with the same time boxcar in both cases.
 
 | figure | what it shows |
@@ -349,11 +374,11 @@ no such exclusion.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_shear_scales_T10.jl    # ~3 min, also writes the cache
-GKSwstype=100 julia --project=. plot_Lcomb_candidates_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot/plot_shear_scales_T10.jl    # ~3 min, also writes the cache
+GKSwstype=100 julia --project=. plot/plot_Lcomb_candidates_T10.jl   # seconds, reads the cache
 ```
 
-`plot_shear_scales_T10.jl` writes `Data/shear_scales_T10.jld2`, the per-sample
+`plot/plot_shear_scales_T10.jl` writes `Data/cache/shear_scales_T10.jld2`, the per-sample
 `L_K`, `L_N`, `L_s` for every case, so the candidate search does not have to
 walk 1601 Stokes snapshots per case again.
 
@@ -457,7 +482,7 @@ across the two flows (~21 % offset), and why the Ekman column cannot span `Ri`.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_KTstar_Ri_stokes_T10.jl
+GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_stokes_T10.jl
 ```
 
 `figures/KTstar_vs_Ri_stokes_T10.png`. One panel: the pure harmonic form with
@@ -504,11 +529,88 @@ The steady rotating layer has no such clock, so it equilibrates — and
 equilibration means adjusting until `Ri` at the layer top reaches a marginal
 value. That is self-regulation, a result rather than a defect.
 
-### The height scan — `plot_KTstar_Ri_zscan_T10.jl`
+### The Ekman figure itself — `plot/plot_KTstar_Ri_ekman_T10.jl`
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_KTstar_Ri_zscan_T10.jl
+GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_ekman_T10.jl
+```
+
+`figures/KTstar_vs_Ri_ekman_T10.png` — the exact counterpart of the Stokes
+figure (`z = h`, background `N`, same harmonic form), drawn to *show* the
+pile-up rather than to fit through it.
+
+| | `A` | rms | `Ri` range |
+|---|---|---|---|
+| Stokes | 0.412 | 14.7 % | 0.0043 → 263 (×61 000) |
+| Ekman | 0.330 | 26.2 % | 0.44 → 12.8 (×29) |
+
+**Read the 26.2 % with care — it is not a measurement of anything.** Six of the
+eight cases (`r` = 1 to 50) sit between `Ri` = 8 and 13, shaded on the figure.
+Only `r` = 0.2 and 0.5 reach below, and those two points carry the entire fit;
+the other six are a single cluster with a ×1.6 vertical spread in `K_T*` at one
+value of `Ri`. Two points and a blob will fit a two-parameter curve — that does
+not make it a law.
+
+The rough-bed `r = 25` run is drawn as an open diamond and lands on top of the
+smooth `r = 25` point, which is the self-regulation result restated.
+
+`A` = 0.330 against 0.412 for Stokes is the same non-universality the height
+scan found (0.149 vs 0.331 there) — different construction, same direction.
+
+### Tested: is that pinning real? — `plot/plot_rough_vs_smooth_T10.jl`
+
+"`Ri` at the layer top is self-regulated" is a strong claim to make from a
+single sweep in which only `N` was varied. So it was tested directly: the
+`r = 25` case re-run with the bed roughness raised from `z₀` = 0.0016 to
+0.0137 m, giving `c_D` ×4.0 at **identical** `U∞`, `f`, `N`, grid and duration.
+That is the one knob that moves `S` without moving `N`.
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot/plot_rough_vs_smooth_T10.jl
+```
+
+`figures/rough_vs_smooth_Ri_T10.png` — the `√Ri(z)` profiles of the two runs
+with each one's `z = h` marked.
+
+| quantity | smooth | rough | change |
+|---|---|---|---|
+| `c_D` | 0.00908 | 0.03621 | ×4.0 *(imposed)* |
+| `u_*` measured | 2.630×10⁻³ | 3.107×10⁻³ | ×1.18 |
+| `h` | 8.309 m | 10.258 m | ×1.23 |
+| `S` at `h` | 7.995×10⁻⁴ | 7.826×10⁻⁴ | ×0.98 |
+| **`√Ri` at `h`** | **3.127** | **3.195** | **×1.02** |
+| `K_T*` at `h` | 0.288 | 0.296 | ×1.03 |
+
+**It is self-regulated.** As elasticities against the measured `u_*`:
+
+    d ln h        / d ln u_*  =  1.27      the layer thickens, roughly h ~ u_*/f
+    d ln √Ri      / d ln u_*  =  0.13      Ri at the top barely moves
+
+If `Ri` were slaved to the forcing — `S ~ u_*/h` at fixed `h` — the second
+number would be about −1. It is 0.13. **The layer answers extra bottom friction
+by getting thicker, not by shearing harder**, and `S` at its top is left alone
+(−2 %). `h/(u_*/f)` went 0.316 → 0.330, so the stage-1 `h` law absorbed the
+change too. The `Ri ≈ 10` pinning across `r ≥ 1` is therefore a property of the
+steady rotating layer, not a coincidence of this parameter set.
+
+**Caveat: the knob delivered less than intended.** `c_D` ×4 was meant to give
+`u_*` ×2; it gave ×1.18, because the drag law sets the stress from `c_D |U₁|²`
+at the first cell and a rougher bed slows `U₁`, eating most of the gain. So this
+is an 18 % change in `u_*` producing a 2 % change in `√Ri`, not a 100 % change
+producing 2 %. The elasticity is the honest way to read it, and 0.13 is still
+far from −1. A sharper test would raise `U∞` instead — at roughly double the
+runtime, since that tightens the advective CFL.
+
+**What it rules out:** raising `u_*` is not a second sweep axis for giving the
+Ekman column a `K_T*(Ri)` curve. `Ri` will not move that way.
+
+### The height scan — `plot/plot_KTstar_Ri_zscan_T10.jl`
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_zscan_T10.jl
 ```
 
 `figures/KTstar_vs_Ri_zscan_T10.png`. One point per (case, height) rather than
@@ -545,7 +647,7 @@ exist, and no choice of height changes that.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_L_K_vs_Lharm_T10.jl   # seconds, reads the cache
+GKSwstype=100 julia --project=. plot/plot_L_K_vs_Lharm_T10.jl   # seconds, reads the cache
 ```
 
 `figures/L_K_vs_Lharm_T10.png` — the preferred candidate only, and the regime
@@ -605,8 +707,8 @@ learned, not when something is run.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl   # ~2 min, now also does ε
-GKSwstype=100 julia --project=. plot_l_vs_corrsin_T10.jl      # ~4 min first time, then cached
+GKSwstype=100 julia --project=. reduce/reduce_ekman_moments_T10.jl   # ~2 min, now also does ε
+GKSwstype=100 julia --project=. plot/plot_l_vs_corrsin_T10.jl      # ~4 min first time, then cached
 ```
 
 Same figure as `l` against `√TKE/N`, same two styles, with the abscissa changed
@@ -623,6 +725,48 @@ the shear analogue of the Ozmidov scale, and a different question from
 | `figures/l_vs_corrsin_ath_T10_combined.png` | every retained sample, medians on top |
 | `figures/l_vs_corrsin_ath_T10_combined_errorbars.png` | medians with the interquartile range |
 
+### The same pair against `L_s` — `plot/plot_l_vs_Ls_T10.jl`
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot/plot_l_vs_Ls_T10.jl   # ENV: STYLE (both)
+```
+
+`figures/l_vs_shear_ath_T10_combined.png` and `..._errorbars.png` — the two
+Corrsin figures redone with `L_s = √TKE/S` in place of
+`L_C = (ε/S³)^(1/2)`, same construction and conventions. They read
+`Data/cache/shear_scales_T10.jld2`, which already holds per-sample `L_K` and `L_s` for
+all 16 cases, so nothing is re-walked. **There is no ε to fail, so all 16 cases
+are usable** — against 13 of 16 on the Corrsin pair, and no hollow markers.
+
+| set | power law `l = A L_s^b` | saturating |
+|---|---|---|
+| Stokes | `A` = 0.079, `b` = 2.43, rms **54.7 %** | no knee |
+| Ekman | `A` = 0.103, `b` = 0.96, rms **20.8 %** | no knee |
+| both | `A` = 0.105, `b` = 1.03, rms **62.3 %** | no knee |
+
+**The saturating form has no knee against `L_s` in any of the three sets** — the
+same thing `plot/plot_shear_scales_T10.jl` found against `τ_s`. The fits push `x₀` to
+60 m against data spanning 0.49–13.7 m, so the power law is what gets drawn.
+
+**The Ekman column lines up and the Stokes column does not.** Ekman gives
+`b` = 0.96 — essentially proportionality — at 21 %, and `l/L_s` is nearly
+constant across its whole sweep, 0.073 → 0.131 (×1.8). Stokes gives `b` = 2.43
+at 55 %, with `l/L_s` running 0.027 → 0.347 (×13): four cases (`r` = 0.2 to 2)
+pile up at `L_s` = 1.5–2.2 m with `l` = 0.42–0.51 m, then `r` = 5 to 50 fall
+away by ×28 in `l` while `L_s` barely moves. `L_s` is close to blind to what the
+tidal column does.
+
+That is the `L_s alone` row of the candidate table drawn out rather than
+tabulated (62.4 % both, 83.8 % Stokes, 21.5 % Ekman), and it is the counterpart
+the Corrsin pair was missing.
+
+*A methodological note carried over:* `fit_sat` here calls a fit "no knee" — and
+refuses to draw it — not only when a parameter lands on a grid edge but when
+`x₀ ≥ 2 × max(x)`. The both-flows fit did not hit the edge (`x₀` = 58.14) and
+scored 62.2 % against the power law's 62.3 %, so an edge test alone would have
+drawn a straight line dressed as a saturating curve on a 0.1-point margin.
+
 ### ε is not stored, and had to be estimated
 
 Neither pipeline wrote the dissipation rate, and like `F_sgs` it cannot be
@@ -632,9 +776,9 @@ the TKE budget, so ε comes from local equilibrium:
     ε ≈ P + B      P = −⟨u′w′⟩ ∂U/∂z − ⟨v′w′⟩ ∂V/∂z + νₑ S²
                    B = F_b = ⟨w′b′⟩ + F_sgs        (negative when stable)
 
-`reduce_ekman_moments_T10.jl` now writes `P_at_h` and `eps_at_h` alongside
+`reduce/reduce_ekman_moments_T10.jl` now writes `P_at_h` and `eps_at_h` alongside
 `S_at_h`; the Stokes side is built the same way inside the plot script and
-cached in `Data/corrsin_T10.jld2`. Three assumptions ride on the abscissa that
+cached in `Data/cache/corrsin_T10.jld2`. Three assumptions ride on the abscissa that
 do not ride on the ordinate: transport is dropped and cannot be checked (the
 worst of them, and it is exactly what dominates at the top of a mixed layer);
 storage is dropped, and is checked below; and `νₑ ≈ κₑ`, since only the
@@ -716,10 +860,10 @@ read as a contradiction of the Ekman result.
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. reduce_profiles_T10.jl     # ~6 min, walks both columns
-GKSwstype=100 julia --project=. plot_delta_T10.jl          # stage 1
-GKSwstype=100 julia --project=. plot_tke_profiles_T10.jl   # stage 2
-GKSwstype=100 julia --project=. plot_KT_model_T10.jl       # stage 3
+GKSwstype=100 julia --project=. reduce/reduce_profiles_T10.jl     # ~6 min, walks both columns
+GKSwstype=100 julia --project=. plot/plot_delta_T10.jl          # stage 1
+GKSwstype=100 julia --project=. plot/plot_tke_profiles_T10.jl   # stage 2
+GKSwstype=100 julia --project=. plot/plot_KT_model_T10.jl       # stage 3
 ```
 
 Testing
@@ -735,7 +879,7 @@ fitted per flow. (As written the bracket only gives a saturating curve with
 
 ### u_* is measured, not assumed
 
-`reduce_profiles_T10.jl` takes `u_*² = max over 0 < z ≤ h of |τ|` with
+`reduce/reduce_profiles_T10.jl` takes `u_*² = max over 0 < z ≤ h of |τ|` with
 `τ = (⟨uw⟩ − ⟨u⟩⟨w⟩) − νₑ ∂U/∂z` and `νₑ ≈ κₑ`, per sample then reduced.
 
 | | measured `u_*` | `√c_D·U∞` | `√(c_D·|U₁|²)` |
@@ -782,7 +926,7 @@ rising, so the fitted 0.155 is a lower bound. And the two prefactors, 1.05 and
 suggest.
 
 **Not a pycnocline artefact — that was checked.** `h` sitting near `z = T = 10 m`
-looks like it might be geometry rather than physics, so `reduce_profiles_T10.jl`
+looks like it might be geometry rather than physics, so `reduce/reduce_profiles_T10.jl`
 reports `h_pin`, the fraction of samples with `h` inside ±5 % of `T`. It is
 24 % at `r = 0.2` and 26 % at `r = 0.5` against **45 % at `r = 5` and 94 % at
 `r = 10`**. The whole Stokes column sits near the pycnocline, so there is no
@@ -852,11 +996,11 @@ is now 10.8 % against 10.7 % rather than 11.1 % against 10.4 % — but the verdi
 is the same, and it is the same verdict for the same reason: nothing is bought.
 
 
-## The same study with the Corrsin scale — `plot_corrsin_scales_T10.jl`
+## The same study with the Corrsin scale — `plot/plot_corrsin_scales_T10.jl`
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. plot_corrsin_scales_T10.jl   # reads both caches
+GKSwstype=100 julia --project=. plot/plot_corrsin_scales_T10.jl   # reads both caches
 ```
 
 The `L_N`/`L_s` study redone with `L_C = (ε/S³)^(1/2)` in place of
@@ -869,11 +1013,11 @@ partner for `L_N`. Three figures, mirroring the `L_s` ones:
 | `L_K_vs_Lcomb_corrsin_T10.png` | `L_K_vs_Lcomb_candidates_T10.png` |
 | `L_K_vs_Lbest_corrsin_T10.png` | `L_K_vs_Lharm_T10.png` |
 
-Everything comes from the two existing caches — `Data/corrsin_T10.jld2` for the
-Stokes per-sample `S`, `ε` and `Data/ekman_lengthscales_T10_moments.jld2` for
+Everything comes from the two existing caches — `Data/cache/corrsin_T10.jld2` for the
+Stokes per-sample `S`, `ε` and `Data/cache/ekman_lengthscales_T10_moments.jld2` for
 the Ekman ones — so `L_K`, `L_N`, `L_s` and `L_C` are all built from the same
 `K_T`, `TKE`, `S`, `ε` on one sample basis. A case is used only if `ε > 0` in at
-least half its samples, the same rule as `plot_l_vs_corrsin_T10.jl`, which
+least half its samples, the same rule as `plot/plot_l_vs_corrsin_T10.jl`, which
 leaves **13 of 16**: Stokes `r` = 10, 25 and 50 are out.
 
 ### The answer: `L_C` does not give the two-regime structure
@@ -951,12 +1095,12 @@ worth keeping as the independent check it already was in the Corrsin section —
 it is not the shear scale to build the model on.
 
 
-## Re-running the weakly stratified end — `swirles.sh`
+## Re-running the weakly stratified end — `run/swirles.sh`
 
 `L_s/L_N = N/S = √Ri`, so the `L_s = L_N` crossing on
 `figures/L_N_L_s_vs_r_T10.png` is `Ri = 1`. The medians put it at `r ≈ 1.4`
 (Stokes) and, extrapolated below the sweep, `r ≈ 0.4` (Ekman) — neither
-resolved. `swirles.sh` re-runs both columns at low `r` to fix that.
+resolved. `run/swirles.sh` re-runs both columns at low `r` to fix that.
 
 **Resolved, 2026-09-15.** With the new cases in, both crossings are bracketed by
 data rather than extrapolated, and both original estimates stand:
@@ -971,10 +1115,10 @@ Four of the sixteen cases are now shear-limited (`w_s > ½`): Stokes `r` = 0.2,
 
 ```
 cd /cephfs/store/damtp/tll46/SRIM-2026
-MODE=preflight bash Combined/swirles.sh     # login node, no GPU work
-sbatch Combined/swirles.sh                  # ~5.6 h serially
-sbatch --array=0-2 Combined/swirles.sh      # or one case per task, ~2 h
-MODE=status bash Combined/swirles.sh        # before pulling anything home
+MODE=preflight bash Combined/run/swirles.sh     # login node, no GPU work
+sbatch Combined/run/swirles.sh                  # ~5.6 h serially
+sbatch --array=0-2 Combined/run/swirles.sh      # or one case per task, ~2 h
+MODE=status bash Combined/run/swirles.sh        # before pulling anything home
 ```
 
 | flow | default `r` | why |
@@ -988,7 +1132,7 @@ comparison rests on.
 ### One folder, for scp
 
 ```
-Combined/Data/lowN/
+Combined/Data/raw/lowN/
   stokes/P4_T10_sqrtRi0p5/    TidalBL3D_*_moments.jld2, mixing_*_hcross.jld2
   stokes/P4_T10_sqrtRi0p2/
   ekman/r=0.2, T=10.0/        Moments.jld2, Avg_*.jld2
@@ -996,7 +1140,7 @@ Combined/Data/lowN/
 ```
 
 ```
-scp -r <host>:/cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/lowN \
+scp -r <host>:/cephfs/store/damtp/tll46/SRIM-2026/Combined/Data/raw/lowN \
        ~/SRIM-2026/Combined/Data/
 ```
 
@@ -1010,16 +1154,16 @@ to; the Stokes drag spin-up under `outputs/` is read, never modified.
 ### Two things to know before running it
 
 **The Ekman driver cannot take an `r` with two decimals.** `case_dir()` in
-`ekmanrun.jl` formats it as `%.1f`, so `r = 0.25` would silently write into the
-folder `r=0.2` and collide with a genuine `r = 0.2`. `swirles.sh` refuses such
+`run/ekmanrun.jl` formats it as `%.1f`, so `r = 0.25` would silently write into the
+folder `r=0.2` and collide with a genuine `r = 0.2`. `run/swirles.sh` refuses such
 an `r` with a message rather than letting it happen. Fixing it properly means
 changing `case_dir()` **and** the matching readers in
-`reduce_ekman_moments_T10.jl` and the `r=%.1f` group keys in the plot scripts.
+`reduce/reduce_ekman_moments_T10.jl` and the `r=%.1f` group keys in the plot scripts.
 
 **`K_T` is badly conditioned at low `N`, and that is why `r = 0.5` was dropped
 from the Stokes column in the first place** (`run_moments_sweep.sh` says so).
 `Δb` is small there and `K_T = −F_b/⟨∂b/∂z⟩` divides by it. The acceptance test
-is the `VERIFICATION` block that `swirles.sh` echoes after each Stokes case:
+is the `VERIFICATION` block that `run/swirles.sh` echoes after each Stokes case:
 `K_T_bulk` and `K_T_pe` share no code, so if they disagree by more than ~30 %
 the diffusivity at that `r` is not measuring the flow. Check that before adding
 these points to any figure.
@@ -1038,7 +1182,7 @@ the driver's own account; the numbers below are from the per-case logs.
 **The conditioning check passes, decisively.** `K_T_bulk` and `K_T_pe` agree to
 0.1 % rms at both `r = 0.5` and `r = 0.2` — they share no code, so this is the
 strong form of the test, not the ~30 % acceptance threshold. Panel (c) of
-`Data/lowN/figures/K_T_P4_T10_sqrtRi0p*.png` shows the two curves lying on top
+`Data/raw/lowN/figures/K_T_P4_T10_sqrtRi0p*.png` shows the two curves lying on top
 of each other for the whole record. **The original reason for dropping Stokes
 `r = 0.5` does not apply to these runs.** The `GRAD_FLOOR = 0.05` mask is doing
 more work than at high `r` — panel (b) is visibly speckled above `z ≈ 10` m —
@@ -1074,19 +1218,19 @@ the sweep — the weakly stratified end has not switched regime by this diagnost
 ### Wiring it into the figures — `sweep.jl`                  (done 2026-09-15)
 
 The three new cases are not beside the originals: they were run into
-`Data/lowN` as one folder for `scp`. Six scripts had the case root, the
+`Data/raw/lowN` as one folder for `scp`. Six scripts had the case root, the
 `sqrtRi0p5` tag spelling and the `r`-colour ramp open-coded, so all three moved
 into **`sweep.jl`**, which every reduction and plot script now includes:
 
 | from `sweep.jl` | what it gives |
 |---|---|
 | `SVALS`, `RATIOS` | the sweep — `0.2 0.5 1 2 5 10 25 50` in both columns |
-| `stokes_case(s)` | searches `Data/lowN/stokes` first, then `Stokes/3D/outputs` |
-| `ekman_case(r)` | searches `Data/lowN/ekman` first, then `Data/Ekman_moments/4` |
+| `stokes_case(s)` | searches `Data/raw/lowN/stokes` first, then `Stokes/3D/outputs` |
+| `ekman_case(r)` | searches `Data/raw/lowN/ekman` first, then `Data/raw/Ekman_moments/4` |
 | `sqrtRi_tag(s)` | `"P4_T10_sqrtRi0p5"` — the decimal point is written `p` |
 | `RAMP`, `ramp_colour` | two anchors added below `r = 1`; `r ≥ 1` unchanged |
 
-`Data/lowN` is searched **first**, and has to be:
+`Data/raw/lowN` is searched **first**, and has to be:
 `Stokes/3D/outputs/P4_T10_sqrtRi0p5` exists but predates the moments pipeline
 and holds no `*_moments.jld2` and no `mixing_*`, which is why `r = 0.5` was
 dropped from the original sweep in the first place.
@@ -1097,19 +1241,19 @@ To rebuild everything from the raw data:
 
 ```
 cd Combined
-GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl   # ~4 min, 8 cases
-GKSwstype=100 julia --project=. reduce_profiles_T10.jl        # then the plots
-GKSwstype=100 julia --project=. plot_shear_scales_T10.jl      # writes the cache
-GKSwstype=100 julia --project=. plot_delta_T10.jl
-GKSwstype=100 julia --project=. plot_tke_profiles_T10.jl
-GKSwstype=100 julia --project=. plot_L_K_vs_Lharm_T10.jl
-GKSwstype=100 julia --project=. plot_Lcomb_candidates_T10.jl
-GKSwstype=100 julia --project=. plot_KT_model_T10.jl
-REBUILD=1 GKSwstype=100 julia --project=. plot_l_vs_corrsin_T10.jl
-GKSwstype=100 julia --project=. plot_l_vs_qN_T10_combined.jl
+GKSwstype=100 julia --project=. reduce/reduce_ekman_moments_T10.jl   # ~4 min, 8 cases
+GKSwstype=100 julia --project=. reduce/reduce_profiles_T10.jl        # then the plots
+GKSwstype=100 julia --project=. plot/plot_shear_scales_T10.jl      # writes the cache
+GKSwstype=100 julia --project=. plot/plot_delta_T10.jl
+GKSwstype=100 julia --project=. plot/plot_tke_profiles_T10.jl
+GKSwstype=100 julia --project=. plot/plot_L_K_vs_Lharm_T10.jl
+GKSwstype=100 julia --project=. plot/plot_Lcomb_candidates_T10.jl
+GKSwstype=100 julia --project=. plot/plot_KT_model_T10.jl
+REBUILD=1 GKSwstype=100 julia --project=. plot/plot_l_vs_corrsin_T10.jl
+GKSwstype=100 julia --project=. plot/plot_l_vs_qN_T10_combined.jl
 ```
 
 **`REBUILD=1` is not optional on the Corrsin script.** It caches the Stokes
-walk in `Data/corrsin_T10.jld2` and reuses it silently, so without the flag it
+walk in `Data/cache/corrsin_T10.jld2` and reuses it silently, so without the flag it
 would have rebuilt the figure from the old six-case Stokes set without saying
 so.

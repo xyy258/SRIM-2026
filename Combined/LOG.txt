@@ -620,42 +620,158 @@
 # height changes that.
 
 
-## Rough-bed Ekman run, launched locally               (2026-09-16, RUNNING)
+## Rough-bed Ekman run: Ri at the layer top IS self-regulated  (2026-09-17)
 
-# Testing whether Ri at the Ekman layer top is genuinely self-regulated or only
-# coincidentally pinned. One knob: the bed roughness, which raises u_* at fixed
-# U_inf, f and N — the one control that moves S without moving N.
+# The r = 25 Ekman case re-run with z0 = 0.0137 m instead of 0.0016, so c_D x4.0
+# at identical U_inf, f, N, grid and duration. Ran LOCALLY (no cluster access),
+# 8.76 h on the shared RTX 4000 Ada against a 7 h benchmark estimate — the
+# contention showed. Reached 25.46 T_f, no NaNs, h drift +1.6 %.
+# Data in Combined/Data/rough/ekman, reduction in
+# Combined/Data/rough/ekman_lengthscales_rough_T10.jld2.
+# Figure: figures/rough_vs_smooth_Ri_T10.png (plot_rough_vs_smooth_T10.jl).
 #
-#   case      r = 25 (equilibrated: h drift +0.9 %, and sqrt(Ri) = 3.13, i.e.
-#             squarely in the pinned range)
-#   z0        0.0016 -> 0.0137 m, so c_D 0.00908 -> 0.03621 (x4) and the
-#             drag-law u_* 3.81e-3 -> 7.61e-3 m/s (x2)
-#   duration  1.6e6 s = 25.46 T_f, as the lowN Ekman run
-#   output    Combined/Data/rough/ekman  (SEPARATE ROOT — case_dir() names
-#             folders by r alone, so the same root would collide with the
-#             existing r = 25)
+#   quantity                 smooth      rough     change
+#   c_D                     0.00908    0.03621     x4.0   (imposed)
+#   u_* measured (m/s)      2.630e-3   3.107e-3    x1.18
+#   h (m)                      8.309     10.258    x1.23
+#   S at h (1/s)            7.995e-4   7.826e-4    x0.98
+#   TKE at h                8.846e-7   9.764e-7    x1.10
+#   K_T at h                1.034e-4   1.166e-4    x1.13
+#   sqrt(Ri) = N/S at h        3.127      3.195    x1.02   <<<
+#   K_T* = K_T N/TKE at h      0.288      0.296    x1.03
 #
-# ekmanrun.jl gained a Z0 env override for this (one line at the drag
-# coefficient). Default is Parameters.jl's z0, so an unset Z0 changes nothing,
-# and nothing in Ekman/ was touched.
+# --- THE ANSWER IS YES, IT IS SELF-REGULATED ---
 #
-# RUN LOCALLY, not on the cluster — no cluster access at the time. Benchmarked
-# first: 3e4 s of model time took 7.84 min on the RTX 4000 Ada plus ~1.2 min
-# startup, so 1.6e6 s extrapolates to about 7 h. Note the GPU is shared, so that
-# is a contended figure and could stretch.
+# As elasticities against the measured u_*:
+#     d ln h        / d ln u_* = 1.27     the layer thickens, roughly h ~ u_*/f
+#     d ln sqrt(Ri) / d ln u_* = 0.13     Ri at the top barely moves
+# If Ri were slaved to the forcing (S ~ u_*/h at fixed h) the second number
+# would be about -1. It is 0.13. THE LAYER ANSWERS EXTRA BOTTOM FRICTION BY
+# GETTING THICKER, NOT BY SHEARING HARDER, and S at its top is left alone (-2 %).
+# h/(u_*/f) went 0.316 -> 0.330, +4 %, so the stage-1 h law absorbed the change
+# too.
 #
-# It appends to logs/P4_T10_r25.log under its own banner, which is the designed
-# behaviour but means that log now holds two different physical setups. The
-# banner records c_D, so they can be told apart.
+# So the Ri ~ 10 pinning across r >= 1 is a property of the steady rotating
+# layer, not a coincidence of this parameter set. That is a result in its own
+# right and it closes the question the run was launched to answer.
 #
-# WHAT TO LOOK FOR when it lands:
-#   - sqrt(Ri) at z = h still ~3.1  ->  self-regulation confirmed, and the
-#     pinning is a property of the steady rotating layer, not a coincidence.
-#     That is a result worth stating on its own.
-#   - sqrt(Ri) drops towards ~1.6 (the x2 in u_* feeding straight through to S)
-#     ->  Ri is controllable after all, and a second sweep axis opens up for
-#     giving the Ekman column a K_T*(Ri) curve.
-#   - h should grow either way, since h ~ u_*/f.
+# --- CAVEAT: THE KNOB DELIVERED LESS THAN INTENDED ---
+#
+# c_D x4 was meant to give u_* x2. It gave x1.18. The drag law sets the stress
+# from c_D |U_1|^2 at the first cell, and a rougher bed slows U_1, which eats
+# most of the gain. So the test is an 18 % change in u_* producing a 2 % change
+# in sqrt(Ri), not a 100 % change producing 2 %. The elasticity is the honest
+# way to read it, and 0.13 is still far from the -1 of a slaved Ri. A sharper
+# test would raise U_inf instead — but that tightens the advective CFL and
+# roughly doubles the runtime.
+#
+# --- what it does NOT do ---
+#
+# It does not open a second sweep axis for an Ekman K_T*(Ri) curve. That was the
+# other possible outcome, and it did not happen: Ri would not move. If the Ekman
+# column is ever to span Ri, it will not be by pushing on u_*.
+
+
+## The Ekman K_T* vs Ri figure, drawn anyway                     (2026-09-17)
+
+# plot_KTstar_Ri_ekman_T10.jl -> figures/KTstar_vs_Ri_ekman_T10.png. The exact
+# counterpart of the Stokes figure — z = h, background N, same harmonic form —
+# drawn to SHOW the pile-up rather than to fit through it.
+#
+#   Ekman   A = 0.330   rms 26.2 %   Ri 0.44 to 12.8 (x29)
+#   Stokes  A = 0.412   rms 14.7 %   Ri 0.0043 to 263 (x61000)
+#
+# Six of the eight cases (r = 1 to 50) sit between Ri = 8 and 13, shaded on the
+# figure. Only r = 0.2 and 0.5 reach below, and they carry the entire fit: the
+# other six are one cluster with a vertical spread of x1.6 in K_T* at one Ri.
+# The rough-bed r = 25 run is drawn as an open diamond and lands on top of the
+# smooth r = 25 point, which is the self-regulation result restated.
+#
+# The 26.2 % is therefore not a measurement of anything. Two points and a blob
+# will fit a two-parameter curve; that does not make it a law. The figure is
+# worth keeping as the visual argument for why the rotating column cannot carry
+# this relation, not as a result.
+#
+# A = 0.330 against 0.412 for Stokes is the same non-universality the height
+# scan found (0.149 vs 0.331 there) — different construction, same direction.
+
+
+## l against L_s, the two Corrsin figures redone              (2026-09-17)
+
+# plot_l_vs_Ls_T10.jl -> figures/l_vs_shear_ath_T10_combined.png and
+# ..._errorbars.png. Same construction and conventions as the Corrsin pair,
+# with L_s = sqrt(TKE)/S on the x axis instead of L_C = (eps/S^3)^(1/2).
+# Reads Data/shear_scales_T10.jld2, which already holds per-sample L_K and L_s
+# for all 16 cases, so nothing is re-walked. There is no eps to fail here, so
+# ALL 16 CASES ARE USABLE and there are no hollow markers — against 13 of 16
+# on the Corrsin pair.
+#
+#   set      power law l = A L_s^b            saturating
+#   Stokes   A = 0.079, b = 2.43, rms 54.7 %  no knee (x0 pinned at 60 m)
+#   Ekman    A = 0.103, b = 0.96, rms 20.8 %  no knee
+#   both     A = 0.105, b = 1.03, rms 62.3 %  no knee
+#
+# THE SATURATING FORM HAS NO KNEE AGAINST L_s, in any of the three sets. That is
+# the same thing plot_shear_scales_T10.jl found against tau_s and is why the
+# power law is drawn. The fits here pin x0 at 60 m against data spanning 0.49 to
+# 13.7 m.
+#
+# NEW GUARD, worth keeping: fit_sat now calls a fit "no knee" — and refuses to
+# draw it — not only when a parameter lands on a grid edge but when
+# x0 >= 2 * max(x). The both-flows fit did NOT hit the edge (x0 = 58.14) and had
+# rms 62.2 % against the power law's 62.3 %, so the old rule would have drawn a
+# straight line dressed as a saturating curve on a 0.1-point margin. The edge
+# test alone is not enough; a knee outside the data is not a knee.
+#
+# --- what the pair shows ---
+#
+# The Ekman column lines up: b = 0.96, essentially proportionality, rms 21 %,
+# and l/L_s is nearly constant across its whole sweep, 0.073 to 0.131 (x1.8).
+# The Stokes column does not: b = 2.43 with rms 55 %, and l/L_s runs 0.027 to
+# 0.347 (x13). Four Stokes cases (r = 0.2 to 2) sit on top of each other at
+# L_s = 1.5-2.2 m with l = 0.42-0.51 m, then r = 5 to 50 fall away by x28 in l
+# while L_s barely moves. L_s is nearly blind to what the tidal column does.
+#
+# This is the 16-case candidate table's "L_s alone" row drawn out: 62.4 % on
+# both flows, 83.8 % Stokes, 21.5 % Ekman. Nothing new, but it is now visible
+# rather than tabulated, and it is the counterpart the Corrsin pair was missing.
+
+
+## Combined/ reorganised                                        (2026-09-17)
+
+# 21 scripts and 7 loose caches at the top level had become hard to read. Now:
+#
+#   Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
+#   Combined/plot/      14 plot_* scripts
+#   Combined/reduce/     3 reduce_* scripts
+#   Combined/run/        ekmanrun.jl, swirles.sh
+#   Combined/Data/raw/   Ekman (90 GB, the old resolved-only source),
+#                        Ekman_moments, lowN, rough_ekman
+#   Combined/Data/cache/ the 8 derived .jld2
+#   Combined/figures/, Combined/logs/   unchanged
+#
+# Moved scripts use `const HERE = dirname(@__DIR__)` instead of @__DIR__, so
+# HERE still points at Combined/ and every joinpath(HERE, ...) inside them is
+# untouched. Anything new in plot/ must do the same. logs/ and figures/ were
+# left alone deliberately — the scripts write into them by HERE, so nothing
+# there had to move.
+#
+# Data/rough was split: the case folder became Data/raw/rough_ekman and its
+# reduction Data/cache/ekman_lengthscales_rough_T10.jld2. Data/Stokes was empty
+# and is gone. Nothing was deleted; the 90 GB Data/raw/Ekman was moved, not
+# removed, on the reasoning that the resolved-only reduction should stay
+# re-runnable.
+#
+# swirles.sh's own invocations were updated (it calls
+# $PROJECT_DIR/Combined/run/ekmanrun.jl now) — THAT MATTERS ON THE CLUSTER, the
+# documented sbatch line is `sbatch Combined/run/swirles.sh`.
+#
+# VERIFIED: all 16 reductions and plot scripts re-run, and ALL 20 FIGURES CAME
+# BACK BYTE-IDENTICAL (md5). The move changed nothing but where things live.
+#
+# Two pre-existing header bugs surfaced and were fixed: plot_Lcomb_candidates
+# and plot_L_K_vs_Lharm had USAGE lines naming files that no longer exist
+# (plot_Lc_candidates_T10.jl, plot_L_K_vs_Lc_T10.jl) from an earlier rename.
 
 
 ## Mistakes made here, so they are not made again

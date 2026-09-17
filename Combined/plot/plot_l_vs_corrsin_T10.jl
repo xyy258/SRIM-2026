@@ -53,7 +53,7 @@
 #   cloud       every retained sample, medians on top
 #   errorbars   medians with the interquartile range in both axes
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_l_vs_corrsin_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_l_vs_corrsin_T10.jl
 #        (run reduce_ekman_moments_T10.jl first — it writes the Ekman side)
 # ENV    STYLE   cloud | errorbars | both   (default both)
 #        REBUILD 1 to re-walk the Stokes moment files instead of using the cache
@@ -65,10 +65,10 @@ get!(ENV, "GKSwstype", "100")
 # LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
-const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
-const CACHE  = joinpath(HERE, "Data", "corrsin_T10.jld2")
+const EKFILE = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2")
+const CACHE  = joinpath(HERE, "Data", "cache", "corrsin_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω

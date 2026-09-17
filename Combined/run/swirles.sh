@@ -36,16 +36,16 @@
 #      GPU work:
 #
 #        cd /cephfs/store/damtp/tll46/SRIM-2026
-#        MODE=preflight bash Combined/swirles.sh
+#        MODE=preflight bash Combined/run/swirles.sh
 #
 #   2. then
 #
-#        sbatch Combined/swirles.sh                 # everything, serially
-#        sbatch --array=0-2 Combined/swirles.sh     # one case per task
+#        sbatch Combined/run/swirles.sh                 # everything, serially
+#        sbatch --array=0-2 Combined/run/swirles.sh     # one case per task
 #
 #   3. when it comes back, before pulling anything home:
 #
-#        MODE=status bash Combined/swirles.sh
+#        MODE=status bash Combined/run/swirles.sh
 #
 # MODE = preflight | stokes | ekman | all (default) | status
 #
@@ -145,8 +145,8 @@ ek_check() {
         log "FATAL: Ekman r = $r needs more than one decimal, and ekmanrun.jl's"
         log "  case_dir() formats r with %.1f — it would write into \"r=$back\"."
         log "  Use a one-decimal r (0.1, 0.2, 0.3, 0.4), or fix case_dir() in"
-        log "  Combined/ekmanrun.jl and the matching readers in"
-        log "  Combined/reduce_ekman_moments_T10.jl first."
+        log "  Combined/run/ekmanrun.jl and the matching readers in"
+        log "  Combined/reduce/reduce_ekman_moments_T10.jl first."
         return 1
     fi
     return 0
@@ -242,7 +242,7 @@ run_ekman() {
 
     OUT_ROOT="$EKMAN_OUT" RATIOS="$r" T_STRAT="$T_STRAT" DURATION="$EKMAN_DURATION" \
     SWEEP_STAGE=cases SKIP_PREFLIGHT=1 WALL_HOURS="${WALL_HOURS:-11.0}" \
-        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/ekmanrun.jl" \
+        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/run/ekmanrun.jl" \
         >> "$LOWN_LOGS/ekman_r${r}.log" 2>&1
     if compgen -G "$dir/.done_moments_*" > /dev/null; then
         log "  Ekman r = $r done"
@@ -290,8 +290,8 @@ preflight)
     log "  checking the Ekman driver's own preflight..."
     OUT_ROOT="$EKMAN_OUT" RATIOS="$EKMAN_RATIOS" T_STRAT="$T_STRAT" \
     DURATION="$EKMAN_DURATION" SWEEP_STAGE=preflight \
-        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/ekmanrun.jl" 2>&1 | tail -20
-    log "  now:  DRY_RUN=1 MODE=all bash Combined/swirles.sh"
+        "$JULIA" --project="$PROJECT_DIR" "$PROJECT_DIR/Combined/run/ekmanrun.jl" 2>&1 | tail -20
+    log "  now:  DRY_RUN=1 MODE=all bash Combined/run/swirles.sh"
     ;;
 
 status)

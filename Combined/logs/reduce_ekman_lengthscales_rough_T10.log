@@ -1,0 +1,7 @@
+Ekman T = 10 m reduction from the plane-averaged moments — h = crossing at 0.1 N²_ref, K_T from resolved + subgrid flux,
+window = 4.0 inertial periods at the end, grad floor = 0.05 N²_ref
+started 2026-09-17T15:51:40.121
+  r=25    reading /home/tll46/SRIM-2026/Combined/Data/rough/ekman/r=25.0, T=10.0
+  r=25.0  N=2.50e-03  nt= 801  med h=10.258 m  drift  +1.6 %  med K_at_h=1.166e-04  sgs share  0.31  med TKE_at_h=9.764e-07  med S_at_h=7.826e-04  med P=1.113e-10  med eps=3.468e-11  eps/(P+|B|)= 0.20  |dTKE/dt|/eps=  0.55  eps<=0: 224  eps>0 at (0.25,0.5,0.75,1)h: 1.00 1.00 1.00 0.72  finite l: 801/801
+wrote /home/tll46/SRIM-2026/Combined/Data/rough/ekman_lengthscales_rough_T10.jld2
+finished 2026-09-17T15:53:10.267

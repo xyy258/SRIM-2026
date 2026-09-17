@@ -18,7 +18,7 @@
 # runs from the peak to z = h, and both ends are reported. Fitting from the wall
 # would fold the near-wall rise into A2 and make it meaningless.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_tke_profiles_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_tke_profiles_T10.jl
 #        (run reduce_profiles_T10.jl and plot_delta_T10.jl first)
 
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
@@ -26,10 +26,10 @@ using JLD2, Plots, Printf, Statistics, LaTeXStrings
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
-const CACHE  = joinpath(HERE, "Data", "profiles_T10.jld2")
-const DFILE  = joinpath(HERE, "Data", "delta_T10.jld2")
+const CACHE  = joinpath(HERE, "Data", "cache", "profiles_T10.jld2")
+const DFILE  = joinpath(HERE, "Data", "cache", "delta_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"
@@ -164,7 +164,7 @@ savefig(f, o)
 say("")
 say("wrote $o")
 
-jldopen(joinpath(HERE, "Data", "tke_fits_T10.jld2"), "w") do io
+jldopen(joinpath(HERE, "Data", "cache", "tke_fits_T10.jld2"), "w") do io
     io["note"] = "A1, A2 per case; by plot_tke_profiles_T10.jl"
     for ((fl, r), v) in fits
         g = @sprintf("%s/r=%.1f", fl, r)

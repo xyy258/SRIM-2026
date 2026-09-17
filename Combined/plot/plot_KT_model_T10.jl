@@ -25,7 +25,7 @@
 # is worth knowing on its own, because the Ekman initial slope L_inf/x0 = 0.423
 # and the Stokes proportionality 0.449 already agree to 6 %.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_KT_model_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_KT_model_T10.jl
 #        (run plot_shear_scales_T10.jl, reduce_profiles_T10.jl, plot_delta_T10.jl first)
 
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
@@ -33,11 +33,11 @@ using JLD2, Plots, Printf, Statistics, LaTeXStrings
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
-const SCALES = joinpath(HERE, "Data", "shear_scales_T10.jld2")
-const DFILE  = joinpath(HERE, "Data", "delta_T10.jld2")
-const PFILE  = joinpath(HERE, "Data", "profiles_T10.jld2")
+const SCALES = joinpath(HERE, "Data", "cache", "shear_scales_T10.jld2")
+const DFILE  = joinpath(HERE, "Data", "cache", "delta_T10.jld2")
+const PFILE  = joinpath(HERE, "Data", "cache", "profiles_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"

@@ -26,10 +26,14 @@ const RATIOS = [0.2, 0.5, 1, 2, 5, 10, 25, 50]     # Ekman
 # Stokes/3D/outputs/P4_T10_sqrtRi0p5 predates the moments pipeline and holds
 # only the raw field file, no *_moments.jld2 and no mixing_*, which is why
 # r = 0.5 was dropped from the original sweep in the first place.
-const STOKES_ROOTS = [joinpath(SWEEP_HERE, "Data", "lowN", "stokes"),
+const STOKES_ROOTS = [joinpath(SWEEP_HERE, "Data", "raw", "lowN", "stokes"),
                       "/home/tll46/SRIM-2026/Stokes/3D/outputs"]
-const EKMAN_ROOTS  = [joinpath(SWEEP_HERE, "Data", "lowN", "ekman"),
-                      joinpath(SWEEP_HERE, "Data", "Ekman_moments", "4")]
+const EKMAN_ROOTS  = [joinpath(SWEEP_HERE, "Data", "raw", "lowN", "ekman"),
+                      joinpath(SWEEP_HERE, "Data", "raw", "Ekman_moments", "4")]
+# EKMAN_ROOT puts a root in front of those, for a variant run whose case folder
+# has the same name as one already here — the rough-bed r = 25, say, since
+# case_dir() names by r alone.
+haskey(ENV, "EKMAN_ROOT") && pushfirst!(EKMAN_ROOTS, ENV["EKMAN_ROOT"])
 
 # "P4_T10_sqrtRi5", "P4_T10_sqrtRi0p5" — the decimal point is written "p", which
 # is how Stokes/3D/case_params.jl has always named them.

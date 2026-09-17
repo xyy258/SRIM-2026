@@ -38,7 +38,7 @@
 # with height so ∂V/∂z is not small, and in the Stokes case the tidal ellipse
 # does the same.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_shear_scales_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_shear_scales_T10.jl
 
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
@@ -76,9 +76,9 @@ get!(ENV, "GKSwstype", "100")
 # LaTeX labels are rendered by GR's own mathtext, so `fontfamily` sets the
 # surrounding text and the maths follows the TeX shapes either way.
 default(dpi = 600, fontfamily = "DejaVu Sans")
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))   # SVALS, case roots, ramp_colour
-const EKFILE = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
+const EKFILE = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
@@ -329,7 +329,7 @@ end
 # ---------------- cache, so the candidate search need not re-read ----------------
 # Building the Stokes shear means walking 1601 snapshots per case; the weighted
 # scale search wants to iterate quickly over the result, so it is written out.
-CACHE = joinpath(HERE, "Data", "shear_scales_T10.jld2")
+CACHE = joinpath(HERE, "Data", "cache", "shear_scales_T10.jld2")
 jldopen(CACHE, "w") do io
     io["note"] = "per-sample L_K, L_N, L_s at z = h; written by plot_shear_scales_T10.jl"
     for (nm, cs) in (("stokes", S), ("ekman", E))

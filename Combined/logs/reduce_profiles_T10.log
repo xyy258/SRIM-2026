@@ -14,4 +14,4 @@ Ekman  N/f = 5     h = 14.458 m  (0 % of samples sitting on the pycnocline)  u_*
 Ekman  N/f = 10    h = 11.450 m  (0 % of samples sitting on the pycnocline)  u_* med 2.6414e-03  p90 2.6771e-03  (free stream 3.8122e-03, drag law 1.9375e-03)
 Ekman  N/f = 25    h =  8.309 m  (0 % of samples sitting on the pycnocline)  u_* med 2.6301e-03  p90 2.6525e-03  (free stream 3.8122e-03, drag law 1.9330e-03)
 Ekman  N/f = 50    h =  6.240 m  (0 % of samples sitting on the pycnocline)  u_* med 2.5825e-03  p90 2.6041e-03  (free stream 3.8122e-03, drag law 1.9123e-03)
-wrote /home/tll46/SRIM-2026/Combined/Data/profiles_T10.jld2
+wrote /home/tll46/SRIM-2026/Combined/Data/cache/profiles_T10.jld2

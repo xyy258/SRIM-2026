@@ -1,0 +1,17 @@
+Ekman, z = h, background N:  K_T* = 0.3299 sqrt(Ri)/(1+sqrt(Ri))  rms 26.2 %  on 8 cases
+  (Stokes, same construction: A = 0.412, rms 14.7 %)
+
+  r        sqrt(Ri)      Ri        K_T*      fit       ratio
+  0.2         0.6612     0.437    0.0772    0.1313     0.588
+  0.5         1.2678     1.607    0.1514    0.1844     0.821
+  1           2.9051     8.440    0.2352    0.2454     0.958
+  2           3.5808    12.822    0.2588    0.2579     1.004
+  5           3.3083    10.945    0.2886    0.2533     1.139
+  10          3.4607    11.977    0.2728    0.2559     1.066
+  25          3.1269     9.777    0.2882    0.2500     1.153
+  50          2.8372     8.050    0.3753    0.2439     1.538
+  25 rgh      3.1946    10.205    0.2961    0.2513     1.178
+
+  Ri spans 0.437 to 12.82  (x29) — and 6 of 8 cases sit between 8 and 13
+
+wrote /home/tll46/SRIM-2026/Combined/figures/KTstar_vs_Ri_ekman_T10.png

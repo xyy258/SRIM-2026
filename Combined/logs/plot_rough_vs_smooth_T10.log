@@ -1,0 +1,17 @@
+Ekman r = 25, T = 10 m: does raising u_* move Ri at z = h?
+
+  quantity                       smooth        rough      change
+  z0 imposed (m)                1.6000e-03  1.3700e-02      8.56 x
+  c_D                           9.0800e-03  3.6210e-02      3.99 x
+  u_* measured (m/s)            2.6301e-03  3.1069e-03      1.18 x
+  h (m)                         8.3090e+00  1.0258e+01      1.23 x
+  S at h (1/s)                  7.9952e-04  7.8257e-04      0.98 x
+  TKE at h (m2/s2)              8.8456e-07  9.7639e-07      1.10 x
+  K_T at h (m2/s)               1.0345e-04  1.1656e-04      1.13 x
+
+  sqrt(Ri) = N/S at h           3.1269e+00  3.1946e+00      1.02 x
+  K_T* = K_T N/TKE at h         2.8824e-01  2.9605e-01      1.03 x
+
+u_*/f  : 26.30 m -> 31.07 m  (x1.18);   h/(u_*/f) : 0.316 -> 0.330
+
+wrote /home/tll46/SRIM-2026/Combined/figures/rough_vs_smooth_Ri_T10.png

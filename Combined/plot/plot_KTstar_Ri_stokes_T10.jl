@@ -14,14 +14,14 @@
 # to 11.3 m — so it fits worse (26.3 % at the best height, z = 10 m) and was
 # dropped. The scan and the reasons are in LOG.txt, 2026-09-16.
 
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_KTstar_Ri_stokes_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_stokes_T10.jl
 
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4

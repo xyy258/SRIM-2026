@@ -41,7 +41,7 @@
 # A one-sided h >= T test would have called all eight Ekman cases pinned, which
 # is why the test is a band and not a threshold.)
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_delta_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_delta_T10.jl
 #        (run reduce_profiles_T10.jl first)
 
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
@@ -49,8 +49,8 @@ using JLD2, Plots, Printf, Statistics, LaTeXStrings
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
-const CACHE  = joinpath(HERE, "Data", "profiles_T10.jld2")
+const HERE   = dirname(@__DIR__)        # scripts live one level down
+const CACHE  = joinpath(HERE, "Data", "cache", "profiles_T10.jld2")
 const FIGDIR = joinpath(HERE, "figures")
 const Ω      = 1e-4                    # omega for Stokes, f for Ekman: equal here
 const C_STOK = "#1b3a6b"
@@ -195,7 +195,7 @@ savefig(f, o)
 say("")
 say("wrote $o")
 
-jldopen(joinpath(HERE, "Data", "delta_T10.jld2"), "w") do io
+jldopen(joinpath(HERE, "Data", "cache", "delta_T10.jld2"), "w") do io
     io["note"] = "chosen delta per case, by plot_delta_T10.jl"
     io["p_stokes"] = pS; io["p_ekman"] = pE
     for (fl, cs, cd) in (("stokes", S, CANDS_S), ("ekman", E, CANDS_E))

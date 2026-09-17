@@ -3,7 +3,7 @@
 # saved, so that K_T on the Ekman side is built the same way as on the Stokes side.
 #
 # Launched by Combined/swirles.sh as
-#     srun julia --project=$PROJECT_DIR Combined/ekmanrun.jl
+#     srun julia --project=$PROJECT_DIR Combined/run/ekmanrun.jl
 #
 # ---------------- Why this run exists ----------------
 # The combined figure (figures/l_vs_q_over_N_ath_T10_combined.png) puts the Ekman
@@ -167,7 +167,7 @@
 # a login node before submitting:
 #
 #     cd /cephfs/store/damtp/tll46/SRIM-2026
-#     DRY_RUN=1 julia --project=. Combined/ekmanrun.jl
+#     DRY_RUN=1 julia --project=. Combined/run/ekmanrun.jl
 #
 # ---------------- Layout of this file ----------------
 # The driver comes first and ends in `exit()`, so in sweep mode the simulation
@@ -177,7 +177,7 @@
 
 using Printf, Dates
 
-const HERE  = @__DIR__
+const HERE  = dirname(@__DIR__)        # scripts live one level down
 const REPO  = dirname(HERE)
 const EKMAN = joinpath(REPO, "Ekman", "3D Simulation")
 
@@ -213,7 +213,7 @@ const EK_MAXDT = ekman_param("max_Δt", 15.0)
 
 const GRID_TAG = get(ENV, "GRID_TAG",
                      join(string.(Int.(EK_GRID)), "x") * "_drag")
-const OUT_ROOT = get(ENV, "OUT_ROOT", joinpath(HERE, "Data", "Ekman_moments", "4"))
+const OUT_ROOT = get(ENV, "OUT_ROOT", joinpath(HERE, "Data", "raw", "Ekman_moments", "4"))
 
 # Passed to the completeness check: a case is finished when its moments file
 # reaches the stop time, and truncated otherwise.
@@ -881,7 +881,7 @@ u_star, z₀_fit, r2 = fit_log_layer(zc[1:n_fit], @.(sqrt(ua[1:n_fit]^2 + va[1:n
 mkpath(joinpath(HERE, "logs"))
 open(joinpath(HERE, "logs", @sprintf("params_%s.txt", case_tag(r))), "w") do io
     @printf(io, """
-Combined/ekmanrun.jl — %s
+Combined/run/ekmanrun.jl — %s
 Written %s
 
 Dimensions                      %.1f m x %.1f m x %.1f m (+ %.0f m sponge)
@@ -903,10 +903,10 @@ Friction Reynolds               Re* = %.3e
 Friction Richardson             Ri* = %.1f
 """, case_tag(r), Dates.format(now(), "yyyy-mm-dd HH:MM:SS"),
      Lx, Ly, Lz, S, Nx, Ny, Nz, U∞, N², f₀, r, T, sharp, ν₀, κ₀, Pr, Re∞, cᴰ,
-     u_star, n_fit, r2, z₀_fit, z₀, δ, u_star * δ / ν₀, N² / f₀^2)
+     u_star, n_fit, r2, z₀_fit, Z0, δ, u_star * δ / ν₀, N² / f₀^2)
 end
 
 @printf("u* = %.4e m/s (R² = %.4f), z₀ fit %.3e vs imposed %.3e, δ = %.2f m\n",
-        u_star, r2, z₀_fit, z₀, δ)
+        u_star, r2, z₀_fit, Z0, δ)
 @printf("case %s finished at %s\n", case_tag(r), Dates.format(now(), "yyyy-mm-dd HH:MM:SS"))
 flush(stdout)

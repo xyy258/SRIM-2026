@@ -69,7 +69,7 @@ fits of τ_K against each candidate time, on the case medians
   τ_s     both     b =  1.00, rms  61.8 %          Y∞ =   21556 s, x₀ =   192485 s, rms  61.8 %
   τ_N    → drawing the saturating family
   τ_s    → drawing the saturating family
-wrote /home/tll46/SRIM-2026/Combined/Data/shear_scales_T10.jld2
+wrote /home/tll46/SRIM-2026/Combined/Data/cache/shear_scales_T10.jld2
 
 wrote /home/tll46/SRIM-2026/Combined/figures/tau_K_vs_timescales_T10.png
 wrote /home/tll46/SRIM-2026/Combined/figures/L_N_L_s_vs_r_T10.png

@@ -29,16 +29,16 @@
 # Nothing in Ekman/ is read for code — the h definition is the copy in this
 # folder, and only the .jld2 data under Combined/Data is touched.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce_ekman_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce/reduce_ekman_T10.jl
 # ENV    T_STEP (1)        keep every T_STEP-th velocity snapshot
 #        WINDOW (4)        how many inertial periods at the end to keep
 #        RATIOS            space-separated r values (default 0.5 1 2 5 10 25 50)
 
 using Oceananigans, JLD2, Printf, Statistics, Dates
 
-const HERE    = @__DIR__
-const DATA    = joinpath(HERE, "Data", "Ekman", "4")
-const OUT     = joinpath(HERE, "Data", "ekman_lengthscales_T10.jld2")
+const HERE    = dirname(@__DIR__)        # scripts live one level down
+const DATA    = joinpath(HERE, "Data", "raw", "Ekman", "4")
+const OUT     = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10.jld2")
 const f₀      = 1e-4                      # Ekman Coriolis parameter
 const T_f     = 2π / f₀                   # inertial period, 62832 s
 const T_STRAT = 10.0

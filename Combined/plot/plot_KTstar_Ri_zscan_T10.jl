@@ -11,14 +11,14 @@
 # does not exist below it — which is exactly why the well-mixed interior, where
 # Ri is genuinely small, cannot be reached.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_KTstar_Ri_zscan_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_zscan_T10.jl
 
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
 const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
@@ -135,7 +135,7 @@ for r in RATIOS
     E = boxcar(Er, nh); Fb = boxcar(Fr, nh); G = boxcar(Gr, nh); S = boxcar(Sr, nh)
     K = [G[k, n] > FLOOR * N2 ? -Fb[k, n] / G[k, n] : NaN for k in axes(G, 1), n in axes(G, 2)]
     hm = med([interp_at(zf, view(G, :, n), NaN) for n in 1:0])   # placeholder, h below
-    hm = med(jldopen(joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2"), "r") do io
+    hm = med(jldopen(joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2"), "r") do io
                  io[@sprintf("r=%.1f/h", r)] end)
     for φ in FRACS
         v = at_z(zf, zc, K, E, S, G, N2, φ * hm)

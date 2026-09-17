@@ -70,16 +70,16 @@
 # Nothing in Ekman/ is read for code — the h definition is the copy in this
 # folder, and only the .jld2 data under Combined/Data is touched.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce_ekman_moments_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. reduce/reduce_ekman_moments_T10.jl
 # ENV    WINDOW (4)        how many inertial periods at the end to average over
 #        GRAD_FLOOR (0.05) mask cells with ∂b/∂z below this fraction of N²_ref
 #        RATIOS            space-separated r values (default: the sweep in sweep.jl)
 
 using Oceananigans, JLD2, Printf, Statistics, Dates
 
-const HERE    = @__DIR__
+const HERE    = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))       # RATIOS, ekman_case
-const OUT     = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
+const OUT     = get(ENV, "OUT_FILE", joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2"))
 const f₀      = 1e-4                      # Ekman Coriolis parameter
 const T_f     = 2π / f₀                   # inertial period, 62832 s
 const T_STRAT = 10.0
@@ -343,6 +343,8 @@ log("wrote $OUT")
 log("finished $(Dates.now())")
 
 mkpath(joinpath(HERE, "logs"))
-open(joinpath(HERE, "logs", "reduce_ekman_moments_T10.log"), "w") do io
+# The log follows OUT_FILE, so a variant reduction does not overwrite the main
+# one's record — which it did once, for the rough-bed run.
+open(joinpath(HERE, "logs", "reduce_" * replace(basename(OUT), ".jld2" => "") * ".log"), "w") do io
     foreach(l -> println(io, l), log_lines)
 end

@@ -3,18 +3,18 @@
 # Writes three figures: the two scales against r, the candidate combinations, and
 # the best candidate on its own.
 #
-# USAGE  cd Combined && GKSwstype=100 julia --project=. plot_corrsin_scales_T10.jl
+# USAGE  cd Combined && GKSwstype=100 julia --project=. plot/plot_corrsin_scales_T10.jl
 
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
 default(dpi = 600, fontfamily = "DejaVu Sans")
 
-const HERE   = @__DIR__
+const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
 const FIGDIR = joinpath(HERE, "figures")
-const SFILE  = joinpath(HERE, "Data", "corrsin_T10.jld2")
-const EFILE  = joinpath(HERE, "Data", "ekman_lengthscales_T10_moments.jld2")
+const SFILE  = joinpath(HERE, "Data", "cache", "corrsin_T10.jld2")
+const EFILE  = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.jld2")
 const C_STOK = "#1b3a6b"
 const C_EKMA = "#8e1b4e"
 const EPS_MIN = 0.5      # a case needs this fraction of samples with eps > 0

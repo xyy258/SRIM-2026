@@ -54,6 +54,18 @@ STANDING RULES:
   Combined/ scripts are heavily commented; that is not the target, and new code
   should not copy it.)
 - Run Julia from inside Combined/ with --project=. (--project=.. is empty).
+  Scripts live one level down and are invoked with their folder, e.g.
+  `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
+      Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
+      Combined/plot/     the 14 plot_* scripts
+      Combined/reduce/   the 3 reduce_* scripts
+      Combined/run/      ekmanrun.jl, swirles.sh
+      Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
+      Combined/Data/cache/    the derived .jld2 every plot script reads
+      Combined/figures/, Combined/logs/
+  Moved scripts use `const HERE = dirname(@__DIR__)`, so HERE is still
+  Combined/ and every joinpath(HERE, ...) is unchanged. A NEW script in plot/
+  must do the same, not @__DIR__.
 - One figure per question. Extra diagnostics go in the log file, not more panels.
 - Every plotting script opens with default(dpi = 600, fontfamily = "DejaVu
   Sans") and uses LaTeXStrings for all labels.
@@ -123,14 +135,26 @@ loosens to 50-52 % because the scan mixes the turbulent interior with the
 quiescent fluid above the layer. Inside the mixed layer Ri is genuinely small
 but db/dz vanishes, so K_T does not exist there and no height fixes that.
 
-RUNNING as of 2026-09-16 16:40, LOCALLY (no cluster access): a rough-bed Ekman
-case, r = 25 with z0 = 0.0137 m instead of 0.0016, so c_D x4 and u_* x2 at fixed
-U_inf, f and N. It asks whether Ri at the layer top is genuinely self-regulated
-or only coincidentally pinned. Output to Combined/Data/rough/ekman (separate
-root — case_dir() names by r alone and would otherwise collide). ~7 h expected
-from a benchmark; the GPU is shared so that may stretch. Appends to
-logs/P4_T10_r25.log under its own banner. ekmanrun.jl gained a Z0 env override
-for it; unset Z0 changes nothing. See the LOG entry for what to look for.
+DONE 2026-09-17: the rough-bed Ekman run (r = 25, z0 0.0016 -> 0.0137 m, c_D
+x4, everything else identical) finished locally in 8.76 h and ANSWERS ITS
+QUESTION: Ri at the Ekman layer top IS self-regulated. sqrt(Ri) at z = h moved
+3.127 -> 3.195, +2 %, while h went 8.31 -> 10.26 m. As elasticities against the
+measured u_*: d ln h/d ln u_* = 1.27 but d ln sqrt(Ri)/d ln u_* = 0.13, against
+about -1 if Ri were slaved to the forcing. The layer answers extra bottom
+friction by thickening, not by shearing harder. So the Ri ~ 10 pinning across
+r >= 1 is a property of the steady rotating layer, not a coincidence — and there
+is no second sweep axis here for an Ekman K_T*(Ri) curve.
+Data: Combined/Data/rough/ekman. Figure: figures/rough_vs_smooth_Ri_T10.png.
+CAVEAT: c_D x4 gave only u_* x1.18, because a rougher bed slows the first-cell
+velocity and eats the gain. A sharper test would raise U_inf, at roughly double
+the runtime.
+
+The Ekman counterpart figure exists (plot_KTstar_Ri_ekman_T10.jl,
+figures/KTstar_vs_Ri_ekman_T10.png): A = 0.330, rms 26.2 %, but six of eight
+cases sit at Ri = 8-13 and the fit rests entirely on r = 0.2 and 0.5. Keep it as
+the visual argument for why the rotating column cannot carry the relation, NOT
+as a result — and do not quote its 26.2 % against the Stokes 14.7 % as if the
+two were comparable measurements.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist
@@ -165,6 +189,10 @@ GOTCHAS THAT COST TIME TO FIND:
 - Always smooth in time before forming a ratio, and form ratios per sample
   before taking the median — never median/median.
 - L_C is reserved for the Corrsin scale. Combined scales are L_harm, L_β, L_comb.
+- A saturating fit is not a fit when its knee is outside the data, even if no
+  parameter hit a grid edge. plot_l_vs_Ls_T10.jl calls x0 >= 2*max(x) "no knee"
+  and refuses to draw it; without that a straight line gets drawn as a
+  saturating curve. Worth applying wherever fit_sat is used.
 - GR's mathtext has no \text or \mbox, no line breaks in labels, swallows
   spaces inside \mathrm{} unless escaped, and prints %g as "2.16e + 03".
 - Piping a Julia run into `head` SIGPIPE-kills it before it writes its figures.
