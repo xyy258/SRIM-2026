@@ -115,7 +115,7 @@ for p in profiles
             markerstrokewidth = 1.5,
             markercolor       = :gray,
             markerstrokecolor = :black,
-            label             = "Medians"
+            label             = "case medians"
         )
 
         for ratio in ratios
@@ -183,12 +183,12 @@ for p in profiles
 
                 tke_int      = mean(tke_inst[rng])
                 db_dz_int    = mean(db_dz_inst[rng])
-                K_t_int      = -mean(wb_inst[rng]) / (db_dz_int + 1e-12)
+                K_t_int      = -mean(wb_inst[rng]) / (db_dz_int + 1e-10)
                 shear_sq_int = mean(shear_sq_inst[rng])
 
-                ri_int = (db_dz_int / (shear_sq_int + 1e-12))^2
+                ri_int = db_dz_int / (shear_sq_int + 1e-10)
 
-                if K_t_int > 0 && tke_int > 1e-12 && N > 0
+                if K_t_int > 0 && tke_int > 1e-12 && N > 0 && ri_int > 0
                     push!(ratio_metric_time, tke_int / (N * K_t_int))
                     push!(ri_metric_time, ri_int)
                 end
@@ -250,10 +250,10 @@ for p in profiles
             plt,
             xscale    = :log10,
             yscale    = :log10,
-            xlabel    = L"\mathrm{Ri}=N^2/|\partial{\mathbf{u}}/\partial{z}|^2",
+            xlabel    = L"\mathrm{Ri}",
             ylabel    = L"\mathrm{TKE} / (N K_t)",
             minorgrid = true,
-            legend    = :topright,
+            legend    = :bottomright,
             title     = L"\mathrm{TKE} / (N K_t)" * " vs " * L"\mathrm{Ri}",
             size      = (950, 650),
             dpi       = 300
