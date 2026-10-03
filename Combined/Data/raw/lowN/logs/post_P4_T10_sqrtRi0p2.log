@@ -1,0 +1,21 @@
+[ Info: Oceananigans will use 4 threads
+
+==============================================================================
+VERIFICATION  P4_T10_sqrtRi0p2   (T = 10 m, N/ω = 0.2, Ri = 0.04, zref = 25.0 m, GRAD_FLOOR = 0.050, SMOOTH = tide20)
+==============================================================================
+  1. max|⟨w⟩_xy| = 2.831e-19 m/s  (= 7.08e-18 U₀)                     PASS
+  2. K_T_bulk vs K_T_pe_full: rel RMS diff =   0.1 %, bias =  -0.0 %   PASS
+     (brief's uncorrected K_T_pe: 2.6 %; flux leaking past zref = 0.01 × ∫F_b
+      — small, so the boundary term may be dropped)
+  3. K_sgs/K_T at z = h: median 0.04 (90th pct 0.05)              PASS
+  4. delta_eff = 8.50 ± 1.66 m (CV 0.19); mean h = 7.97 m          PASS
+     delta_eff/Lz = 0.170 — the 'peak = mean' shorthand needs this ≈ 1; IT IS NOT — use the integral
+  5. panel (d) slope d(log K_T)/d(log TKE) at z = h = +0.41  (r = +0.65, n = 1235)
+     1/2 ⇒ K_T ~ √TKE·l ;  1 ⇒ K_T ~ TKE/N.  Nearest: √TKE·l
+  → all checks pass; the slope above can be read as physics.
+  wrote ../../Combined/Data/lowN/stokes/P4_T10_sqrtRi0p2/mixing_P4_T10_sqrtRi0p2_hcross.jld2
+         ../../Combined/Data/lowN/figures/K_T_P4_T10_sqrtRi0p2.png
+
+==============================================================================
+1 case(s) analysed; ALL VERIFICATION CHECKS PASS.
+==============================================================================

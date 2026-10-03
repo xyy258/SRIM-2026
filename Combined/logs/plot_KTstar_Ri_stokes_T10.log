@@ -1,0 +1,22 @@
+N/ω = 0.2   85 % of samples usable
+N/ω = 0.5   77 % of samples usable
+N/ω = 1     72 % of samples usable
+N/ω = 2     71 % of samples usable
+N/ω = 5     87 % of samples usable
+N/ω = 10    92 % of samples usable
+N/ω = 25    89 % of samples usable
+N/ω = 50    100 % of samples usable
+
+z = h, background N = r·ω:  K_T* = 0.4124 sqrt(Ri)/(1 + sqrt(Ri)),  rms 14.7 % on 8 cases
+  r        sqrt(Ri)      Ri        K_T*      fit       ratio
+  0.2        0.0655     0.0043    0.0187    0.0254     0.739
+  0.5        0.1805     0.0326    0.0593    0.0630     0.941
+  1          0.6931     0.4804    0.1626    0.1688     0.963
+  2          1.5348     2.3555    0.3206    0.2497     1.284
+  5          3.3078    10.9414    0.3309    0.3167     1.045
+  10         4.4774    20.0472    0.3243    0.3371     0.962
+  25         5.7005    32.4962    0.3699    0.3509     1.054
+  50        16.2259   263.2788    0.4261    0.3885     1.097
+  Ri spans 0.004291 to 263.3  (x61362)
+
+wrote /home/tll46/SRIM-2026/Combined/figures/KTstar_vs_Ri_stokes_T10.png
