@@ -1,0 +1,77 @@
+% chktex-file 1
+
+\usetheme{Darmstadt}
+% More themes at https://www.overleaf.com/learn/latex/Beamer
+
+% --- Packages ---
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb, amsmath}
+\usepackage[UKenglish]{datetime}
+\usepackage{siunitx} % Writing SI units
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+
+\newcommand{\mathhighlight}[2]{%
+  \tcbhighmath[
+    enhanced,
+    frame hidden,
+    colback=#1,
+    boxsep=3pt,
+    top=0pt,
+    bottom=0pt,
+    left=0pt,
+    right=0pt,
+  ]{#2}
+}
+
+\colorlet{highyellow}{yellow!35}
+\colorlet{highred}{red!20}
+\colorlet{highblue}{cyan!20}
+\colorlet{highgreen}{green!20}
+
+\usepackage[
+    backend = biber,
+    style   = nature,
+    isbn    = false
+]{biblatex} % BibTeX for bibliography
+\usepackage{graphicx, multimedia}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\sisetup{
+  per-mode = power
+}
+
+% --- Bullet points ---
+\setbeamertemplate{itemize item}{\(\bullet\)}
+\setbeamertemplate{itemize subitem}{\(\circ\)}
+\setbeamercovered{transparent}
+
+% --- Bottom navigation bar ---s
+% \setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{navigation symbols}{%
+    \insertslidenavigationsymbol    % Slide navigation
+    \insertframenavigationsymbol    % Frame navigation
+    % \insertsubsectionnavigationsymbol    % Subsection navigation
+    \insertsectionnavigationsymbol  % Section navigation
+    \insertdocnavigationsymbol      % Search / doc navigation
+    % \insertbackfindforwardnavigationsymbol % Back/forward arrows
+
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \raisebox{1.2pt}[0pt][0pt]{\insertframenumber/\inserttotalframenumber}
+}
+\setbeamertemplate{sections in toc}[sections numbered]
+
+% --- Custom Commands ---
+\newcommand\partialdev[2]{\frac{\partial #1}{\partial #2}}
+\newcommand\codev[2]{\frac{D #1}{D #2}}
+\renewcommand\d{\mathrm{d}}
+\newcommand\dev[2]{\frac{\d #1}{\d #2}}
+\newcommand\devsq[2]{\frac{\d^2 {#1}}{\d {#2}^2}}
