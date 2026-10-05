@@ -1,0 +1,44 @@
+% chktex-file 36
+
+\documentclass[12pt]{report}
+
+\input{style}
+
+\setlist[itemize]{itemsep=1pt,topsep=3pt}
+\setlist[enumerate]{label=(\roman*{}),itemsep=1pt,topsep=3pt}
+\newcommand{\boldu}{\mathbf{u}}
+
+\title{\textbf{Oceanic Mixed Bottom Layers}}
+\author{Xing Yu Yi}
+\date{August 2026}
+
+\addbibresource{bibliography.bib}
+
+\begin{document}
+
+\maketitle
+
+\hypersetup{
+    linkcolor=black,
+}
+\tableofcontents
+\hypersetup{
+    linkcolor=blue,
+}
+
+\chapter{Introduction}
+\input{Chapters/Introduction}\label{intro}
+
+\chapter{Ekman model}\label{chap:2}
+
+We will begin by looking at an Ekman model for the formation of the bottom boundary layer, where we will have the effects of the Coriolis force with a far-stream velocity \(\mathbf{U}_\infty\). The flow will initially be in geostrophic balance, with a pressure gradient to balance this. This model will largely be based off~\cite{TaylorSarkar2008} and looking at stratified Ekman layers.
+
+\input{Chapters/Ekman}
+
+\chapter{Stokes model}\label{chap:3}
+
+We will next look at the Stokes model
+
+\printbibliography{}
+
+\end{document}

@@ -1,0 +1,35 @@
+% chktex-file 1
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper]{geometry} % Adjust margins
+\usepackage{setspace} % Used for adding spaces in contents
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{footnote}
+\usepackage{siunitx} % Writing SI units
+\usepackage[titles]{tocloft} % Table of contents titles made bold
+\usepackage[labelfont=bf]{caption} % Boldens names of figures
+\usepackage[bottom]{footmisc} % Footnotes at bottom of page
+\usepackage[hidelinks]{hyperref}
+\usepackage[all]{hypcap} % Hyperlink sends you to top of reference
+
+\usepackage[
+    backend=biber,
+    citestyle=authoryear,
+    sorting=ynt,
+]{biblatex} % BibTeX for bibliography
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\renewcommand{\labelitemi}{\(\bullet\)}
+\renewcommand{\labelitemii}{\(\circ\)}
+
+\newcommand\partialdev[2]{\frac{\partial #1}{\partial #2}}
+\newcommand\dev[2]{\frac{d #1}{d #2}}
+\newcommand\codev[2]{\frac{D #1}{D #2}}
