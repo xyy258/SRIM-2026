@@ -19,7 +19,8 @@
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans")
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
+        legendfontsize = 10, plot_titlefontsize = 18)
 
 const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
@@ -140,7 +141,7 @@ function panel(key, ttl, xlab, note)
     ylo, yhi = minimum(fin(ys)) / 2.5, maximum(fin(ys)) * 2.2
     p = plot(xscale = :log10, yscale = :log10, xlabel = xlab,
              ylabel = L"K_T^{*} = K_T N/\mathrm{TKE}", title = ttl,
-             legend = :bottomright, legendfontsize = 6, foreground_color_legend = nothing)
+             legend = :bottomright, foreground_color_legend = nothing)
     xx = exp.(range(log(lo), log(hi); length = 300))
     xlow = xx[xx .<= 2.0]; xhigh = xx[xx .>= 0.7]
     plot!(p, xlow, f.A .* xlow; color = :grey55, lw = 1.2, ls = :dash,
@@ -159,7 +160,7 @@ function panel(key, ttl, xlab, note)
     end
     plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
              yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
-    annotate!(p, lo * 1.15, yhi / 1.08, text(note, 6, :grey30, :left, :top))
+    annotate!(p, lo * 1.15, yhi / 1.08, text(note, 9, :grey30, :left, :top))
     return p
 end
 

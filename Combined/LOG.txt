@@ -774,6 +774,37 @@
 # (plot_Lc_candidates_T10.jl, plot_L_K_vs_Lc_T10.jl) from an earlier rename.
 
 
+## Ekman-only height scan, with and without r = 25, 50          (2026-10-07)
+
+# plot_KTstar_Ri_zscan_ekman_T10.jl -> figures/KTstar_vs_Ri_zscan_ekman_T10.png
+# and figures/KTstar_vs_Ri_zscan_ekman_lowr_T10.png. Asked for because the scan
+# only had a Stokes z = h figure and a both-flows figure. It is the Ekman half of
+# plot_KTstar_Ri_zscan_T10.jl on its own axes; the all-r fit comes back
+# identical to that script's Ekman row (A = 0.1488, 52.3 %, n = 50).
+#
+#   all r     A = 0.149   rms 52.3 %   n = 50
+#   r < 25    A = 0.122   rms 39.8 %   n = 38
+#
+# r = 25 and 50 were dropped because their points keep climbing at high Ri
+# (median K_T*/fit 1.47 and 2.44) where the rest flatten near 0.1. They are also
+# the two thinnest layers, h = 8.3 and 6.2 m against 11-23 m. Dropping them is a
+# choice made on the plot, not on a physical criterion.
+#
+# It helps but does not rescue: 40 % is still ~3x the Stokes z = h 14.7 %, the
+# plateau moves further from Stokes (0.122 vs 0.331), r = 1 at z/h = 2.5, 3.0
+# still climbs the same way, and the low-Ri points now sit above the curve.
+
+
+## Bigger text on the K_T* figures                             (2026-10-07)
+
+# All four K_T* scripts (stokes, ekman, zscan, zscan_ekman — five figures) now
+# set guidefontsize 16, tickfontsize 12, legendfontsize 10, plot_titlefontsize
+# 18 in default(), and the grey annotations went 6 -> 9. The per-call
+# legendfontsize = 6/7 overrides were removed. At that size the both-flows scan's
+# 1-2-5 x ticks collided over eight decades, so its x axis is decades only.
+# Logs came back unchanged: no number moved.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

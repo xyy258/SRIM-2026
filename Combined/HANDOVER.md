@@ -57,7 +57,7 @@ STANDING RULES:
   Scripts live one level down and are invoked with their folder, e.g.
   `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
       Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
-      Combined/plot/     the 14 plot_* scripts
+      Combined/plot/     the 15 plot_* scripts
       Combined/reduce/   the 3 reduce_* scripts
       Combined/run/      ekmanrun.jl, swirles.sh
       Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
@@ -68,7 +68,10 @@ STANDING RULES:
   must do the same, not @__DIR__.
 - One figure per question. Extra diagnostics go in the log file, not more panels.
 - Every plotting script opens with default(dpi = 600, fontfamily = "DejaVu
-  Sans") and uses LaTeXStrings for all labels.
+  Sans") and uses LaTeXStrings for all labels. The four K_T* scripts also set
+  guidefontsize 16, tickfontsize 12, legendfontsize 10, plot_titlefontsize 18
+  and annotation text 9 (enlarged 2026-10-07); new nondimensional figures
+  should match.
 
 WHERE THINGS STAND:
 The sweep is 16 cases — Stokes and Ekman each at r = 0.2, 0.5, 1, 2, 5, 10, 25,
@@ -155,6 +158,13 @@ cases sit at Ri = 8-13 and the fit rests entirely on r = 0.2 and 0.5. Keep it as
 the visual argument for why the rotating column cannot carry the relation, NOT
 as a result — and do not quote its 26.2 % against the Stokes 14.7 % as if the
 two were comparable measurements.
+
+Built 2026-10-07: plot_KTstar_Ri_zscan_ekman_T10.jl, the Ekman half of the
+height scan on its own, two figures: all r (A = 0.149, rms 52 %) and r = 25, 50
+dropped (A = 0.122, rms 40 %). Those two climb at high Ri instead of flattening
+and are the thinnest layers (h = 6-8 m). Dropping them was chosen by eye, not
+on a physical criterion — say so if it is shown. It does not close the gap to
+Stokes; the plateau moves further away.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist

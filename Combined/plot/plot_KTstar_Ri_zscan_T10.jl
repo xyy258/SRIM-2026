@@ -16,7 +16,8 @@
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans")
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
+        legendfontsize = 10, plot_titlefontsize = 18)
 
 const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
@@ -165,9 +166,9 @@ for p in pts
 end
 
 mkpath(FIGDIR)
-function logticks(lo, hi)
+function logticks(lo, hi; ms = (1, 2, 5))
     a = floor(Int, log10(lo)); b = ceil(Int, log10(hi)); v = Float64[]
-    for e in a:b, m in (1, 2, 5)
+    for e in a:b, m in ms
         x = m * 10.0^e; lo / 1.05 <= x <= hi * 1.05 && push!(v, x)
     end
     (v, [x >= 1 ? (x == round(x) ? string(Int(round(x))) : string(x)) :
@@ -180,7 +181,7 @@ lo, hi = minimum(xs) / 2.5, maximum(xs) * 2.5
 p = plot(xscale = :log10, yscale = :log10,
          xlabel = L"\sqrt{Ri} = \sqrt{\langle \partial b/\partial z \rangle}/S \ \ (\mathrm{local})",
          ylabel = L"K_T^{*} = K_T N/\mathrm{TKE} \ \ (\mathrm{local})",
-         legend = :bottomright, legendfontsize = 6, foreground_color_legend = nothing)
+         legend = :bottomright, foreground_color_legend = nothing)
 xx = exp.(range(log(lo), log(hi); length = 300))
 for (f, col, ls, lw, nm) in ((fs, C_STOK, :dash, 1.8, "Stokes"), (fe, C_EKMA, :dash, 1.8, "Ekman"),
                              (fb, :black, :solid, 2.4, "both"))
@@ -199,12 +200,12 @@ scatter!(p, [NaN], [NaN]; marker = :diamond, ms = 7, msw = 1.3, mc = :grey70, ms
 for sv in SVALS
     scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv), label = @sprintf("N/ω = N/f = %g", sv))
 end
-plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
+plot!(p; xticks = logticks(lo, hi; ms = (1,)), xlims = (lo, hi),
          yticks = logticks(minimum(ys) / 2.5, maximum(ys) * 2.5),
          ylims = (minimum(ys) / 2.5, maximum(ys) * 2.5))
 annotate!(p, lo * 1.15, maximum(ys) * 2.2,
           text("one point per (case, height), z/h = $(FRACS[1]) to $(FRACS[end]).\nOnly where db/dz clears the $(FLOOR) N²_ref mask in >= $(Int(100KEEP)) % of samples —\nthe well-mixed interior, where Ri is genuinely small, has no gradient\nto measure K_T against and cannot appear here.",
-               6, :grey30, :left, :top))
+               9, :grey30, :left, :top))
 f = plot(p; size = (980, 820),
          plot_title = L"T = 10\,\mathrm{m}:\ \ K_T^{*}\ \mathrm{against\ local}\ Ri,\ \mathrm{scanned\ in\ height}",
          bottom_margin = 6Plots.mm, left_margin = 6Plots.mm, top_margin = 3Plots.mm)

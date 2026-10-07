@@ -643,6 +643,56 @@ What stays out of reach either way is the **well-mixed interior**, where `Ri` is
 genuinely small: there is no gradient there, so `K_T = −F_b/⟨∂b/∂z⟩` does not
 exist, and no choice of height changes that.
 
+### Text size on the `K_T*` figures
+
+The four `K_T*` scripts (`plot_KTstar_Ri_{stokes,ekman,zscan,zscan_ekman}_T10.jl`)
+use larger fonts than the rest of `plot/` — axis labels 16, ticks 12, legend 10,
+title 18, annotations 9 — so they read on a slide. On
+`KTstar_vs_Ri_zscan_T10.png` that crowded the 1-2-5 x ticks over eight decades
+into each other, so that axis is ticked at decades only.
+
+### The height scan, Ekman only — `plot/plot_KTstar_Ri_zscan_ekman_T10.jl`
+
+```
+cd Combined
+GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_zscan_ekman_T10.jl   # ~minutes, reads Moments.jld2
+```
+
+The Ekman half of the scan above, on its own axes, with its own fit. Same
+construction, same heights, same masks; the all-`r` fit reproduces the both-flows
+script's Ekman row exactly (`A` = 0.1488, 52.3 %, `n` = 50), which is the check
+that the port is faithful. Two figures, same axis limits so they sit side by side:
+
+- `figures/KTstar_vs_Ri_zscan_ekman_T10.png` — all eight `r`
+- `figures/KTstar_vs_Ri_zscan_ekman_lowr_T10.png` — `r` = 25 and 50 left out (`DROP = 25`)
+
+| set | `A` | rms | `n` | `Ri` range |
+|---|---|---|---|---|
+| all `r` | 0.149 | 52.3 % | 50 | 8.8×10⁻³ → 4.5×10⁵ |
+| `r` < 25 | 0.122 | 39.8 % | 38 | 8.8×10⁻³ → 5.8×10⁴ |
+
+Per-`r` median of `K_T*`/fit (all-`r` fit → `r` < 25 fit):
+
+| r | 0.2 | 0.5 | 1 | 2 | 5 | 10 | 25 | 50 |
+|---|---|---|---|---|---|---|---|---|
+| all | 1.05 | 0.75 | 0.83 | 0.73 | 0.54 | 0.74 | 1.47 | 2.44 |
+| `r` < 25 | 1.28 | 0.91 | 1.01 | 0.89 | 0.66 | 0.90 | — | — |
+
+**Why those two:** `r` = 25 and 50 are the cases whose points keep climbing at
+high `Ri` instead of flattening, to `K_T*` 0.3–0.5 against a plateau of ~0.1 for
+the rest. They are also the two thinnest layers (`h` = 8.3 and 6.2 m against
+11–23 m for `r` ≤ 10), so the same `z/h` puts their scan at a different place
+relative to the stratification above. Leaving them out is a choice on how the
+points look, not on a physical criterion, and should be presented that way.
+
+**What it buys:** rms 52 → 40 % and a lower plateau, `A` = 0.122. It does
+**not** make the scan tight — 40 % is still nearly three times the Stokes `z = h`
+figure's 14.7 % — and the plateau moves *further* from Stokes (0.331), so it does
+not help the universality question. Two outliers remain in the kept set: `r` = 1
+at `z/h` = 2.5 and 3.0 (`K_T*` 0.18, 0.62), the same climb at the top of the scan.
+With the plateau lowered, the low-`Ri` points (`r` = 0.2, 0.5) now sit above the
+curve rather than on it.
+
 ## The one-figure summary
 
 ```

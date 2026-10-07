@@ -14,7 +14,8 @@
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans")
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
+        legendfontsize = 10, plot_titlefontsize = 18)
 
 const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
@@ -83,7 +84,7 @@ ylo, yhi = minimum(ys) / 2.5, maximum(ys) * 2.2
 p = plot(xscale = :log10, yscale = :log10,
          xlabel = L"\sqrt{Ri} = N/S \ \ (N = r\,f,\ \mathrm{background})",
          ylabel = L"K_T^{*} = K_T N/\mathrm{TKE}",
-         legend = :bottomright, legendfontsize = 6, foreground_color_legend = nothing)
+         legend = :bottomright, foreground_color_legend = nothing)
 xx = exp.(range(log(lo), log(hi); length = 300))
 plot!(p, xx, STOKES_A .* xx ./ (1 .+ xx); color = :grey55, lw = 1.6, ls = :dot,
       label = latexstring(@sprintf("\\mathrm{Stokes\\ fit\\ for\\ reference}\\!: \\ A = %.3f", STOKES_A)))
@@ -105,7 +106,7 @@ plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
          yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
 annotate!(p, lo * 1.12, yhi / 1.06,
           text(@sprintf("Six of the eight cases (r = 1 to 50) sit in the shaded band,\nRi = 8 to 13, because S ~ N^1.018 here: the layer equilibrates\nto a marginal Ri at its top, so r does not control Ri.\nThe rough-bed run (u_* x1.18) lands on the smooth r = 25 point.\nOnly r = 0.2 and 0.5 reach below — there is no curve to fit."),
-               6, :grey30, :left, :top))
+               9, :grey30, :left, :top))
 fig = plot(p; size = (920, 800),
            plot_title = L"T = 10\,\mathrm{m},\ z = h,\ \mathrm{Ekman}:\ \ K_T^{*} = A\sqrt{Ri}/(1+\sqrt{Ri})",
            bottom_margin = 6Plots.mm, left_margin = 6Plots.mm, top_margin = 3Plots.mm)
