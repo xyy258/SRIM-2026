@@ -805,6 +805,21 @@
 # Logs came back unchanged: no number moved.
 
 
+## THEORY.md: the analytic chain written down                 (2026-10-08)
+
+# Written on returning to the project, because the motivation for L_K, L_N/L_s
+# and the nondimensionalisation had got lost under the figure-by-figure detail.
+# THEORY.md is the argument only, no simulation specifics: dh/dt = 2K_T/h needs
+# K_T(h); K_T = sqrt(TKE) L_K turns that into an eddy-size question; L_N and L_s
+# are the two physical limits on eddy size, combined harmonically; fitting picks
+# the form; K_T* = A sqrt(Ri)/(1+sqrt(Ri)) is the same model with the dimensions
+# removed.
+#
+# Writing it out exposed a gap that is not on the open list: closing
+# K_T = A TKE/(N+S) back to a function of h alone needs S(h) at the layer top,
+# and nothing here models it — only the empirical S ~ N^p at z = h. Added below.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning
@@ -856,3 +871,6 @@
 #   interacting with the pycnocline at T = 10 m is not separable without another
 #   T. This is the strongest reason to do T = 15 or 20.
 # - The softplus overflow in Ekman 3D.jl is unfixed, by design.
+# - No model for the shear S at z = h as a function of h (and u_*, N). The
+#   closure K_T = A TKE/(N+S) is not a function of h alone until there is one,
+#   so dh/dt = 2K_T/h cannot yet be integrated. See THEORY.md section 7.

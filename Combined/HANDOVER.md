@@ -20,6 +20,8 @@ parameter r = N/ω = N/f means the same background N in both. All the
 comparison work lives in Combined/, at T = 10 m.
 
 START BY READING, in this order:
+  Combined/THEORY.md  short: the analytic chain (dh/dt = 2K_T/h -> L_K ->
+                      L_N, L_s -> K_T*(Ri)) and why each step is taken
   Combined/LOG.txt    ~400 lines, the narrative: what was done, in order, what
                       came of it, mistakes made, and what's still open
   Combined/README.md  the detail and the reasoning behind each figure
@@ -165,6 +167,10 @@ dropped (A = 0.122, rms 40 %). Those two climb at high Ri instead of flattening
 and are the thinnest layers (h = 6-8 m). Dropping them was chosen by eye, not
 on a physical criterion — say so if it is shown. It does not close the gap to
 Stokes; the plateau moves further away.
+
+Written 2026-10-08: THEORY.md, the theoretical argument with no simulation
+detail. It surfaced an unlisted gap: to make K_T a function of h alone, S at
+the layer top needs a model in h; only S ~ N^p exists. Now on the open list.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist

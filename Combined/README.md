@@ -2,6 +2,10 @@
 
 We combine the results of both simulations for each model.
 
+`THEORY.md` sets out the analytic chain this work serves — `dh/dt = 2K_T/h`,
+the mixing length, `L_N`/`L_s`, and why `K_T*(Ri)` — with no simulation detail.
+Read it first if the motivation for a figure here is unclear.
+
 ## Where things live
 
 ```
