@@ -820,6 +820,21 @@
 # and nothing here models it — only the empirical S ~ N^p at z = h. Added below.
 
 
+## TKE profiles with their fits drawn                          (2026-10-09)
+
+# plot_tke_fits_T10.jl -> figures/tke_fits_stokes_T10.png and
+# figures/tke_fits_ekman_lowr_T10.png (one per flow). The stage-2 exponential fits
+# drawn over the profiles, which tke_profiles_T10.png never did. Stokes all r,
+# Ekman r < 25 (the sets of the Stokes K_T* figure and the Ekman lowr scan).
+# Constants identical to plot_tke_profiles_T10.log.
+#
+# Seeing them drawn: Ekman r < 25 is genuinely exponential up to h (rms <= 5.4 %)
+# with a slope that changes with r. Stokes collapses but curves — steeper in the
+# bottom 0.2 h, rolling off just below h — so its 13-19 % is shape, not noise.
+# Worth knowing before TKE(h) from this fit is used in a K_T(h) closure: for
+# Stokes it is evaluated exactly where the fit is worst.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

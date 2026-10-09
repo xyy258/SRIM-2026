@@ -1013,6 +1013,22 @@ further.
 `h/δ` at 2.62 and 0.66, so `A₂` alone is not comparable between flows; `A₂h/δ`
 is, and on that measure both flows decay by about `e^(−3.4)` over one `h`.
 
+### The fits drawn — `plot/plot_tke_fits_T10.jl`
+
+`figures/tke_fits_stokes_T10.png` and `figures/tke_fits_ekman_lowr_T10.png`,
+one figure per flow (split 2026-10-09), `z/h` up and `TKE/u_*²` on a log axis,
+each case's profile solid and its stage-2 fit (`A₁e^(−A₂z/δ)`, peak to `z = h`)
+dashed over the range it was fitted. Stokes is all eight `r`, matching
+`KTstar_vs_Ri_stokes_T10.png`; Ekman is `r` < 25, matching
+`KTstar_vs_Ri_zscan_ekman_lowr_T10.png`. Same fitting code as stage 2, so the
+constants are the ones in the table above (log in `logs/plot_tke_fits_T10.log`).
+
+What the drawn fits show that the table does not: the Ekman profiles really are
+straight lines on this axis up to `z ≈ h` (rms 1.6–5.4 % for `r` < 25), they just
+have different slopes. The Stokes ones collapse but are **not** quite
+exponential — they steepen in the bottom ~0.2 h and bend over again below `h`,
+which is where their 13–19 % rms comes from.
+
 ### Stage 3 — the δ model for K_T
 
 `figures/KT_delta_model_T10.png`. Does `L_K/δ` against `L_harm/δ` collapse both

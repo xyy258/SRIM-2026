@@ -59,7 +59,7 @@ STANDING RULES:
   Scripts live one level down and are invoked with their folder, e.g.
   `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
       Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
-      Combined/plot/     the 15 plot_* scripts
+      Combined/plot/     the 16 plot_* scripts
       Combined/reduce/   the 3 reduce_* scripts
       Combined/run/      ekmanrun.jl, swirles.sh
       Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
@@ -171,6 +171,10 @@ Stokes; the plateau moves further away.
 Written 2026-10-08: THEORY.md, the theoretical argument with no simulation
 detail. It surfaced an unlisted gap: to make K_T a function of h alone, S at
 the layer top needs a model in h; only S ~ N^p exists. Now on the open list.
+
+Built 2026-10-09: plot_tke_fits_T10.jl -> figures/tke_fits_{stokes,ekman_lowr}_T10.png, TKE
+profiles with the exponential fits drawn (Stokes all r, Ekman r < 25). Ekman is
+cleanly exponential to h; Stokes collapses but curves, worst right at z = h.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist
