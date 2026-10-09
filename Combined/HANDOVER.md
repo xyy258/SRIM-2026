@@ -179,7 +179,8 @@ A1 u_*^2 e^(-A2 h/delta) depends on h — in z/h it is a constant. Stokes
 GOTCHA for the growth closure: the measured Stokes TKE(h) sits well BELOW the
 exponential at high N (profile rolls off under h), so the fit overestimates
 TKE(h) there (no longer marked on the figure). Each legend also gives the
-median u_* (Stokes 1.11e-3, Ekman 2.66e-3 m/s). Ekman's decay rate depends on
+median u_* (Stokes 1.11e-3, Ekman 2.66e-3 m/s) and the delta formula
+(0.4 u_*/ω (1+N²/ω²)^-0.020; 1.3 u_*/f (1+N²/f²)^-0.155). Ekman's decay rate depends on
 r in either scaling.
 
 2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png

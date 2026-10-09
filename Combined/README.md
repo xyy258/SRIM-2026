@@ -1028,7 +1028,9 @@ line per flow (the layer-top dots were drawn briefly and removed on request): ev
 from its TKE peak to `z = h` pooled into a single least-squares fit of
 `log(TKE/u_*²)` against `z/δ`. The legend shows the equation and the flow's
 measured `u_*` (median over cases: 1.11×10⁻³ m/s Stokes, 2.66×10⁻³ m/s Ekman
-`r` < 25 — each flat to ~2 % across its cases, range in the log); the rms is in
+`r` < 25 — each flat to ~2 % across its cases, range in the log) and the δ
+used, `0.4 u_*/ω (1+N²/ω²)^(−0.020)` and `1.3 u_*/f (1+N²/f²)^(−0.155)` (stage 1;
+`p` read from `delta_T10.jld2`). The rms is in
 `logs/plot_tke_fits_T10.log`.
 
 **Why `z/δ` and not `z/h`** (changed 2026-10-09). For the growth law

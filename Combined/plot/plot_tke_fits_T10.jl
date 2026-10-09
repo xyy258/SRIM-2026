@@ -47,7 +47,7 @@ function linfit(x, y)
 end
 
 # One fit per flow, all r pooled: TKE/u_*^2 = A1 exp(-A2 z/delta).
-function panel(cs, fl, sym)
+function panel(cs, fl, sym, c0, w, pp)
     ztop = ZMAX * maximum(c.h / c.δ for c in cs)
     p = plot(xscale = :log10, xlabel = L"\mathrm{TKE}/u_*^2", ylabel = L"z/\delta",
              ylims = (0, ztop), legend = :topright, foreground_color_legend = nothing)
@@ -71,10 +71,14 @@ function panel(cs, fl, sym)
     say(@sprintf("%s: u_* = %.3e m/s median, %.3e to %.3e", fl, median(us), minimum(us), maximum(us)))
     plot!(p, [NaN], [NaN]; color = :white, lw = 0,
           label = latexstring(@sprintf("u_* = %.2f \\times 10^{%d}\\ \\mathrm{m\\,s^{-1}}", median(us) / 10.0^e, e)))
+    plot!(p, [NaN], [NaN]; color = :white, lw = 0,
+          label = latexstring(@sprintf("\\delta = %.1f\\,u_*/%s\\,(1+N^2/%s^2)^{-%.3f}", c0, w, w, pp)))
 end
 
-for (cs, fl, sym, tag) in ((S, "Stokes", "N/ω", "stokes"), (E, "Ekman,\\ N/f < $DROP", "N/f", "ekman_lowr"))
-    fig = plot(panel(cs, fl, sym); size = (800, 760),
+pS, pE = jldopen(io -> (io["p_stokes"], io["p_ekman"]), DFILE, "r")
+for (cs, fl, sym, tag, c0, w, pp) in ((S, "Stokes", "N/ω", "stokes", 0.4, "\\omega", pS),
+                                      (E, "Ekman,\\ N/f < $DROP", "N/f", "ekman_lowr", 1.3, "f", pE))
+    fig = plot(panel(cs, fl, sym, c0, w, pp); size = (800, 760),
                title = latexstring("T = 10\\,\\mathrm{m},\\ \\mathrm{$fl}:\\ \\ \\mathrm{TKE\\ profiles\\ and\\ fits}"),
                left_margin = 6Plots.mm, bottom_margin = 6Plots.mm, top_margin = 3Plots.mm)
     o = joinpath(HERE, "figures", "tke_fits_$(tag)_T10.png"); savefig(fig, o); say("wrote $o")

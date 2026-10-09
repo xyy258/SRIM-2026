@@ -869,7 +869,9 @@
 # these profiles. The layer-top dots that showed this were then removed from the
 # figures on request; the finding stands and is in the README. u_* added to
 # each legend as the median over cases (Stokes 1.11e-3, Ekman r < 25 2.66e-3
-# m/s, each within ~2 % across cases).
+# m/s, each within ~2 % across cases). The delta formula was then added to each
+# legend: 0.4 u_*/omega (1+N^2/omega^2)^(-0.020) Stokes, 1.3 u_*/f
+# (1+N^2/f^2)^(-0.155) Ekman, p read from delta_T10.jld2 (p_stokes, p_ekman).
 
 
 ## Mistakes made here, so they are not made again
