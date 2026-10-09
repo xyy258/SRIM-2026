@@ -820,19 +820,23 @@
 # and nothing here models it — only the empirical S ~ N^p at z = h. Added below.
 
 
-## TKE profiles with their fits drawn                          (2026-10-09)
+## TKE profiles, one fit per flow                             (2026-10-09)
 
 # plot_tke_fits_T10.jl -> figures/tke_fits_stokes_T10.png and
-# figures/tke_fits_ekman_lowr_T10.png (one per flow). The stage-2 exponential fits
-# drawn over the profiles, which tke_profiles_T10.png never did. Stokes all r,
-# Ekman r < 25 (the sets of the Stokes K_T* figure and the Ekman lowr scan).
-# Constants identical to plot_tke_profiles_T10.log.
+# figures/tke_fits_ekman_lowr_T10.png. Stokes all r, Ekman r < 25 (the sets of
+# the Stokes K_T* figure and the Ekman lowr scan). First drawn with a dashed fit
+# per case; changed the same day on request to ONE pooled fit per flow with its
+# equation on the figure, in z/h:
 #
-# Seeing them drawn: Ekman r < 25 is genuinely exponential up to h (rms <= 5.4 %)
-# with a slope that changes with r. Stokes collapses but curves — steeper in the
-# bottom 0.2 h, rolling off just below h — so its 13-19 % is shape, not noise.
-# Worth knowing before TKE(h) from this fit is used in a K_T(h) closure: for
-# Stokes it is evaluated exactly where the fit is worst.
+#   Stokes   TKE/u_*^2 = 3.42 exp(-3.46 z/h)   rms 17.6 %
+#   Ekman    TKE/u_*^2 = 1.79 exp(-3.86 z/h)   rms 35.9 %   (r < 25)
+#
+# Stokes pools at almost no cost (per-case 13-19 %): one profile, but curved —
+# steeper in the bottom 0.2 h, rolling off below h — so the line is worst right
+# at z = h, which is where a K_T(h) closure would evaluate it. Ekman is cleanly
+# exponential per case (<= 5.4 %) but the decay b runs 4.53 -> 2.86 with r, so
+# the pooled 35.9 % is the fan, not noise; one TKE(z/h) needs b(r) there.
+# The rms was then taken off the legend on request; it stays in the log.
 
 
 ## Mistakes made here, so they are not made again

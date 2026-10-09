@@ -172,9 +172,10 @@ Written 2026-10-08: THEORY.md, the theoretical argument with no simulation
 detail. It surfaced an unlisted gap: to make K_T a function of h alone, S at
 the layer top needs a model in h; only S ~ N^p exists. Now on the open list.
 
-Built 2026-10-09: plot_tke_fits_T10.jl -> figures/tke_fits_{stokes,ekman_lowr}_T10.png, TKE
-profiles with the exponential fits drawn (Stokes all r, Ekman r < 25). Ekman is
-cleanly exponential to h; Stokes collapses but curves, worst right at z = h.
+Built 2026-10-09: plot_tke_fits_T10.jl -> figures/tke_fits_{stokes,ekman_lowr}_T10.png,
+one pooled exponential per flow in z/h, equation (no rms) on the figure. Stokes
+TKE/u_*^2 = 3.42 e^(-3.46 z/h), 17.6 %; Ekman (r < 25) 1.79 e^(-3.86 z/h),
+35.9 % — Ekman's decay rate depends on r, so its single line is a compromise.
 
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist

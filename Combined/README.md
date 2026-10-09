@@ -1013,21 +1013,34 @@ further.
 `h/δ` at 2.62 and 0.66, so `A₂` alone is not comparable between flows; `A₂h/δ`
 is, and on that measure both flows decay by about `e^(−3.4)` over one `h`.
 
-### The fits drawn — `plot/plot_tke_fits_T10.jl`
+### One fit per flow — `plot/plot_tke_fits_T10.jl`
 
-`figures/tke_fits_stokes_T10.png` and `figures/tke_fits_ekman_lowr_T10.png`,
-one figure per flow (split 2026-10-09), `z/h` up and `TKE/u_*²` on a log axis,
-each case's profile solid and its stage-2 fit (`A₁e^(−A₂z/δ)`, peak to `z = h`)
-dashed over the range it was fitted. Stokes is all eight `r`, matching
-`KTstar_vs_Ri_stokes_T10.png`; Ekman is `r` < 25, matching
-`KTstar_vs_Ri_zscan_ekman_lowr_T10.png`. Same fitting code as stage 2, so the
-constants are the ones in the table above (log in `logs/plot_tke_fits_T10.log`).
+`figures/tke_fits_stokes_T10.png` (all eight `r`, the set of
+`KTstar_vs_Ri_stokes_T10.png`) and `figures/tke_fits_ekman_lowr_T10.png`
+(`r` < 25, the set of `KTstar_vs_Ri_zscan_ekman_lowr_T10.png`). `z/h` up,
+`TKE/u_*²` on a log axis, each case's profile in its colour, and **one** black
+line per flow: every case's points from its TKE peak to `z = h` pooled into a
+single least-squares fit of `log(TKE/u_*²)` against `z/h`.
 
-What the drawn fits show that the table does not: the Ekman profiles really are
-straight lines on this axis up to `z ≈ h` (rms 1.6–5.4 % for `r` < 25), they just
-have different slopes. The Stokes ones collapse but are **not** quite
-exponential — they steepen in the bottom ~0.2 h and bend over again below `h`,
-which is where their 13–19 % rms comes from.
+| flow | pooled fit | rms | per-case `a`, `b` |
+|---|---|---|---|
+| Stokes, all `r` | `TKE/u_*² = 3.42 e^(−3.46 z/h)` | 17.6 % | 3.29–3.55, 2.94–3.77 |
+| Ekman, `r` < 25 | `TKE/u_*² = 1.79 e^(−3.86 z/h)` | 35.9 % | 1.73–2.01, 2.86–4.53 |
+
+Written in `z/h`, so `b` is the stage-2 `A₂h/δ` and `a` is `A₁/u_*²` — the
+per-case numbers are the stage-2 table's (log: `logs/plot_tke_fits_T10.log`).
+
+**Stokes has one profile**; the pooled rms (17.6 %) is barely above the per-case
+13–19 %, so pooling costs almost nothing. What remains is shape: the profiles
+steepen in the bottom ~0.2 h and roll off just below `h`, so the single line is
+worst exactly at `z = h`. **Ekman does not** — each case is a clean exponential
+(rms ≤ 5.4 %) but the slope runs 4.53 → 2.86 with `r`, so the pooled line is a
+compromise through a fan and its 35.9 % is that spread. A single `TKE(z/h)` for
+the rotating column would need `b` to depend on `r`.
+
+The pooled fit weights each case by its number of grid points in range, so finer
+or deeper cases count for more. The legend shows the equation only; the rms is in
+the log, not on the figure (removed 2026-10-09 on request).
 
 ### Stage 3 — the δ model for K_T
 
