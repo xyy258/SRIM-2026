@@ -134,7 +134,7 @@ end
 
 # Each guide is drawn only where it is actually the asymptote, so neither runs
 # across the empty corners the legend and the caption need.
-function panel(key, ttl, xlab, note)
+function panel(key, ttl, xlab)
     f = fit(cases, key)
     xs = [med(getfield(c, key).x) for c in cases]; ys = [med(getfield(c, key).K) for c in cases]
     lo, hi = minimum(fin(xs)) / 2.5, maximum(fin(xs)) * 2.5
@@ -145,11 +145,11 @@ function panel(key, ttl, xlab, note)
     xx = exp.(range(log(lo), log(hi); length = 300))
     xlow = xx[xx .<= 2.0]; xhigh = xx[xx .>= 0.7]
     plot!(p, xlow, f.A .* xlow; color = :grey55, lw = 1.2, ls = :dash,
-          label = L"Ri \to 0\!: \ K_T^{*} \to A\sqrt{Ri} \ \ (K_T \to \mathrm{TKE}/S)")
+          label = "")
     plot!(p, xhigh, fill(f.A, length(xhigh)); color = :grey55, lw = 1.2, ls = :dot,
-          label = latexstring(@sprintf("Ri \\to \\infty\\!: \\ K_T^{*} \\to %.3f \\ \\ (K_T \\to \\mathrm{TKE}/N)", f.A)))
+          label = "")
     plot!(p, xx, f.A .* xx ./ (1 .+ xx); color = :black, lw = 2.4,
-          label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri}), \\ \\mathrm{rms}\\ %.1f\\,\\%%", f.A, f.rms)))
+          label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri})", f.A)))
     for (i, c) in enumerate(cases)
         (isfinite(xs[i]) && isfinite(ys[i])) || continue
         plot!(p, [qlo(getfield(c, key).x), qhi(getfield(c, key).x)], [ys[i], ys[i]];
@@ -160,17 +160,15 @@ function panel(key, ttl, xlab, note)
     end
     plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
              yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
-    annotate!(p, lo * 1.15, yhi / 1.08, text(note, 9, :grey30, :left, :top))
     return p
 end
 
-p = panel(:bg, "", L"\sqrt{Ri} = N/S \ \ (N = r\,\omega,\ \mathrm{background})",
-          "both axes carry N, so K_T* ~ N and Ri ~ N² share it:\nsome correlation is built in, as in L_K vs L_harm")
+p = panel(:bg, "", L"\sqrt{Ri} = N/S \ \ (N = r\,\omega,\ \mathrm{background})")
 for sv in SVALS
     scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv), label = @sprintf("N/ω = %g", sv))
 end
 f = plot(p; size = (900, 780),
-         plot_title = L"T = 10\,\mathrm{m},\ z = h,\ \mathrm{Stokes\ only}:\ \ K_T^{*} = A\sqrt{Ri}/(1+\sqrt{Ri})",
+         plot_title = L"T = 10\,\mathrm{m},\ z = h,\ \mathrm{Stokes}",
          bottom_margin = 6Plots.mm, left_margin = 6Plots.mm, top_margin = 3Plots.mm)
 o = joinpath(FIGDIR, "KTstar_vs_Ri_stokes_T10.png"); savefig(f, o); say("\nwrote $o")
 

@@ -136,13 +136,14 @@ xlo, xhi = minimum(p -> p.x, pts) / 2.5, maximum(p -> p.x, pts) * 2.5
 ylo, yhi = minimum(p -> p.K, pts) / 2.5, maximum(p -> p.K, pts) * 2.5
 xx = exp.(range(log(xlo), log(xhi); length = 300))
 
-function figure(ps, f, title, out)
+function figure(ps, f, title, out; stats = true)
     p = plot(xscale = :log10, yscale = :log10,
              xlabel = L"\sqrt{Ri} = \sqrt{\langle \partial b/\partial z \rangle}/S \ \ (\mathrm{local})",
              ylabel = L"K_T^{*} = K_T N/\mathrm{TKE} \ \ (\mathrm{local})",
              legend = :bottomright, foreground_color_legend = nothing)
     plot!(p, xx, f.A .* xx ./ (1 .+ xx); color = :black, lw = 2.4,
-          label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri}), \\ \\mathrm{rms}\\ %.0f\\,\\%%, \\ n = %d", f.A, f.rms, f.n)))
+          label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri})", f.A) *
+                              (stats ? @sprintf(", \\ \\mathrm{rms}\\ %.0f\\,\\%%, \\ n = %d", f.rms, f.n) : "")))
     for q in ps
         scatter!(p, [q.x], [q.K]; marker = :diamond, ms = 8, msw = 1.3,
                  mc = ramp_colour(q.r), msc = C_EKMA, label = "")
@@ -163,7 +164,7 @@ say("")
 figure(pts, fa, L"T = 10\,\mathrm{m},\ \mathrm{Ekman}:\ \ K_T^{*}\ \mathrm{against\ local}\ Ri,\ z/h = 0.6\ \mathrm{to}\ 3",
        joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_T10.png"))
 figure(kept, fk, latexstring(@sprintf("T = 10\\,\\mathrm{m},\\ \\mathrm{Ekman},\\ N/f < %g:\\ \\ K_T^{*}\\ \\mathrm{against\\ local}\\ Ri", DROP)),
-       joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_lowr_T10.png"))
+       joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_lowr_T10.png"); stats = false)
 
 mkpath(joinpath(HERE, "logs"))
 write(joinpath(HERE, "logs", "plot_KTstar_Ri_zscan_ekman_T10.log"), join(logl, "\n") * "\n")

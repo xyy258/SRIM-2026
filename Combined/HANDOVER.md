@@ -177,6 +177,11 @@ one pooled exponential per flow in z/h, equation (no rms) on the figure. Stokes
 TKE/u_*^2 = 3.42 e^(-3.46 z/h), 17.6 %; Ekman (r < 25) 1.79 e^(-3.86 z/h),
 35.9 % — Ekman's decay rate depends on r, so its single line is a compromise.
 
+2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png
+trimmed for slides (no rms or n in legends, no caveat note, shorter Stokes title,
+asymptote guides unlabelled). The shared-N caveat is now only in the docs —
+say it aloud if the Stokes figure is shown.
+
 NEXT STEP: not chosen. The open list at the end of LOG.txt is the menu; the
 strongest item is a second pycnocline depth (T = 15 or 20, which already exist
 on the Stokes side), because it is the only way to tell whether the Stokes h

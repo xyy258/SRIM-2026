@@ -839,6 +839,17 @@
 # The rms was then taken off the legend on request; it stays in the log.
 
 
+## K_T* figures trimmed for slides                            (2026-10-09)
+
+# On request. KTstar_vs_Ri_stokes_T10.png: no rms in the legend, no "both axes
+# carry N" note, title now just "T = 10 m, z = h, Stokes", and the two asymptote
+# guides kept on the plot but dropped from the legend.
+# KTstar_vs_Ri_zscan_ekman_lowr_T10.png: rms and n off the legend (figure()
+# takes stats = false); the all-r Ekman scan figure keeps both. No numbers changed — the
+# rms values are still in both logs. The shared-N caveat still applies even
+# though it is no longer printed on the Stokes figure.
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

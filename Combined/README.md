@@ -514,8 +514,12 @@ so it fits worse: 26.3 % at the best height (`z = 10 m = T`), and 30–47 % over
 9–18 m. Inside the layer the gradient falls under the mask and `K_T` is
 discarded; above it `S` dies and `√Ri` runs away. The numbers are in `LOG.txt`.
 
-The panel carries a note that `K_T* ∝ N` and `Ri ∝ N²` share `N`, so some
-correlation is built in, exactly as `L_K` vs `L_harm` shares `√TKE`.
+The figure no longer carries a note, but the caveat stands: `K_T* ∝ N` and
+`Ri ∝ N²` share `N`, so some correlation is built in, exactly as `L_K` vs
+`L_harm` shares `√TKE`. Since 2026-10-09 the figure is trimmed for slides:
+title `T = 10 m, z = h, Stokes`, legend shows the fit (no rms) and the cases,
+and the two asymptote guides are still drawn but unlabelled. The rms is in
+`logs/plot_KTstar_Ri_stokes_T10.log`.
 
 ### Why this is Stokes only
 
@@ -668,7 +672,8 @@ script's Ekman row exactly (`A` = 0.1488, 52.3 %, `n` = 50), which is the check
 that the port is faithful. Two figures, same axis limits so they sit side by side:
 
 - `figures/KTstar_vs_Ri_zscan_ekman_T10.png` — all eight `r`
-- `figures/KTstar_vs_Ri_zscan_ekman_lowr_T10.png` — `r` = 25 and 50 left out (`DROP = 25`)
+- `figures/KTstar_vs_Ri_zscan_ekman_lowr_T10.png` — `r` = 25 and 50 left out (`DROP = 25`);
+  its legend shows the fit only, no rms or `n` (2026-10-09, `stats = false`); the all-`r` one keeps both
 
 | set | `A` | rms | `n` | `Ri` range |
 |---|---|---|---|---|
