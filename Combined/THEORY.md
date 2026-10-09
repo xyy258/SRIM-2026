@@ -161,7 +161,7 @@ $dh/dt = 2K_T/h$, each ingredient has to be a function of $h$:
 | ingredient | how it becomes a function of $h$ |
 |---|---|
 | $N$ | the background stratification. It is known. |
-| $\mathrm{TKE}(h)$ | from a vertical profile of TKE (time-averaged over the forcing cycle in the oscillating case), e.g. $\mathrm{TKE}(z) = A_1 e^{-A_2 z/\delta}$ with $A_1 \propto u_*^2$ and $\delta$ a boundary-layer thickness, evaluated at $z = h$ |
+| $\mathrm{TKE}(h)$ | from a vertical profile of TKE (time-averaged over the forcing cycle in the oscillating case), e.g. $\mathrm{TKE}(z) = A_1 e^{-A_2 z/\delta}$ with $A_1 \propto u_*^2$ and $\delta$ a boundary-layer thickness, evaluated at $z = h$. The height must be scaled by a length that does **not** depend on $h$ (such as $\delta$): written as $e^{-b z/h}$, the profile gives $\mathrm{TKE}(h) = a e^{-b} u_*^2$, a constant |
 | $S(h)$ | **still needed.** The shear at the layer top also needs a model in terms of $h$ (and $u_*$, $N$). Without one, $K_T$ is a function of $h$ *and* $S$, not of $h$ alone. |
 
 With all three in place,

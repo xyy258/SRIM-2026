@@ -850,6 +850,28 @@
 # though it is no longer printed on the Stokes figure.
 
 
+## TKE fits redrawn in z/delta                                (2026-10-09)
+
+# Prompted by: in z/h the fit gives TKE(h) = a e^(-b) u_*^2, a constant, which
+# cannot drive dh/dt = 2K_T/h. In z/delta (delta independent of h) it gives
+# TKE(h) = A1 u_*^2 e^(-A2 h/delta), which falls as h grows. Same data, same
+# fit range; the forms agree on equilibrated runs and differ only in growth.
+#
+#   Stokes   TKE/u_*^2 = 3.43 exp(-1.47 z/delta)   rms 15.7 %  (z/h: 17.6 %)
+#   Ekman    TKE/u_*^2 = 1.72 exp(-5.68 z/delta)   rms 41.2 %  (z/h: 35.9 %)
+#
+# Two things the redraw shows. Stokes TKE(h) is NOT on its own exponential:
+# with each case's layer top marked, TKE(h) falls from ~0.16 u_*^2 (r = 0.2) to
+# ~0.03 (r = 50), below the line, because the profile rolls off just under h —
+# stratification at the top, which A1 e^(-A2 h/delta) does not contain, so it
+# overestimates TKE(h) at high N. And Ekman is worse in z/delta than z/h: A2 per
+# delta still spans x1.6 with r, so delta's N-dependence is not what collapses
+# these profiles. The layer-top dots that showed this were then removed from the
+# figures on request; the finding stands and is in the README. u_* added to
+# each legend as the median over cases (Stokes 1.11e-3, Ekman r < 25 2.66e-3
+# m/s, each within ~2 % across cases).
+
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

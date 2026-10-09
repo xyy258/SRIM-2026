@@ -1022,30 +1022,44 @@ is, and on that measure both flows decay by about `e^(−3.4)` over one `h`.
 
 `figures/tke_fits_stokes_T10.png` (all eight `r`, the set of
 `KTstar_vs_Ri_stokes_T10.png`) and `figures/tke_fits_ekman_lowr_T10.png`
-(`r` < 25, the set of `KTstar_vs_Ri_zscan_ekman_lowr_T10.png`). `z/h` up,
+(`r` < 25, the set of `KTstar_vs_Ri_zscan_ekman_lowr_T10.png`). `z/δ` up,
 `TKE/u_*²` on a log axis, each case's profile in its colour, and **one** black
-line per flow: every case's points from its TKE peak to `z = h` pooled into a
-single least-squares fit of `log(TKE/u_*²)` against `z/h`.
+line per flow (the layer-top dots were drawn briefly and removed on request): every case's points
+from its TKE peak to `z = h` pooled into a single least-squares fit of
+`log(TKE/u_*²)` against `z/δ`. The legend shows the equation and the flow's
+measured `u_*` (median over cases: 1.11×10⁻³ m/s Stokes, 2.66×10⁻³ m/s Ekman
+`r` < 25 — each flat to ~2 % across its cases, range in the log); the rms is in
+`logs/plot_tke_fits_T10.log`.
 
-| flow | pooled fit | rms | per-case `a`, `b` |
+**Why `z/δ` and not `z/h`** (changed 2026-10-09). For the growth law
+`dh/dt = 2K_T/h` we need `TKE(h)`. In `z/h` the fit `a e^(−b z/h)` gives
+`TKE(h) = a e^(−b) u_*²` — a constant, whatever `h` is. In `z/δ`, with `δ` set by
+`u_*`, `ω` or `f` and `N` but not by `h`, it gives `TKE(h) = A₁ u_*² e^(−A₂ h/δ)`,
+which falls as the layer deepens. On the equilibrated data the two are the same
+fit (`h/δ` is nearly constant per flow, so `b = A₂ h/δ`); they differ only in
+what they predict while `h` changes, which these runs cannot test.
+
+| flow | pooled fit | rms | per-case `A₁`, `A₂` |
 |---|---|---|---|
-| Stokes, all `r` | `TKE/u_*² = 3.42 e^(−3.46 z/h)` | 17.6 % | 3.29–3.55, 2.94–3.77 |
-| Ekman, `r` < 25 | `TKE/u_*² = 1.79 e^(−3.86 z/h)` | 35.9 % | 1.73–2.01, 2.86–4.53 |
+| Stokes, all `r` | `TKE/u_*² = 3.43 e^(−1.47 z/δ)` | 15.7 % | 3.29–3.55, 1.38–1.52 |
+| Ekman, `r` < 25 | `TKE/u_*² = 1.72 e^(−5.68 z/δ)` | 41.2 % | 1.73–2.01, 4.20–6.88 |
 
-Written in `z/h`, so `b` is the stage-2 `A₂h/δ` and `a` is `A₁/u_*²` — the
-per-case numbers are the stage-2 table's (log: `logs/plot_tke_fits_T10.log`).
+(In `z/h` they were 17.6 % and 35.9 %.)
 
-**Stokes has one profile**; the pooled rms (17.6 %) is barely above the per-case
-13–19 %, so pooling costs almost nothing. What remains is shape: the profiles
-steepen in the bottom ~0.2 h and roll off just below `h`, so the single line is
-worst exactly at `z = h`. **Ekman does not** — each case is a clean exponential
-(rms ≤ 5.4 %) but the slope runs 4.53 → 2.86 with `r`, so the pooled line is a
-compromise through a fan and its 35.9 % is that spread. A single `TKE(z/h)` for
-the rotating column would need `b` to depend on `r`.
+**Stokes collapses slightly better in `z/δ` than in `z/h`.** Below `z ≈ 2δ`
+the eight profiles lie on one line. But the layer-top dots do **not** sit on it:
+`TKE(h)` runs from ~0.16 `u_*²` (`r` = 0.2) down to ~0.03 (`r` = 50), and the
+strongly stratified cases fall well below the exponential, because the
+profile rolls off just under `h`. So `A₁e^(−A₂h/δ)` overestimates `TKE(h)` at
+high `N` — the roll-off is stratification acting at the layer top, and the
+exponential does not contain it.
 
-The pooled fit weights each case by its number of grid points in range, so finer
-or deeper cases count for more. The legend shows the equation only; the rms is in
-the log, not on the figure (removed 2026-10-09 on request).
+**Ekman collapses worse in `z/δ`.** `A₂` (per `δ`) runs 6.88 → 4.20 with `r`,
+×1.6, so the fitted `δ` exponent (p = 0.155) does not absorb the change in
+decay rate; neither length makes these profiles collapse. A single Ekman
+`TKE(z)` needs `A₂` to depend on `r`.
+
+The pooled fit weights each case by its number of grid points in range.
 
 ### Stage 3 — the δ model for K_T
 

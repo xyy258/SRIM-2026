@@ -173,9 +173,14 @@ detail. It surfaced an unlisted gap: to make K_T a function of h alone, S at
 the layer top needs a model in h; only S ~ N^p exists. Now on the open list.
 
 Built 2026-10-09: plot_tke_fits_T10.jl -> figures/tke_fits_{stokes,ekman_lowr}_T10.png,
-one pooled exponential per flow in z/h, equation (no rms) on the figure. Stokes
-TKE/u_*^2 = 3.42 e^(-3.46 z/h), 17.6 %; Ekman (r < 25) 1.79 e^(-3.86 z/h),
-35.9 % — Ekman's decay rate depends on r, so its single line is a compromise.
+one pooled exponential per flow, NOW IN z/delta (not z/h) so that TKE(h) =
+A1 u_*^2 e^(-A2 h/delta) depends on h — in z/h it is a constant. Stokes
+3.43 e^(-1.47 z/delta), 15.7 %; Ekman (r < 25) 1.72 e^(-5.68 z/delta), 41.2 %.
+GOTCHA for the growth closure: the measured Stokes TKE(h) sits well BELOW the
+exponential at high N (profile rolls off under h), so the fit overestimates
+TKE(h) there (no longer marked on the figure). Each legend also gives the
+median u_* (Stokes 1.11e-3, Ekman 2.66e-3 m/s). Ekman's decay rate depends on
+r in either scaling.
 
 2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png
 trimmed for slides (no rms or n in legends, no caveat note, shorter Stokes title,
