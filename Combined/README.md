@@ -1063,6 +1063,45 @@ decay rate; neither length makes these profiles collapse. A single Ekman
 
 The pooled fit weights each case by its number of grid points in range.
 
+### Growth in time — `plot/plot_growth_T10.jl`                 (2026-10-09)
+
+`figures/growth_{stokes,ekman}_T10.png` (h against log t, one curve per `r`,
+with a dashed line at the end of the LES run) and `tables/growth_times_T10.tex`
+(time to reach h = 10–60 m, in hours). The chain is
+
+    dh/dt = 2K_T/h,   K_T = K_T* TKE(h)/N,
+    TKE(h) = A₁ u_*² e^(−A₂h/δ)      (pooled fits above)
+    K_T*   = A √Ri/(1+√Ri)            (A = 0.412 Stokes, 0.122 Ekman r < 25)
+
+**Assumption: √Ri at h is held at each run's measured value** (Stokes from the
+`z = h` figure, Ekman from the z-scan at `z/h = 1`), because S(h) has no model.
+K_T* is then a constant per run and, with `x = A₂h/δ`, `h(0) = 0`,
+
+    t(h) = N δ² [(x − 1)eˣ + 1] / (2 K_T* A₁ u_*² A₂²)
+
+**Growth is effectively capped at a few δ.** TKE(h) falls as `e^(−A₂h/δ)`, so
+`t` grows like `eˣ`. Stokes (δ ≈ 4 m) reaches 10 m in 12–390 h but 60 m in
+10⁹–10¹² h; Ekman (δ = 17–34 m) reaches 60 m in 10⁴–10¹⁰ h. Beyond about
+`h/δ ≈ 2.5` (Stokes) or `0.7` (Ekman) the curves are extrapolations of the
+TKE fit past any data and should be read as "does not grow", not as times.
+
+**Check against the LES** (model h at the end of the run, 8 tidal / 12.73
+inertial periods, against measured h):
+
+| r | Stokes model / LES (m) | Ekman model / LES (m) |
+|---|---|---|
+| 0.2 | 15.1 / 9.0 | 30.2 / 22.6 |
+| 1 | 15.6 / 11.3 | 25.5 / 20.7 |
+| 5 | 12.9 / 10.5 | 15.0 / 14.5 |
+| 10 | 11.4 / 9.8 | 11.5 / 11.5 |
+| 50 | 8.1 / 8.6 | — |
+
+Good at high N (within 5 %), 30–70 % too deep at low N. Two known reasons:
+the Stokes LES has a pycnocline at `z = T = 10 m` that the model does not
+(uniform N), and at low N `√Ri` at h is small so a fixed `Ri` is the weakest
+assumption there. The exponential also overestimates Stokes TKE(h) at high N
+(stage-2 note), which this check does not show because it acts late.
+
 ### Stage 3 — the δ model for K_T
 
 `figures/KT_delta_model_T10.png`. Does `L_K/δ` against `L_harm/δ` collapse both

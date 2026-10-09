@@ -874,6 +874,20 @@
 # (1+N^2/f^2)^(-0.155) Ekman, p read from delta_T10.jld2 (p_stokes, p_ekman).
 
 
+## Growth curves h(t) from the closure                       (2026-10-09)
+
+# plot/plot_growth_T10.jl -> figures/growth_{stokes,ekman}_T10.png and
+# tables/growth_times_T10.tex. dh/dt = 2 K_T*/N TKE(h)/h with the pooled
+# z/delta TKE fits and the two K_T* figures' A (0.412, 0.122). sqrt(Ri) at h
+# held at each run's measured value (S(h) still unmodelled), giving a closed
+# form t(h) = N delta^2 [(x-1)e^x + 1]/(2 K* A1 u_*^2 A2^2), x = A2 h/delta.
+# Time to 10 m: Stokes 12-390 h, Ekman 1.7-110 h. Past a few delta the times
+# explode (Stokes 60 m: 1e9-1e12 h) — extrapolation of the exponential, read as
+# "stops growing". Model h at run end vs LES: within 5 % at high N, 30-70 % too
+# deep at low N (Stokes pycnocline at T = 10 m not in the model; fixed Ri worst
+# where sqrt(Ri) is small). sqrt(Ri) and fit constants are hard-coded from the
+# logs in the script; update them if those scripts are rerun.
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

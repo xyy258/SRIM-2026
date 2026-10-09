@@ -59,7 +59,7 @@ STANDING RULES:
   Scripts live one level down and are invoked with their folder, e.g.
   `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
       Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
-      Combined/plot/     the 16 plot_* scripts
+      Combined/plot/     the 17 plot_* scripts (+ tables/ for .tex)
       Combined/reduce/   the 3 reduce_* scripts
       Combined/run/      ekmanrun.jl, swirles.sh
       Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
@@ -182,6 +182,13 @@ TKE(h) there (no longer marked on the figure). Each legend also gives the
 median u_* (Stokes 1.11e-3, Ekman 2.66e-3 m/s) and the delta formula
 (0.4 u_*/ω (1+N²/ω²)^-0.020; 1.3 u_*/f (1+N²/f²)^-0.155). Ekman's decay rate depends on
 r in either scaling.
+
+Built 2026-10-09: plot_growth_T10.jl -> figures/growth_{stokes,ekman}_T10.png
+and tables/growth_times_T10.tex (time to h = 10..60 m). sqrt(Ri) at h is HELD
+FIXED per run (no S(h) model) and constants are hard-coded from the TKE-fit and
+K_T* logs — update them if those are rerun. Times past a few delta are
+extrapolation. Model h at run end matches LES within 5 % at high N, 30-70 %
+too deep at low N.
 
 2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png
 trimmed for slides (no rms or n in legends, no caveat note, shorter Stokes title,
