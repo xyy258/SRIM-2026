@@ -28,6 +28,7 @@ const FIGDIR = joinpath(HERE, "figures")
 const ω      = 1e-4
 const T_tide = 2π / ω
 const SKIP   = 3                       # spin-up, tidal periods
+const DROP   = 25                      # r >= DROP left out, as on the Ekman side
 
 logl = String[]
 say(s) = (println(s); flush(stdout); push!(logl, s))
@@ -73,7 +74,7 @@ function pair(K, E, S, N)
 end
 
 cases = []
-for s in SVALS
+for s in filter(<(DROP), SVALS)
     c = stokes_case(s)
     c === nothing && (say("missing files for $(sqrtRi_tag(s)) — skipped"); continue)
     d = jldopen(c.mix, "r") do io
@@ -164,7 +165,7 @@ function panel(key, ttl, xlab)
 end
 
 p = panel(:bg, "", L"\sqrt{Ri} = N/S \ \ (N = r\,\omega,\ \mathrm{background})")
-for sv in SVALS
+for sv in filter(<(DROP), SVALS)
     scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv), label = @sprintf("N/ω = %g", sv))
 end
 f = plot(p; size = (900, 780),

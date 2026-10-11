@@ -59,7 +59,7 @@ STANDING RULES:
   Scripts live one level down and are invoked with their folder, e.g.
   `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
       Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
-      Combined/plot/     the 18 plot_* scripts (+ tables/ for .tex)
+      Combined/plot/     the 19 plot_* scripts (+ tables/ for .tex)
       Combined/reduce/   the 3 reduce_* scripts
       Combined/run/      ekmanrun.jl, swirles.sh
       Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
@@ -247,3 +247,13 @@ GOTCHAS THAT COST TIME TO FIND:
   spaces inside \mathrm{} unless escaped, and prints %g as "2.16e + 03".
 - Piping a Julia run into `head` SIGPIPE-kills it before it writes its figures.
 ```
+
+SLIDE PAIRS (2026-10-11): growth, K_T*, Ri vs h and TKE fits each also come as
+one A4-landscape figure with Stokes left and Ekman right
+(figures/*_pair_T10.png). The K_T* pair comes from plot_KTstar_Ri_pair_T10.jl,
+which includes the two single-flow scripts in separate modules. When legends
+change, check the pairs by eye: the legends are placed by hand in empty corners.
+SINCE 2026-10-11 the closure uses r < 25 for BOTH flows (DROP = 25 in the K_T*,
+TKE, Ri and growth scripts). Constants: Stokes A 0.4025, A1 3.422, A2 1.460;
+Ekman A 0.2998, A1 1.718, A2 5.680. Growth times are in years. If a fit changes,
+copy the new constants into the FL table in plot_growth_T10.jl by hand.

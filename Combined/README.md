@@ -1171,6 +1171,32 @@ pycnocline (z ≈ T) while Ri still wanders — but the same form fits within
 ×1.3. Both fits are dimensional (S₀, ℓ in s⁻¹ and m); whether ℓ scales with δ
 or u_*/f has not been tested on a second u_*.
 
+### Side-by-side slide figures (A4 landscape)                    (2026-10-11)
+
+**Since 2026-10-11 both flows use N/ω, N/f < 25 everywhere** (K_T\*, TKE, Ri, growth).
+The refitted values are:
+- Stokes K_T\*: A = 0.4025.
+- Ekman K_T\*: A = 0.2998.
+- Stokes TKE: A₁ = 3.422, A₂ = 1.460.
+
+Growth times are in years. Values quoted elsewhere in this README that include
+r = 25 and 50 are the older all-r numbers.
+
+Stokes on the left, Ekman on the right, 11.69 × 8.27 in at 600 dpi, for the
+beamer deck. The single-flow figures are still written as before.
+
+| figure | written by |
+|---|---|
+| `figures/growth_pair_T10.png` | `plot/plot_growth_T10.jl` |
+| `figures/KTstar_vs_Ri_pair_T10.png` | `plot/plot_KTstar_Ri_pair_T10.jl` (runs the Stokes and Ekman K_T\* scripts, each in its own module) |
+| `figures/Ri_vs_h_pair_T10.png` | `plot/plot_Ri_vs_h_T10.jl` |
+| `figures/tke_fits_pair_T10.png` | `plot/plot_tke_fits_T10.jl` (Stokes all r, Ekman N/f < 25) |
+
+In the pairs the legends are smaller (12 pt) and moved so that they cover no data:
+- the Stokes Ri panel runs up to 10⁶ to leave room above the points;
+- the Ekman TKE panel runs up to z/δ = 1.75 for the same reason;
+- the K_T\* x-label is shortened to √Ri = N/S, with "N background" in the title.
+
 ### Stage 3 — the δ model for K_T
 
 `figures/KT_delta_model_T10.png`. Does `L_K/δ` against `L_harm/δ` collapse both

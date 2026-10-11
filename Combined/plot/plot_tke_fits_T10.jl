@@ -17,8 +17,9 @@ const HERE   = dirname(@__DIR__)
 include(joinpath(HERE, "sweep.jl"))
 const CACHE  = joinpath(HERE, "Data", "cache", "profiles_T10.jld2")
 const DFILE  = joinpath(HERE, "Data", "cache", "delta_T10.jld2")
-const DROP   = 25                       # Ekman r >= DROP left out, as in the lowr figure
+const DROP   = 25                       # r >= DROP left out of both flows
 const ZMAX   = 1.5                      # shown up to ZMAX times the largest h/delta
+const A4     = (1169, 827)              # A4 landscape at 100 px/in, for the side-by-side figure
 
 logl = String[]
 say(s) = (println(s); flush(stdout); push!(logl, s))
@@ -29,7 +30,7 @@ cases(fl, keep) = jldopen(CACHE, "r") do io
       δ = jldopen(d -> d[@sprintf("%s/r=%.1f/best", fl, r)], DFILE, "r"))
       for r in io["$fl/ratios"] if keep(r)]
 end
-S = cases("stokes", r -> true)
+S = cases("stokes", r -> r < DROP)
 E = cases("ekman",  r -> r < DROP)
 
 # Fit range per case: the TKE peak up to z = h.
@@ -75,14 +76,22 @@ function panel(cs, fl, sym, c0, w, pp)
           label = latexstring(@sprintf("\\delta = %.1f\\,u_*/%s\\,(1+N^2/%s^2)^{-%.3f}", c0, w, w, pp)))
 end
 
+ps = []
 pS, pE = jldopen(io -> (io["p_stokes"], io["p_ekman"]), DFILE, "r")
-for (cs, fl, sym, tag, c0, w, pp) in ((S, "Stokes", "N/ω", "stokes", 0.4, "\\omega", pS),
+for (cs, fl, sym, tag, c0, w, pp) in ((S, "Stokes,\\ N/\\omega < $DROP", "N/ω", "stokes", 0.4, "\\omega", pS),
                                       (E, "Ekman,\\ N/f < $DROP", "N/f", "ekman_lowr", 1.3, "f", pE))
-    fig = plot(panel(cs, fl, sym, c0, w, pp); size = (800, 760),
+    q = panel(cs, fl, sym, c0, w, pp)
+    fig = plot(q; size = (800, 760),
                title = latexstring("T = 10\\,\\mathrm{m},\\ \\mathrm{$fl}:\\ \\ \\mathrm{TKE\\ profiles\\ and\\ fits}"),
                left_margin = 6Plots.mm, bottom_margin = 6Plots.mm, top_margin = 3Plots.mm)
     o = joinpath(HERE, "figures", "tke_fits_$(tag)_T10.png"); savefig(fig, o); say("wrote $o")
+    push!(ps, plot!(q; title = latexstring("\\mathrm{$fl}"), titlefontsize = 20, guidefontsize = 22, tickfontsize = 17,
+                    legendfontsize = 12, background_color_legend = nothing,
+                    legend = tag == "stokes" ? :bottomleft : :topright, ylims = tag == "stokes" ? :auto : (0, 1.75)))   # headroom for the Ekman legend
 end
+o = joinpath(HERE, "figures", "tke_fits_pair_T10.png")
+savefig(plot(ps...; layout = (1, 2), size = A4, left_margin = 6Plots.mm, bottom_margin = 6Plots.mm,
+             plot_title = L"T = 10\,\mathrm{m}:\ \ \mathrm{TKE\ profiles\ and\ fits}"), o); say("wrote $o")
 
 mkpath(joinpath(HERE, "logs"))
 write(joinpath(HERE, "logs", "plot_tke_fits_T10.log"), join(logl, "\n") * "\n")

@@ -22,6 +22,7 @@ const EKFILE = joinpath(HERE, "Data", "cache", "ekman_lengthscales_T10_moments.j
 const ROUGH  = joinpath(HERE, "Data", "cache", "ekman_lengthscales_rough_T10.jld2")
 const STOKES_A = 0.412                 # from plot_KTstar_Ri_stokes_T10.jl
 const C_EKMA = "#8e1b4e"
+const DROP   = 25                      # r >= DROP left out, as on the Stokes side
 
 logl = String[]
 say(s) = (println(s); flush(stdout); push!(logl, s))
@@ -40,7 +41,7 @@ function grab(file, r)
     end
 end
 
-cases = [grab(EKFILE, r) for r in RATIOS]
+cases = [grab(EKFILE, r) for r in RATIOS if r < DROP]
 rough = grab(ROUGH, 25.0)
 
 function fit(cs)
@@ -94,7 +95,7 @@ for (i, c) in enumerate(cases)
     plot!(p, [xs[i], xs[i]], [qlo(c.K), qhi(c.K)]; color = :grey70, lw = 1.0, label = "")
     scatter!(p, [xs[i]], [ys[i]]; ms = 9, msw = 1.5, mc = ramp_colour(c.r), msc = :black, label = "")
 end
-for sv in RATIOS
+for sv in filter(<(DROP), RATIOS)
     scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv), label = @sprintf("N/f = %g", sv))
 end
 plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),

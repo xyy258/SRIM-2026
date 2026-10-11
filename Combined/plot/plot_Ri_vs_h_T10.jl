@@ -27,6 +27,7 @@ const TP    = 2π / Ω                    # one tidal or inertial period
 const DROP  = 25
 const WIN   = 2.0                      # window, forcing periods
 const STEP  = 0.25                     # step, forcing periods
+const A4    = (1169, 827)              # A4 landscape at 100 px/in, for the side-by-side figure
 
 logl = String[]
 say(s) = (println(s); flush(stdout); push!(logl, s))
@@ -87,7 +88,8 @@ function sfit(H, S)
     (S0 = exp(a), l = -1 / b, rms = sqrt(mean((y .- a .- b .* H) .^ 2)))
 end
 
-for (fl, rs, get, sym, nm) in (("stokes", SVALS, stokes, "N/ω", "Stokes"),
+ps = []
+for (fl, rs, get, sym, nm) in (("stokes", filter(<(DROP), SVALS), stokes, "N/ω", "Stokes"),
                                ("ekman", filter(<(DROP), RATIOS), ekman, "N/f", "Ekman"))
     p = plot(yscale = :log10, xlabel = L"h\ \ (\mathrm{m})", ylabel = L"Ri = N^2/S^2\ \ \mathrm{at}\ z = h",
              legend = :outerright, foreground_color_legend = nothing, minorgrid = true, minorticks = 9,
@@ -112,7 +114,13 @@ for (fl, rs, get, sym, nm) in (("stokes", SVALS, stokes, "N/ω", "Stokes"),
     plot!(p; yticks = exp10.(floor(Int, log10(lo)):ceil(Int, log10(hi))))
     o = joinpath(HERE, "figures", "Ri_vs_h_$(fl)_T10.png")
     savefig(plot(p; size = (1100, 760), left_margin = 6Plots.mm, bottom_margin = 6Plots.mm), o); say("wrote $o")
+    # Stokes: empty decades on top for the legend; Ekman: legend in the empty lower right.
+    nm == "Stokes" && plot!(p; ylims = (lo / 1.5, 1e4), yticks = exp10.(floor(Int, log10(lo)):4))
+    push!(ps, plot!(p; title = nm, legend = nm == "Stokes" ? :topright : :bottomright, legendfontsize = 12, background_color_legend = nothing))
 end
+o = joinpath(HERE, "figures", "Ri_vs_h_pair_T10.png")
+savefig(plot(ps...; layout = (1, 2), size = A4, left_margin = 6Plots.mm, bottom_margin = 6Plots.mm,
+             plot_title = L"Ri\ \mathrm{at\ the\ layer\ top,\ running\ mean\ over\ 2\ periods}"), o); say("wrote $o")
 
 mkpath(joinpath(HERE, "logs"))
 write(joinpath(HERE, "logs", "plot_Ri_vs_h_T10.log"), join(logl, "\n") * "\n")
