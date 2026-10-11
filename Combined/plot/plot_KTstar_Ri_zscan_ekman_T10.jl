@@ -7,8 +7,8 @@
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
-        legendfontsize = 10, plot_titlefontsize = 18)
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 22, tickfontsize = 17,
+        legendfontsize = 15, plot_titlefontsize = 22)
 
 const HERE   = dirname(@__DIR__)
 include(joinpath(HERE, "sweep.jl"))
@@ -125,8 +125,8 @@ for p in pts
     say(@sprintf("  %-5g %5.2f %10.3f %9.4f %7.0f %%", p.r, p.φ, p.x, p.K, 100 * p.frac))
 end
 
-function logticks(lo, hi)
-    v = [m * 10.0^e for e in floor(Int, log10(lo)):ceil(Int, log10(hi)) for m in (1, 2, 5)]
+function logticks(lo, hi; ms = (1, 2, 5))
+    v = [m * 10.0^e for e in floor(Int, log10(lo)):ceil(Int, log10(hi)) for m in ms]
     v = filter(x -> lo / 1.05 <= x <= hi * 1.05, v)
     (v, [x >= 1 ? string(round(Int, x)) : rstrip(rstrip(@sprintf("%.4f", x), '0'), '.') for x in v])
 end
@@ -136,11 +136,11 @@ xlo, xhi = minimum(p -> p.x, pts) / 2.5, maximum(p -> p.x, pts) * 2.5
 ylo, yhi = minimum(p -> p.K, pts) / 2.5, maximum(p -> p.K, pts) * 2.5
 xx = exp.(range(log(xlo), log(xhi); length = 300))
 
-function figure(ps, f, title, out; stats = true)
+function figure(ps, f, title, out; stats = true, leg = :bottomright)
     p = plot(xscale = :log10, yscale = :log10,
              xlabel = L"\sqrt{Ri} = \sqrt{\langle \partial b/\partial z \rangle}/S \ \ (\mathrm{local})",
              ylabel = L"K_T^{*} = K_T N/\mathrm{TKE} \ \ (\mathrm{local})",
-             legend = :bottomright, foreground_color_legend = nothing)
+             legend = leg, foreground_color_legend = nothing, background_color_legend = nothing)
     plot!(p, xx, f.A .* xx ./ (1 .+ xx); color = :black, lw = 2.4,
           label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri})", f.A) *
                               (stats ? @sprintf(", \\ \\mathrm{rms}\\ %.0f\\,\\%%, \\ n = %d", f.rms, f.n) : "")))
@@ -152,8 +152,8 @@ function figure(ps, f, title, out; stats = true)
         scatter!(p, [NaN], [NaN]; marker = :diamond, ms = 6, msw = 0, color = ramp_colour(r),
                  label = @sprintf("N/f = %g", r))
     end
-    plot!(p; xticks = logticks(xlo, xhi), xlims = (xlo, xhi),
-             yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
+    plot!(p; xticks = logticks(xlo, xhi; ms = (1,)), xlims = (xlo, xhi),
+             yticks = logticks(ylo, yhi; ms = (1,)), ylims = (ylo, yhi), minorgrid = true, minorticks = 9)
     savefig(plot(p; size = (900, 760), plot_title = title,
                  bottom_margin = 6Plots.mm, left_margin = 6Plots.mm, top_margin = 3Plots.mm), out)
     say("wrote $out")
@@ -164,7 +164,7 @@ say("")
 figure(pts, fa, L"T = 10\,\mathrm{m},\ \mathrm{Ekman}:\ \ K_T^{*}\ \mathrm{against\ local}\ Ri,\ z/h = 0.6\ \mathrm{to}\ 3",
        joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_T10.png"))
 figure(kept, fk, latexstring(@sprintf("T = 10\\,\\mathrm{m},\\ \\mathrm{Ekman},\\ N/f < %g:\\ \\ K_T^{*}\\ \\mathrm{against\\ local}\\ Ri", DROP)),
-       joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_lowr_T10.png"); stats = false)
+       joinpath(FIGDIR, "KTstar_vs_Ri_zscan_ekman_lowr_T10.png"); stats = false, leg = :topleft)
 
 mkpath(joinpath(HERE, "logs"))
 write(joinpath(HERE, "logs", "plot_KTstar_Ri_zscan_ekman_T10.log"), join(logl, "\n") * "\n")

@@ -72,8 +72,11 @@ STANDING RULES:
 - Every plotting script opens with default(dpi = 600, fontfamily = "DejaVu
   Sans") and uses LaTeXStrings for all labels. The four K_T* scripts also set
   guidefontsize 16, tickfontsize 12, legendfontsize 10, plot_titlefontsize 18
-  and annotation text 9 (enlarged 2026-10-07); new nondimensional figures
-  should match.
+  and annotation text 9 (enlarged 2026-10-07). The slide figures
+  (KTstar stokes, KTstar zscan_ekman, growth) were enlarged again 2026-10-11
+  to guide 22, tick 17, legend 15, title 22 (growth 20); check legends for
+  overlap after any further size change. Since 2026-10-11 they also label
+  decades only and have a minor grid.
 
 WHERE THINGS STAND:
 The sweep is 16 cases — Stokes and Ekman each at r = 0.2, 0.5, 1, 2, 5, 10, 25,
@@ -188,7 +191,8 @@ and tables/growth_times_T10.tex (time to h = 10..60 m). sqrt(Ri) at h is HELD
 FIXED per run (no S(h) model) and constants are hard-coded from the TKE-fit and
 K_T* logs — update them if those are rerun. Times past a few delta are
 extrapolation. Model h at run end matches LES within 5 % at high N, 30-70 %
-too deep at low N.
+too deep at low N. Ri(h) candidate found 2026-10-11: S at h ~ u_*/(kappa h)
+(within x0.5-1.5, Stokes), Ri = (N kappa h/u_*)^2 — not yet used.
 
 2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png
 trimmed for slides (no rms or n in legends, no caveat note, shorter Stokes title,

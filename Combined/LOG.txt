@@ -888,6 +888,27 @@
 # where sqrt(Ri) is small). sqrt(Ri) and fit constants are hard-coded from the
 # logs in the script; update them if those scripts are rerun.
 
+## Slide figures enlarged                                     (2026-10-11)
+
+# KTstar_vs_Ri_stokes, KTstar_vs_Ri_zscan_ekman{,_lowr}, growth_{stokes,ekman}:
+# fonts 16/12/10/18 -> 22/17/15/22 (growth title 20). Bigger text caused
+# collisions: zscan_ekman x ticks 1-2-5 ran together ("0.050.1") -> decades
+# only; lowr legend hid points near sqrt(Ri) ~ 10-30 -> top-left with a
+# transparent background; growth legends clipped a curve -> bottom-right.
+# No numbers changed.
+
+## Minor grids, decade labels; Ri(h) checked                (2026-10-11)
+
+# KTstar stokes / zscan_ekman and growth figures: minor grid, labels at decades
+# only (growth: every 1e2 to 1e10, h every 10 m; 1e12 label was clipped). Stokes
+# K_T* y axis extended to 1 so it has three labels.
+# Asked how Ri is a function of h: it is NOT — the growth curves hold each
+# run's measured sqrt(Ri) at h. Bound: K_T* <= A, so any Ri(h) speeds growth by
+# at most (1+sRi)/sRi (Stokes x16 at r = 0.2 down to x1.1; Ekman x5.4 to x1.9),
+# small against e^x. Candidate: implied S at h = N/sqrt(Ri) vs u_*/(kappa h),
+# ratio 0.51-1.46 across the Stokes sweep -> Ri(h) = (N kappa h/u_*)^2. Not
+# adopted; recorded in README growth section.
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

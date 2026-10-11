@@ -19,8 +19,8 @@
 using Oceananigans, JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
-        legendfontsize = 10, plot_titlefontsize = 18)
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 22, tickfontsize = 17,
+        legendfontsize = 15, plot_titlefontsize = 22)
 
 const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
@@ -123,9 +123,9 @@ for (key, nm) in ((:bg, "z = h, background N = r·ω"),)
 end
 
 mkpath(FIGDIR)
-function logticks(lo, hi)
+function logticks(lo, hi; ms = (1,))
     a = floor(Int, log10(lo)); b = ceil(Int, log10(hi)); v = Float64[]
-    for e in a:b, m in (1, 2, 5)
+    for e in a:b, m in ms
         x = m * 10.0^e; lo / 1.05 <= x <= hi * 1.05 && push!(v, x)
     end
     (v, [x >= 1 ? (x == round(x) ? string(Int(round(x))) : string(x)) :
@@ -138,7 +138,7 @@ function panel(key, ttl, xlab)
     f = fit(cases, key)
     xs = [med(getfield(c, key).x) for c in cases]; ys = [med(getfield(c, key).K) for c in cases]
     lo, hi = minimum(fin(xs)) / 2.5, maximum(fin(xs)) * 2.5
-    ylo, yhi = minimum(fin(ys)) / 2.5, maximum(fin(ys)) * 2.2
+    ylo, yhi = minimum(fin(ys)) / 2.5, max(1.05, maximum(fin(ys)) * 2.2)
     p = plot(xscale = :log10, yscale = :log10, xlabel = xlab,
              ylabel = L"K_T^{*} = K_T N/\mathrm{TKE}", title = ttl,
              legend = :bottomright, foreground_color_legend = nothing)
@@ -159,7 +159,7 @@ function panel(key, ttl, xlab)
         scatter!(p, [xs[i]], [ys[i]]; ms = 9, msw = 1.5, mc = ramp_colour(c.r), msc = :black, label = "")
     end
     plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
-             yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
+             yticks = logticks(ylo, yhi), ylims = (ylo, yhi), minorgrid = true, minorticks = 9)
     return p
 end
 

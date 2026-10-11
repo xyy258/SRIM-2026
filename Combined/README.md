@@ -659,6 +659,17 @@ title 18, annotations 9 — so they read on a slide. On
 `KTstar_vs_Ri_zscan_T10.png` that crowded the 1-2-5 x ticks over eight decades
 into each other, so that axis is ticked at decades only.
 
+**Enlarged again 2026-10-11** for the slide figures: `plot_KTstar_Ri_stokes_T10.jl`,
+`plot_KTstar_Ri_zscan_ekman_T10.jl` and `plot_growth_T10.jl` now use axis labels
+22, ticks 17, legend 15, title 22 (20 on the growth plots). Knock-ons: the Ekman
+z-scan x axis is ticked at decades only; its legend background is transparent
+and the lowr figure's legend sits top-left, where it hid no points; the growth
+legends moved to the empty bottom-right. The `ekman` and `zscan` K_T* scripts
+are still at 16/12/10/18. Same day: those figures label decades only on log
+axes (y extended to 1 on the Stokes K_T* plot so it has three labels), growth
+time axis labelled every 10² up to 10¹⁰, h every 10 m, and all five carry a
+minor grid (`minorgrid = true`; `minorticks = 9` per decade on the K_T* axes).
+
 ### The height scan, Ekman only — `plot/plot_KTstar_Ri_zscan_ekman_T10.jl`
 
 ```
@@ -1101,6 +1112,15 @@ the Stokes LES has a pycnocline at `z = T = 10 m` that the model does not
 (uniform N), and at low N `√Ri` at h is small so a fixed `Ri` is the weakest
 assumption there. The exponential also overestimates Stokes TKE(h) at high N
 (stage-2 note), which this check does not show because it acts late.
+
+**How much the fixed-Ri choice can matter (2026-10-11).** K_T* is bounded by A,
+so no Ri(h) model can speed growth by more than `(1+√Ri)/√Ri` over the fixed-Ri
+curves: ×16 at Stokes r = 0.2, ×2.4 at r = 1, ≤ ×1.3 for r ≥ 5; Ekman ×5.4 at
+r = 0.2, ≈ ×2 otherwise. Against the eˣ growth of t(h) that does not move the
+stall. **A candidate S(h):** the shear implied at h, `S = N/√Ri`, matches the
+log-layer `u_*/(κh)` to within ×0.5–1.5 on all eight Stokes runs (×1.0 at
+r = 0.2, 0.5, 50), which would give `Ri(h) = (Nκh/u_*)²`. Not adopted yet;
+untested on Ekman, whose z-scan Ri uses the local gradient, not background N.
 
 ### Stage 3 — the δ model for K_T
 

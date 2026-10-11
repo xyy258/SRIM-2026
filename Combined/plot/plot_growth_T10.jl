@@ -13,8 +13,8 @@
 using JLD2, Plots, Printf, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
-        legendfontsize = 10, titlefontsize = 16)
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 22, tickfontsize = 17,
+        legendfontsize = 15, titlefontsize = 20)
 
 const HERE  = dirname(@__DIR__)
 include(joinpath(HERE, "sweep.jl"))
@@ -55,7 +55,8 @@ for f in FL
     say("\n$(f.name): t(h) in hours")
     say("  r      N (1/s)   delta (m)   sqrt(Ri)   K_T*    h_sim  h_model at run end (m)  " * join((@sprintf("%9d m", h) for h in HS)))
     p = plot(xscale = :log10, xlabel = L"t\ \ (\mathrm{hours})", ylabel = L"h\ \ (\mathrm{m})",
-             ylims = (0, 65), xlims = (1e-1, 1e12), legend = :topleft, foreground_color_legend = nothing,
+             ylims = (0, 65), xlims = (1e-1, 1e12), yticks = 0:10:60, xticks = exp10.(0:2:10),
+             minorgrid = true, minorticks = 2, legend = :bottomright, foreground_color_legend = nothing,
              title = latexstring("\\mathrm{$(f.name)}:\\ \\ dh/dt = 2K_T/h,\\ \\ \\sqrt{Ri}\\ \\mathrm{fixed\\ at\\ its\\ value\\ at}\\ h"))
     push!(tex, "\\begin{table}[h]\n\\centering\n\\caption{$(f.name): time (hours) for the mixed layer to reach height \$h\$, " *
                "from \$dh/dt = 2K_T/h\$ with \$\\sqrt{Ri}\$ held at its measured value at \$h\$.}\n" *
