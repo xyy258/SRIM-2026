@@ -158,7 +158,8 @@ velocity and eats the gain. A sharper test would raise U_inf, at roughly double
 the runtime.
 
 The Ekman counterpart figure exists (plot_KTstar_Ri_ekman_T10.jl,
-figures/KTstar_vs_Ri_ekman_T10.png): A = 0.330, rms 26.2 %, but six of eight
+figures/KTstar_vs_Ri_ekman_T10.png, Stokes layout since 2026-10-11: no
+shading, no Stokes curve, no rough marker): A = 0.330, rms 26.2 %, but six of eight
 cases sit at Ri = 8-13 and the fit rests entirely on r = 0.2 and 0.5. Keep it as
 the visual argument for why the rotating column cannot carry the relation, NOT
 as a result — and do not quote its 26.2 % against the Stokes 14.7 % as if the

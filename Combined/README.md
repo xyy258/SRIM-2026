@@ -540,8 +540,11 @@ value. That is self-regulation, a result rather than a defect.
 ### The Ekman figure itself — `plot/plot_KTstar_Ri_ekman_T10.jl`
 
 *Since 2026-10-11 this, not the z-scan, is the Ekman K_T\* used in the growth
-closure (background N, like Stokes), and it is trimmed for slides: no note, no
-rms, legend outside on the right, slide fonts, minor grid.*
+closure (background N, like Stokes). Since 2026-10-11 it is also drawn in the
+Stokes figure's layout: asymptote guides (dashed A sqrt(Ri), dotted A),
+interquartile bars, legend top-left, x from 0.1 to 10, 900x780. The red Ri = 8-13
+shading, the Stokes reference curve and the rough-bed marker are gone from the
+figure; the rough-bed numbers stay in the log.*
 
 ```
 cd Combined
@@ -558,13 +561,13 @@ pile-up rather than to fit through it.
 | Ekman | 0.330 | 26.2 % | 0.44 → 12.8 (×29) |
 
 **Read the 26.2 % with care — it is not a measurement of anything.** Six of the
-eight cases (`r` = 1 to 50) sit between `Ri` = 8 and 13, shaded on the figure.
+eight cases (`r` = 1 to 50) sit between `Ri` = 8 and 13.
 Only `r` = 0.2 and 0.5 reach below, and those two points carry the entire fit;
 the other six are a single cluster with a ×1.6 vertical spread in `K_T*` at one
 value of `Ri`. Two points and a blob will fit a two-parameter curve — that does
 not make it a law.
 
-The rough-bed `r = 25` run is drawn as an open diamond and lands on top of the
+The rough-bed `r = 25` run (log only, `25 rgh`) lands on top of the
 smooth `r = 25` point, which is the self-regulation result restated.
 
 `A` = 0.330 against 0.412 for Stokes is the same non-universality the height
