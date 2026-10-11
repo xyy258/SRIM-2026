@@ -909,6 +909,36 @@
 # ratio 0.51-1.46 across the Stokes sweep -> Ri(h) = (N kappa h/u_*)^2. Not
 # adopted; recorded in README growth section.
 
+## Ri against h; Ekman closure moved to background N          (2026-10-11)
+
+# plot/plot_Ri_vs_h_T10.jl -> figures/Ri_vs_h_{stokes,ekman}_T10.png. Ri at h
+# (background N) vs h through each run, per-period medians from the FULL raw
+# series (Ekman Moments.jld2 U V dBdz every 4th sample; Stokes mixing + moments
+# files). Ekman Ri climbs ~3 decades as h grows and stops near 10. At fixed h,
+# S is ~independent of N: pooled S(h) = 3.16e-3 exp(-h/4.64) (rms ln 0.15,
+# Ekman), 4.33e-3 exp(-h/3.29) (0.34, Stokes). The u_*/(kappa h) candidate from
+# earlier today fails for Ekman by ~100x in Ri — dropped.
+#
+# BUG FIXED in plot_growth_T10.jl: Ekman used the z-scan A = 0.122 and sqrt(Ri)
+# (LOCAL N) but divided by the BACKGROUND N in K_T = K_T* TKE/N. At z = h local
+# N = sqrt(0.1) N_bg by the definition of h, so K_T was x3.2 too small. Now
+# A = 0.330 and sqrt(Ri) from plot_KTstar_Ri_ekman_T10.log (z = h, background
+# N), matching Stokes. Ekman times to 10 m: 0.3-28 h (were 1.7-110 h); model h
+# at run end now 28-73 % above LES at every N/f (the old 5 % agreement at high
+# N was the bug cancelling the overshoot). Table regenerated.
+# KTstar_vs_Ri_ekman_T10.png restyled for slides (no note/rms, legend outside).
+
+## Ri vs h smoothed                                           (2026-10-11)
+
+# Per-period median of N^2/S^2 replaced by a 2-period running window stepped
+# every 1/4 period with Ri = N^2/<S^2> (ratio of averages; S at h nears zero
+# twice per tide, which spiked the median of N^2/S^2). Curves now smooth.
+# Pooled S(h): Ekman 3.24e-3 exp(-h/4.72) rms ln 0.11 (was 3.16e-3, 4.64,
+# 0.15); Stokes 6.20e-3 exp(-h/3.16) rms ln 0.25 (was 4.33e-3, 3.29, 0.34). n
+# now counts overlapping windows. Stokes N/omega >= 10 still near-vertical:
+# h pinned near T while Ri varies — real, not noise. Then redrawn as unjoined
+# points (one per window position) on request; fits unchanged.
+
 ## Mistakes made here, so they are not made again
 
 # - h(t) computed wrongly twice before it was right: a broken findlast returning

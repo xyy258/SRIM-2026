@@ -539,6 +539,10 @@ value. That is self-regulation, a result rather than a defect.
 
 ### The Ekman figure itself — `plot/plot_KTstar_Ri_ekman_T10.jl`
 
+*Since 2026-10-11 this, not the z-scan, is the Ekman K_T\* used in the growth
+closure (background N, like Stokes), and it is trimmed for slides: no note, no
+rms, legend outside on the right, slide fonts, minor grid.*
+
 ```
 cd Combined
 GKSwstype=100 julia --project=. plot/plot_KTstar_Ri_ekman_T10.jl
@@ -1082,17 +1086,25 @@ with a dashed line at the end of the LES run) and `tables/growth_times_T10.tex`
 
     dh/dt = 2K_T/h,   K_T = K_T* TKE(h)/N,
     TKE(h) = A₁ u_*² e^(−A₂h/δ)      (pooled fits above)
-    K_T*   = A √Ri/(1+√Ri)            (A = 0.412 Stokes, 0.122 Ekman r < 25)
+    K_T*   = A √Ri/(1+√Ri)            (A = 0.412 Stokes, 0.330 Ekman; z = h, background N)
 
-**Assumption: √Ri at h is held at each run's measured value** (Stokes from the
-`z = h` figure, Ekman from the z-scan at `z/h = 1`), because S(h) has no model.
+**Assumption: √Ri at h is held at each run's measured value** (both from the
+`z = h`, background-`N` figures), because S(h) is not in the closure yet.
+
+**Corrected 2026-10-11 — the Ekman curves first used the wrong N.** They took
+`A = 0.122` and `√Ri` from the z-scan, where `K_T*` and `Ri` use the *local*
+`N`, but then formed `K_T = K_T* TKE/N` with the *background* `N`. At `z = h`
+the local gradient is `0.1 N²` by the definition of h, so local `N = 0.316 N`
+and Ekman `K_T` came out ×3.2 too small. Both flows now use background `N`
+throughout; Ekman `K_T*` at h rose from 0.02–0.06 to 0.13–0.26.
 K_T* is then a constant per run and, with `x = A₂h/δ`, `h(0) = 0`,
 
     t(h) = N δ² [(x − 1)eˣ + 1] / (2 K_T* A₁ u_*² A₂²)
 
 **Growth is effectively capped at a few δ.** TKE(h) falls as `e^(−A₂h/δ)`, so
 `t` grows like `eˣ`. Stokes (δ ≈ 4 m) reaches 10 m in 12–390 h but 60 m in
-10⁹–10¹² h; Ekman (δ = 17–34 m) reaches 60 m in 10⁴–10¹⁰ h. Beyond about
+10⁹–10¹² h; Ekman (δ = 17–34 m) reaches 10 m in 0.3–28 h and 60 m in
+1.2×10⁴–5×10⁹ h. Beyond about
 `h/δ ≈ 2.5` (Stokes) or `0.7` (Ekman) the curves are extrapolations of the
 TKE fit past any data and should be read as "does not grow", not as times.
 
@@ -1101,16 +1113,18 @@ inertial periods, against measured h):
 
 | r | Stokes model / LES (m) | Ekman model / LES (m) |
 |---|---|---|
-| 0.2 | 15.1 / 9.0 | 30.2 / 22.6 |
-| 1 | 15.6 / 11.3 | 25.5 / 20.7 |
-| 5 | 12.9 / 10.5 | 15.0 / 14.5 |
-| 10 | 11.4 / 9.8 | 11.5 / 11.5 |
+| 0.2 | 15.1 / 9.0 | 39.0 / 22.6 |
+| 1 | 15.6 / 11.3 | 31.7 / 20.7 |
+| 5 | 12.9 / 10.5 | 18.9 / 14.5 |
+| 10 | 11.4 / 9.8 | 14.7 / 11.5 |
 | 50 | 8.1 / 8.6 | — |
 
-Good at high N (within 5 %), 30–70 % too deep at low N. Two known reasons:
-the Stokes LES has a pycnocline at `z = T = 10 m` that the model does not
-(uniform N), and at low N `√Ri` at h is small so a fixed `Ri` is the weakest
-assumption there. The exponential also overestimates Stokes TKE(h) at high N
+Stokes is good at high N, 30–70 % too deep at low N. Ekman is now 28–73 % too
+deep everywhere — the earlier "within 5 %" at high N was the ×3.2 error
+cancelling the overshoot. Known reasons: the Stokes LES has a pycnocline at
+`z = T = 10 m` that the model does not (uniform N), and holding `Ri` fixed at
+its end-of-run value overestimates K_T* early on, when Ri at h was much smaller
+(see the Ri–h figures below). The exponential also overestimates Stokes TKE(h) at high N
 (stage-2 note), which this check does not show because it acts late.
 
 **How much the fixed-Ri choice can matter (2026-10-11).** K_T* is bounded by A,
@@ -1119,8 +1133,40 @@ curves: ×16 at Stokes r = 0.2, ×2.4 at r = 1, ≤ ×1.3 for r ≥ 5; Ekman ×5
 r = 0.2, ≈ ×2 otherwise. Against the eˣ growth of t(h) that does not move the
 stall. **A candidate S(h):** the shear implied at h, `S = N/√Ri`, matches the
 log-layer `u_*/(κh)` to within ×0.5–1.5 on all eight Stokes runs (×1.0 at
-r = 0.2, 0.5, 50), which would give `Ri(h) = (Nκh/u_*)²`. Not adopted yet;
-untested on Ekman, whose z-scan Ri uses the local gradient, not background N.
+r = 0.2, 0.5, 50), which would give `Ri(h) = (Nκh/u_*)²`. **Superseded the same day** by the
+Ri–h figures below: it fails badly for Ekman, and an exponential S(h) fits both.
+
+### Ri against h — `plot/plot_Ri_vs_h_T10.jl`                   (2026-10-11)
+
+`figures/Ri_vs_h_{stokes,ekman}_T10.png`. Ri at the layer top (background N,
+S at h) against h, followed through each run. Smoothed 2026-10-11: a running
+window of 2 tidal / inertial periods stepped every ¼ period, h the window mean
+and **Ri = N²/⟨S²⟩ (ratio of averages)** — S at h passes near zero twice per
+tide, so the earlier per-period median of N²/S² spiked. First period dropped
+(the flow has not reached h). Neighbouring points share data, so n below counts
+overlapping windows, not independent samples. Drawn as unjoined points, one
+per window position (the windows overlap, so a joining line implied more
+continuity than there is). Built from the full raw series,
+not the end-window caches. ~40 s.
+
+**Ekman: Ri rises steeply and cleanly with h** — e.g. N/f = 1 goes Ri 0.02 at
+h = 6 m → 13 at 21 m — and stops near 10, which is the self-regulation seen as
+it happens. **At a given h the shear hardly depends on N**: pooling every run
+and period,
+
+    S(h) = 3.24×10⁻³ e^(−h/4.72 m)   rms(ln S) 0.11, n = 285   (Ekman, N/f < 25)
+    S(h) = 6.20×10⁻³ e^(−h/3.16 m)   rms(ln S) 0.25, n = 168   (Stokes)
+
+(per-period medians gave 3.16×10⁻³, 4.64 m and 4.33×10⁻³, 3.29 m — the Ekman
+law barely moved; the Stokes prefactor did, because N²/⟨S²⟩ weights the
+low-shear phases of the tide differently from the median of N²/S²).
+
+so `Ri(h) = N² e^(2h/ℓ)/S₀²` (dashed on the figures). This is the missing S(h)
+of the closure, at least for Ekman. Stokes is looser — h barely moves (6–13 m)
+and at N/ω ≥ 10 the curves are near-vertical: h is held near the
+pycnocline (z ≈ T) while Ri still wanders — but the same form fits within
+×1.3. Both fits are dimensional (S₀, ℓ in s⁻¹ and m); whether ℓ scales with δ
+or u_*/f has not been tested on a second u_*.
 
 ### Stage 3 — the δ model for K_T
 

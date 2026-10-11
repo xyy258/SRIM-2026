@@ -59,7 +59,7 @@ STANDING RULES:
   Scripts live one level down and are invoked with their folder, e.g.
   `GKSwstype=100 julia --project=. plot/plot_delta_T10.jl`. The layout is
       Combined/sweep.jl, mixed_layer_height.jl   shared, included by everything
-      Combined/plot/     the 17 plot_* scripts (+ tables/ for .tex)
+      Combined/plot/     the 18 plot_* scripts (+ tables/ for .tex)
       Combined/reduce/   the 3 reduce_* scripts
       Combined/run/      ekmanrun.jl, swirles.sh
       Combined/Data/raw/      Ekman, Ekman_moments, lowN, rough_ekman
@@ -191,8 +191,14 @@ and tables/growth_times_T10.tex (time to h = 10..60 m). sqrt(Ri) at h is HELD
 FIXED per run (no S(h) model) and constants are hard-coded from the TKE-fit and
 K_T* logs — update them if those are rerun. Times past a few delta are
 extrapolation. Model h at run end matches LES within 5 % at high N, 30-70 %
-too deep at low N. Ri(h) candidate found 2026-10-11: S at h ~ u_*/(kappa h)
-(within x0.5-1.5, Stokes), Ri = (N kappa h/u_*)^2 — not yet used.
+too deep at low N. 2026-10-11: Ekman now uses
+the z = h BACKGROUND-N K_T* (A = 0.330), fixing a x3.2 error from mixing the
+z-scan's local N with background N; Ekman model h now overshoots LES 28-73 %.
+plot_Ri_vs_h_T10.jl: S at h is ~independent of N, S(h) = 3.24e-3 e^(-h/4.72)
+(Ekman, tight) / 6.20e-3 e^(-h/3.16) (Stokes, loose) — 2-period running window,
+Ri = N^2/<S^2> — the S(h) the closure
+lacked, not yet put into the growth curves. NEVER mix local-N and
+background-N K_T* or Ri.
 
 2026-10-09: KTstar_vs_Ri_stokes_T10.png and ..._zscan_ekman_lowr_T10.png
 trimmed for slides (no rms or n in legends, no caveat note, shorter Stokes title,

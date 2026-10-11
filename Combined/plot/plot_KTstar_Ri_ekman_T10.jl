@@ -14,8 +14,8 @@
 using JLD2, Plots, Printf, Statistics, LaTeXStrings
 
 get!(ENV, "GKSwstype", "100")
-default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 16, tickfontsize = 12,
-        legendfontsize = 10, plot_titlefontsize = 18)
+default(dpi = 600, fontfamily = "DejaVu Sans", guidefontsize = 22, tickfontsize = 17,
+        legendfontsize = 15, plot_titlefontsize = 22)
 
 const HERE   = dirname(@__DIR__)        # scripts live one level down
 include(joinpath(HERE, "sweep.jl"))
@@ -69,9 +69,9 @@ let xs = fin([med(c.x)^2 for c in cases])
 end
 
 mkpath(FIGDIR)
-function logticks(lo, hi)
+function logticks(lo, hi; ms = (1,))
     a = floor(Int, log10(lo)); b = ceil(Int, log10(hi)); v = Float64[]
-    for e in a:b, m in (1, 2, 5)
+    for e in a:b, m in ms
         x = m * 10.0^e; lo / 1.05 <= x <= hi * 1.05 && push!(v, x)
     end
     (v, [x >= 1 ? (x == round(x) ? string(Int(round(x))) : string(x)) :
@@ -80,16 +80,16 @@ end
 
 xs = [med(c.x) for c in cases]; ys = [med(c.K) for c in cases]
 lo, hi = minimum(xs) / 2.5, maximum(xs) * 2.5
-ylo, yhi = minimum(ys) / 2.5, maximum(ys) * 2.2
+ylo, yhi = minimum(ys) / 2.5, max(1.05, maximum(ys) * 2.2)
 p = plot(xscale = :log10, yscale = :log10,
          xlabel = L"\sqrt{Ri} = N/S \ \ (N = r\,f,\ \mathrm{background})",
          ylabel = L"K_T^{*} = K_T N/\mathrm{TKE}",
-         legend = :bottomright, foreground_color_legend = nothing)
+         legend = :outerright, foreground_color_legend = nothing)
 xx = exp.(range(log(lo), log(hi); length = 300))
 plot!(p, xx, STOKES_A .* xx ./ (1 .+ xx); color = :grey55, lw = 1.6, ls = :dot,
-      label = latexstring(@sprintf("\\mathrm{Stokes\\ fit\\ for\\ reference}\\!: \\ A = %.3f", STOKES_A)))
+      label = latexstring(@sprintf("\\mathrm{Stokes},\\ A = %.3f", STOKES_A)))
 plot!(p, xx, f.A .* xx ./ (1 .+ xx); color = :black, lw = 2.4,
-      label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri}), \\ \\mathrm{rms}\\ %.1f\\,\\%%", f.A, f.rms)))
+      label = latexstring(@sprintf("K_T^{*} = %.3f\\,\\sqrt{Ri}/(1+\\sqrt{Ri})", f.A)))
 # The pile-up is the point: shade where six of the eight cases sit.
 vspan!(p, [sqrt(8.0), sqrt(13.0)]; color = "#8e1b4e", alpha = 0.07, label = "")
 for (i, c) in enumerate(cases)
@@ -102,13 +102,10 @@ scatter!(p, [med(rough.x)], [med(rough.K)]; marker = :diamond, ms = 11, msw = 1.
 for sv in RATIOS
     scatter!(p, [NaN], [NaN]; ms = 5, msw = 0, color = ramp_colour(sv), label = @sprintf("N/f = %g", sv))
 end
-plot!(p; xticks = logticks(lo, hi), xlims = (lo, hi),
-         yticks = logticks(ylo, yhi), ylims = (ylo, yhi))
-annotate!(p, lo * 1.12, yhi / 1.06,
-          text(@sprintf("Six of the eight cases (r = 1 to 50) sit in the shaded band,\nRi = 8 to 13, because S ~ N^1.018 here: the layer equilibrates\nto a marginal Ri at its top, so r does not control Ri.\nThe rough-bed run (u_* x1.18) lands on the smooth r = 25 point.\nOnly r = 0.2 and 0.5 reach below — there is no curve to fit."),
-               9, :grey30, :left, :top))
-fig = plot(p; size = (920, 800),
-           plot_title = L"T = 10\,\mathrm{m},\ z = h,\ \mathrm{Ekman}:\ \ K_T^{*} = A\sqrt{Ri}/(1+\sqrt{Ri})",
+plot!(p; xticks = logticks(lo, hi; ms = (1, 2, 5)), xlims = (lo, hi),
+         yticks = logticks(ylo, yhi), ylims = (ylo, yhi), minorgrid = true, minorticks = 9)
+fig = plot(p; size = (1250, 800),
+           plot_title = L"T = 10\,\mathrm{m},\ z = h,\ \mathrm{Ekman}",
            bottom_margin = 6Plots.mm, left_margin = 6Plots.mm, top_margin = 3Plots.mm)
 o = joinpath(FIGDIR, "KTstar_vs_Ri_ekman_T10.png"); savefig(fig, o); say("\nwrote $o")
 

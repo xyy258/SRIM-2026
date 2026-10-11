@@ -23,14 +23,17 @@ const DFILE = joinpath(HERE, "Data", "cache", "delta_T10.jld2")
 const HS    = [10, 20, 30, 40, 50, 60]      # heights for the table (m)
 
 # Fitted constants and measured sqrt(Ri) at h, from logs/plot_tke_fits_T10.log,
-# logs/plot_KTstar_Ri_stokes_T10.log and logs/plot_KTstar_Ri_zscan_ekman_T10.log
-# (z/h = 1). Rerun those scripts and update these if they change.
+# logs/plot_KTstar_Ri_stokes_T10.log and logs/plot_KTstar_Ri_ekman_T10.log. Both
+# K_T* fits are at z = h on the BACKGROUND N, the same N used in K_T = K_T* TKE/N
+# here. (The Ekman z-scan uses the local N, which at z = h is sqrt(0.1) of the
+# background by the definition of h, so it must not be mixed with this N.)
+# Rerun those scripts and update these if they change.
 const FL = (
     (name = "Stokes", key = "stokes", sym = "N/ω", tend = 8 * 2π / 1e-4, A1 = 3.428, A2 = 1.469, A = 0.4124,
      sRi = Dict(0.2 => 0.0655, 0.5 => 0.1805, 1 => 0.6931, 2 => 1.5348, 5 => 3.3078,
                 10 => 4.4774, 25 => 5.7005, 50 => 16.2259)),
-    (name = "Ekman", key = "ekman", sym = "N/f", tend = 12.73 * 2π / 1e-4, A1 = 1.718, A2 = 5.680, A = 0.1220,
-     sRi = Dict(0.2 => 0.225, 0.5 => 0.428, 1 => 0.975, 2 => 1.108, 5 => 1.091, 10 => 1.114)))
+    (name = "Ekman", key = "ekman", sym = "N/f", tend = 12.73 * 2π / 1e-4, A1 = 1.718, A2 = 5.680, A = 0.3299,
+     sRi = Dict(0.2 => 0.6612, 0.5 => 1.2678, 1 => 2.9051, 2 => 3.5808, 5 => 3.3083, 10 => 3.4607)))
 
 logl = String[]
 say(s) = (println(s); flush(stdout); push!(logl, s))
