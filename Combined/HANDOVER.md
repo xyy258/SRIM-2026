@@ -257,3 +257,7 @@ SINCE 2026-10-11 the closure uses r < 25 for BOTH flows (DROP = 25 in the K_T*,
 TKE, Ri and growth scripts). Constants: Stokes A 0.4025, A1 3.422, A2 1.460;
 Ekman A 0.2998, A1 1.718, A2 5.680. Growth times are in years. If a fit changes,
 copy the new constants into the FL table in plot_growth_T10.jl by hand.
+stokes_animations/ (2026-10-12): b' panels cropped from three OLD Stokes mp4s
+(Ri500 L0.5Lz, softplus no-slip T10 sqrtRi 0.5 and 1). There is no system ffmpeg; use
+~/.julia/artifacts/62487207.../bin/ffmpeg with LD_LIBRARY_PATH set to the artifact
+lib dirs. Details in LOG.txt.

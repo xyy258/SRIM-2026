@@ -1171,6 +1171,18 @@ pycnocline (z ≈ T) while Ri still wanders — but the same form fits within
 ×1.3. Both fits are dimensional (S₀, ℓ in s⁻¹ and m); whether ℓ scales with δ
 or u_*/f has not been tested on a second u_*.
 
+### Stokes buoyancy animations — `stokes_animations/`         (2026-10-12)
+
+These are the b' = b − b_bg(z) panel, cropped out of three old Stokes animations
+(none of them from the current T = 10 sweep):
+- `b_Ri500_L0p5Lz.mp4`: Ri = N²/ω² = 500 (N/ω ≈ 22), stratified layer 0.5 L_z.
+- `b_T10_r0p5.mp4`: N/ω = 0.5, T = 10.
+- `b_T10_r1.mp4`: N/ω = 1, T = 10.
+
+The two T = 10 files come from the old softplus sweep with a no-slip bottom.
+The sources are under `Stokes/3D/1 Old Runs/`, and the exact crop is in LOG.txt.
+Each video has its parameter labelled top-left. There is still no time label, because the time was in the u panel's title.
+
 ### Side-by-side slide figures (A4 landscape)                    (2026-10-11)
 
 **Since 2026-10-11 both flows use N/ω, N/f < 25 everywhere** (K_T\*, TKE, Ri, growth).

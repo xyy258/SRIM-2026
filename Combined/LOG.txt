@@ -1021,3 +1021,19 @@
   plot_growth_T10.jl: times now in YEARS (365.25 d) on the axis, in the log and
   in tables/growth_times_T10.tex; x axis 1e-5 to 1e8 yr. Ekman times are ~10 %
   longer than with A = 0.330. Stokes Ri pair ylim top lowered to 1e4.
+
+2026-10-12  New folder stokes_animations/: the b' panel cropped out of three old
+  Stokes animations (u and dye panels removed; nothing re-simulated):
+    b_Ri500_L0p5Lz.mp4  <- Stokes/3D/1 Old Runs/-Varying L_strat fraction of Lz/
+                           output_L0p5Lz_Ri500 (Ri = N^2/w^2 = 500, N/w ~ 22)
+    b_T10_r0p5.mp4      <- .../-Softplus T sweep, no-slip bottom/outputs/P4_T10_sqrtRi0p5
+    b_T10_r1.mp4        <- .../-Softplus T sweep, no-slip bottom/outputs/P4_T10_sqrtRi1
+  Cropped with the ffmpeg in Julia's FFMPEG artifact (no system ffmpeg):
+  crop=1000:298:0:290 (3-panel source), crop=1000:354:0:346 (2-panel source),
+  libx264 crf 18. The time label was in the u-panel title, so it is gone.
+  These are OLD runs (no-slip bottom / earlier profiles), not the T = 10 sweep.
+  (later 2026-10-12) Parameter label added top-left of each video: "Ri = N²/ω² =
+  500 (N/ω ≈ 22)", "N/ω = 0.5", "N/ω = 1". This ffmpeg has no drawtext, so each
+  label is a PNG (Pillow, DejaVu Sans Bold 20 px, white box) put on with overlay.
+  All three were re-encoded from the originals in one pass (not re-encoded twice).
+  The T10 pair has a 14 px white strip on top (pad) so the label clears the y = 20 tick.
